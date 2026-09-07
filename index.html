@@ -1691,14 +1691,14 @@
     reviewsList.innerHTML = reviews.map(review => `
       <div style="background:var(--ivory-deep); padding:16px; border-radius:6px; border-left:4px solid var(--brass);">
         <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
-          <div style="font-weight:600; color:var(--charcoal); font-size:14px;">` + (review.profiles?.full_name || 'Anonymous') + `</div>
+          <div style="font-weight:600; color:var(--charcoal); font-size:14px;">` + escapeHTML(review.profiles?.full_name || 'Anonymous') + `</div>
           <div style="font-size:12px; color:var(--charcoal-soft);">` + formatReviewDate(review.created_at) + `</div>
         </div>
         <div style="display:flex; gap:2px; margin-bottom:8px; color:#D4AF37;">
           ` + '<span style="font-size:14px;">★</span>'.repeat(review.rating) + `
         </div>
-        <div style="font-weight:600; color:var(--charcoal); margin-bottom:6px; font-size:13px;">` + (review.title || '') + `</div>
-        <div style="font-size:13px; line-height:1.6; color:var(--charcoal);">` + (review.comment || '') + `</div>
+        <div style="font-weight:600; color:var(--charcoal); margin-bottom:6px; font-size:13px;">` + escapeHTML(review.title || '') + `</div>
+        <div style="font-size:13px; line-height:1.6; color:var(--charcoal);">` + escapeHTML(review.comment || '') + `</div>
       </div>
     `).join('');
   }
@@ -2529,7 +2529,7 @@
     );
     const el = document.getElementById('searchResults');
     if(!results.length){
-      el.innerHTML = `<div class="search-empty">No products found for "${q}".</div>`;
+      el.innerHTML = `<div class="search-empty">No products found for "${escapeHTML(q)}".</div>`;
       return;
     }
     el.innerHTML = results.slice(0,8).map(p => `
