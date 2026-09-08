@@ -1946,13 +1946,27 @@
       if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Uploading photo…'; }
       const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${account.id}/${productId}-${Date.now()}.${ext}`;
-      const { error: uploadErr } = await sb.storage.from('review-photos').upload(path, photoFile);
-      if(uploadErr){
+
+      // Upload directly to R2 via the review-photo-upload Worker, instead
+      // of Supabase Storage — see review-photo-upload-worker.js.
+      // TODO: replace with your actual deployed Worker URL.
+      const REVIEW_UPLOAD_ENDPOINT = 'https://review-photo-upload.m-bipul21.workers.dev';
+
+      try{
+        const fd = new FormData();
+        fd.append('file', photoFile);
+        fd.append('path', path);
+        const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+        const result = await res.json();
+        if(!res.ok || result.error){
+          console.error('Photo upload failed:', result.error);
+          showToast("Couldn't upload photo — posting review without it");
+        } else {
+          image_url = result.url || null;
+        }
+      }catch(uploadErr){
         console.error('Photo upload failed:', uploadErr);
         showToast("Couldn't upload photo — posting review without it");
-      } else {
-        const { data: pub } = sb.storage.from('review-photos').getPublicUrl(path);
-        image_url = pub?.publicUrl || null;
       }
     }
 
