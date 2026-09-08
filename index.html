@@ -801,7 +801,7 @@
     <nav class="center" id="mainNav">
       <a href="#shop">Shop</a>
       <a href="#bestsellers" onclick="filterCategory('Claw Clips', this)">Claw Clips</a>
-      <a href="#bestsellers" onclick="filterCategory('Scrunchies', this)">Scrunchies</a>
+      <a href="#bestsellers" onclick="filterCategory('Bracelets', this)">Bracelets</a>
       <a href="#bestsellers" onclick="filterCategory('Earrings', this)">Earrings</a>
       <a href="#bestsellers" onclick="filterCategory('Chains', this)">Chains</a>
       <a href="#bestsellers" onclick="filterCategory('New', this)">New Arrivals</a>
@@ -828,7 +828,7 @@
       <span class="eyebrow">CLIPPD ✦ Fashion Accessories</span>
       <h1>YOUR<br>EVERYDAY<br><em>SLAY</em></h1>
       <p class="hero-sub">Small accessories. Major energy.</p>
-      <p class="desc">Discover effortless fashion accessories designed to turn your everyday look into a statement — claw clips, scrunchies and earrings built for real, everyday main-character moments.</p>
+      <p class="desc">Discover effortless fashion accessories designed to turn your everyday look into a statement — claw clips, bracelets and earrings built for real, everyday main-character moments.</p>
       <div class="hero-ctas">
         <a href="#shop" class="btn btn-primary">Shop The Collection</a>
         <a href="#bestsellers" class="btn btn-outline" onclick="filterCategory(null)">Explore Bestsellers</a>
@@ -891,13 +891,13 @@
         <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Claw Clips')">Shop Now →</a>
       </div>
     </div>
-    <div class="cat-card" id="scrunchies">
+    <div class="cat-card" id="bracelets">
       <div class="clip-notch"><svg viewBox="0 0 34 16" fill="none"><path d="M2 14C2 6 10 2 17 2s15 4 15 12" stroke="#231F1B" stroke-width="2.4" stroke-linecap="round"/></svg></div>
       <div class="cat-thumb"></div>
       <div class="cat-body">
-        <h3>Satin Scrunchies</h3>
-        <p>"Soft on hair. Big on style."</p>
-        <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Scrunchies')">Shop Now →</a>
+        <h3>Stacked Bracelets</h3>
+        <p>"Stack them up. Style all day."</p>
+        <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Bracelets')">Shop Now →</a>
       </div>
     </div>
     <div class="cat-card" id="earrings">
@@ -1036,7 +1036,7 @@
       <h4>Shop</h4>
       <ul>
         <li><a href="#bestsellers" onclick="filterCategory('Claw Clips')">Claw Clips</a></li>
-        <li><a href="#bestsellers" onclick="filterCategory('Scrunchies')">Scrunchies</a></li>
+        <li><a href="#bestsellers" onclick="filterCategory('Bracelets')">Bracelets</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('Earrings')">Earrings</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('Chains')">Chains</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('New')">New Arrivals</a></li>
@@ -1193,7 +1193,7 @@
   <div class="mobile-nav-links" id="mobileNavLinks">
     <a href="#shop" onclick="closeMobileNav()">Shop</a>
     <a href="#bestsellers" onclick="filterCategory('Claw Clips', this); closeMobileNav();">Claw Clips</a>
-    <a href="#bestsellers" onclick="filterCategory('Scrunchies', this); closeMobileNav();">Scrunchies</a>
+    <a href="#bestsellers" onclick="filterCategory('Bracelets', this); closeMobileNav();">Bracelets</a>
     <a href="#bestsellers" onclick="filterCategory('Earrings', this); closeMobileNav();">Earrings</a>
     <a href="#bestsellers" onclick="filterCategory('Chains', this); closeMobileNav();">Chains</a>
     <a href="#bestsellers" onclick="filterCategory('New', this); closeMobileNav();">New Arrivals</a>
@@ -1222,7 +1222,7 @@
   <div class="search-panel-inner">
     <div class="search-input-row">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="20" height="20"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="Search claw clips, scrunchies, earrings…">
+      <input type="text" id="searchInput" placeholder="Search claw clips, bracelets, earrings…">
       <button class="search-close" onclick="closeSearch()" aria-label="Close search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
@@ -1506,7 +1506,7 @@
   const shopCopy = {
     null:        { eyebrow:'Best Sellers', h2:'The CLIPPD Edit', sub:'The pieces everyone is adding to their everyday rotation.' },
     'Claw Clips': { eyebrow:'Claw Clips',  h2:'Claw Clips',      sub:'Clip it. Style it. Slay it.' },
-    'Scrunchies': { eyebrow:'Scrunchies',  h2:'Satin Scrunchies', sub:'Soft on hair. Big on style.' },
+    'Bracelets': { eyebrow:'Bracelets',  h2:'Stacked Bracelets', sub:'Stack them up. Style all day.' },
     'Earrings':   { eyebrow:'Earrings',    h2:'Oxidised & Statement Earrings', sub:'Everyday tradition, reimagined.' },
     'Chains':     { eyebrow:'Chains',      h2:'Chains',           sub:'Make your look unforgettable.' },
     'New':        { eyebrow:'New Arrivals', h2:'Just Dropped', sub:'The newest additions to your everyday rotation.' },
@@ -3051,7 +3051,7 @@
     },
     story: {
       eyebrow: 'About', title: 'Our Story',
-      body: `<p>CLIPPD started with a simple idea: everyday accessories shouldn't feel like an afterthought. What began as a small edit of claw clips and scrunchies grew into a full accessory line for people who want their look to feel considered, not complicated.</p>
+      body: `<p>CLIPPD started with a simple idea: everyday accessories shouldn't feel like an afterthought. What began as a small edit of claw clips and bracelets grew into a full accessory line for people who want their look to feel considered, not complicated.</p>
         <p>Every piece is chosen for how it actually gets worn — on busy mornings, between meetings, on the days you want to feel a little more yourself.</p>`
     },
     terms: {
@@ -3338,8 +3338,8 @@
     const clawClips = byCat('Claw Clips');
     if(clawClips.length) setThumb('#claw-clips .cat-thumb', clawClips[Math.floor(Math.random() * clawClips.length)]);
 
-    const scrunchies = byCat('Scrunchies');
-    if(scrunchies.length) setThumb('#scrunchies .cat-thumb', scrunchies[Math.floor(Math.random() * scrunchies.length)]);
+    const bracelets = byCat('Bracelets');
+    if(bracelets.length) setThumb('#bracelets .cat-thumb', bracelets[Math.floor(Math.random() * bracelets.length)]);
 
     // "Earrings" and "Chains" are now two separate categories, each
     // pulling its thumbnail from its own matching products.
