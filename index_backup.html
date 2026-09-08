@@ -1408,33 +1408,12 @@
     }
     return list.map(u => (u || '').trim()).filter(Boolean);
   }
-
-  // Transform Supabase image URLs to Cloudflare R2 URLs
-  // Handles all three buckets: product-images, review-photos, community-photos
-  function transformImageUrl(url){
-    if(!url) return url;
-    
-    // Pattern: https://tghmxutqpbxrtrlavmjx.storage.supabase.co/storage/v1/s3/BUCKET-NAME/...
-    const supabaseMatch = url.match(
-      /https:\/\/tghmxutqpbxrtrlavmjx\.storage\.supabase\.co\/storage\/v1\/s3\/(product-images|review-photos|community-photos)\/(.+)/
-    );
-    
-    if(supabaseMatch){
-      const [, bucket, path] = supabaseMatch;
-      // Convert to Cloudflare: https://clippd-images.r2.cloudflarecustomers.com/BUCKET-NAME/path
-      return `https://clippd-images.r2.cloudflarecustomers.com/${bucket}/${path}`;
-    }
-    
-    return url; // Not a Supabase URL, return as-is
-  }
-
   // Used for product-card, cart, and wishlist thumbnails — just needs one
   // image, so it uses the first entry from image_urls if present.
   function imgStyleFor(p){
     const first = getImageList(p)[0];
     if(first){
-      const transformed = transformImageUrl(first);
-      return `background-image:url('${transformed}'); background-size:cover; background-position:center;`;
+      return `background-image:url('${first}'); background-size:cover; background-position:center;`;
     }
     return `background:${imgFor(p ? p.id : 0)};`;
   }
@@ -1566,7 +1545,7 @@
     const images = getImageList(p);
     const modalImgEl = document.getElementById('modalImg');
     if(images.length){
-      modalImgEl.src = transformImageUrl(images[0]);
+      modalImgEl.src = images[0];
     }
     renderModalThumbs(images);
 
@@ -1613,7 +1592,7 @@
   }
   function setModalImage(url){
     const modalImgEl = document.getElementById('modalImg');
-    modalImgEl.src = transformImageUrl(url);
+    modalImgEl.src = url;
     document.querySelectorAll('.modal-thumb').forEach(t => {
       t.classList.toggle('active', t.dataset.url === url);
     });
@@ -1626,7 +1605,7 @@
     }
     thumbsEl.innerHTML = images.map((url, i) => `
       <div class="modal-thumb${i===0 ? ' active' : ''}" data-url="${url}"
-           style="background-image:url('${transformImageUrl(url)}');" onclick="setModalImage('${url}')"></div>
+           style="background-image:url('${url}');" onclick="setModalImage('${url}')"></div>
     `).join('');
   }
   // Renders the colour swatches/pills for the currently open product and
