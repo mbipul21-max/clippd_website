@@ -1414,29 +1414,31 @@
   function transformImageUrl(url){
     if(!url) return url;
 
-    // product-images still lives in the original shared "clippd-images" R2
-    // bucket (with the bucket name kept as a path prefix inside it).
-    // review-photos and community-photos each got migrated into their own
-    // dedicated R2 bucket instead, so no prefix is needed for those two —
-    // the object key is just the path.
+    // Each Supabase bucket is mirrored 1:1 into its own R2 bucket via
+    // On Demand Migration (Sippy), so object keys carry over as-is —
+    // no bucket-name folder prefix inside R2.
     const R2_DOMAINS = {
-      'product-images':   { domain: 'clippd-images.r2.cloudflarecustomers.com', prefix: true  },
-      'review-photos':    { domain: 'pub-eb98b25f0403425885426907112853397.r2.dev', prefix: false },
-      'community-photos': { domain: 'pub-00131064c2e642d98fb76e2ea7c81ab4.r2.dev',  prefix: false },
+      'product-images':   'cdn.clippd.in',
+      'review-photos':    'pub-eb98b25f0403425885426907112853397.r2.dev',
+      'community-photos': 'pub-00131064c2e642d98fb76e2ea7c81ab4.r2.dev',
     };
 
-    // Pattern: https://tghmxutqpbxrtrlavmjx.storage.supabase.co/storage/v1/s3/BUCKET-NAME/...
+    // Supabase Storage public URLs can appear in two forms depending on how
+    // they were generated — match both:
+    //   .../storage/v1/object/public/BUCKET-NAME/path   (standard public URL)
+    //   .../storage/v1/s3/BUCKET-NAME/path               (S3-compatible URL)
     const supabaseMatch = url.match(
-      /https:\/\/tghmxutqpbxrtrlavmjx\.storage\.supabase\.co\/storage\/v1\/s3\/(product-images|review-photos|community-photos)\/(.+)/
+      /https:\/\/tghmxutqpbxrtrlavmjx\.storage\.supabase\.co\/storage\/v1\/(?:object\/public|s3)\/(product-images|review-photos|community-photos)\/(.+)/
     );
 
     if(supabaseMatch){
       const [, bucket, path] = supabaseMatch;
-      const { domain, prefix } = R2_DOMAINS[bucket];
-      return prefix ? `https://${domain}/${bucket}/${path}` : `https://${domain}/${path}`;
+      const domain = R2_DOMAINS[bucket];
+      return `https://${domain}/${path}`;
     }
 
     return url; // Not a Supabase URL, return as-is
+  }
   }
 
   // Used for product-card, cart, and wishlist thumbnails — just needs one
