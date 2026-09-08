@@ -92,6 +92,9 @@
     font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
   }
   .announce span.dot{ color:var(--brass-soft); margin:0 10px; }
+  @keyframes blinkText{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+  .blink-text{ animation:blinkText 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .blink-text{ animation:none; } }
 
   /* ---------- HEADER ---------- */
   header.site{
@@ -787,7 +790,7 @@
 </head>
 <body>
 
-<div class="announce">YOUR EVERYDAY SLAY <span class="dot">✦</span> TRENDING ACCESSORIES, MADE EASY <span class="dot">✦</span> FREE SHIPPING OVER ₹499</div>
+<div class="announce"><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">LAUNCHING SOON</strong> <span class="dot">✦</span> YOUR EVERYDAY SLAY, ALMOST HERE <span class="dot">✦</span> STAY TUNED</div>
 
 <header class="site">
   <div class="nav-row">
