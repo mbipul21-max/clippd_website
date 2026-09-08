@@ -1413,18 +1413,29 @@
   // Handles all three buckets: product-images, review-photos, community-photos
   function transformImageUrl(url){
     if(!url) return url;
-    
+
+    // product-images still lives in the original shared "clippd-images" R2
+    // bucket (with the bucket name kept as a path prefix inside it).
+    // review-photos and community-photos each got migrated into their own
+    // dedicated R2 bucket instead, so no prefix is needed for those two —
+    // the object key is just the path.
+    const R2_DOMAINS = {
+      'product-images':   { domain: 'clippd-images.r2.cloudflarecustomers.com', prefix: true  },
+      'review-photos':    { domain: 'pub-eb98b25f0403425885426907112853397.r2.dev', prefix: false },
+      'community-photos': { domain: 'pub-00131064c2e642d98fb76e2ea7c81ab4.r2.dev',  prefix: false },
+    };
+
     // Pattern: https://tghmxutqpbxrtrlavmjx.storage.supabase.co/storage/v1/s3/BUCKET-NAME/...
     const supabaseMatch = url.match(
       /https:\/\/tghmxutqpbxrtrlavmjx\.storage\.supabase\.co\/storage\/v1\/s3\/(product-images|review-photos|community-photos)\/(.+)/
     );
-    
+
     if(supabaseMatch){
       const [, bucket, path] = supabaseMatch;
-      // Convert to Cloudflare: https://clippd-images.r2.cloudflarecustomers.com/BUCKET-NAME/path
-      return `https://clippd-images.r2.cloudflarecustomers.com/${bucket}/${path}`;
+      const { domain, prefix } = R2_DOMAINS[bucket];
+      return prefix ? `https://${domain}/${bucket}/${path}` : `https://${domain}/${path}`;
     }
-    
+
     return url; // Not a Supabase URL, return as-is
   }
 
