@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1524,7 +1525,43 @@
     'New':        { eyebrow:'New Arrivals', h2:'Just Dropped', sub:'The newest additions to your everyday rotation.' },
   };
 
-  function filterCategory(cat, navEl){
+  const CATEGORY_SLUGS = {
+    'Claw Clips': 'claw-clips',
+    'Bracelets':  'bracelets',
+    'Earrings':   'earrings',
+    'Chains':     'chains',
+    'New':        'new',
+  };
+  const SLUG_TO_CATEGORY = Object.fromEntries(
+    Object.entries(CATEGORY_SLUGS).map(([cat, slug]) => [slug, cat])
+  );
+
+  function updateCategoryURL(cat, replace){
+    const slug = cat ? CATEGORY_SLUGS[cat] : null;
+    const newUrl = slug
+      ? `${location.pathname}?cat=${slug}#bestsellers`
+      : `${location.pathname}#bestsellers`;
+    if(replace){
+      history.replaceState({ cat }, '', newUrl);
+    } else {
+      history.pushState({ cat }, '', newUrl);
+    }
+  }
+
+  function findNavElForCategory(cat){
+    const selector = cat ? `[onclick*="filterCategory('${cat}'"]` : `[onclick*="filterCategory(null"]`;
+    return document.querySelector(`#mainNav ${selector}, #mobileNavLinks ${selector}`);
+  }
+
+  function applyCategoryFromURL(replace){
+    const slug = new URLSearchParams(location.search).get('cat');
+    const cat = slug ? (SLUG_TO_CATEGORY[slug] || null) : null;
+    filterCategory(cat, findNavElForCategory(cat), replace);
+  }
+
+  window.addEventListener('popstate', () => applyCategoryFromURL(true));
+
+  function filterCategory(cat, navEl, isUrlSync){
     const list = cat === 'New' ? products.filter(p => p.isNew)
                : cat ? products.filter(p => p.cat === cat)
                // "Best Sellers" (cat === null): most-viewed products first,
@@ -1539,6 +1576,7 @@
     document.getElementById('shopSub').textContent = copy.sub;
     document.querySelectorAll('#mainNav a, #mobileNavLinks a').forEach(a => a.classList.remove('active-cat'));
     if(navEl) navEl.classList.add('active-cat');
+    if(!isUrlSync) updateCategoryURL(cat, false);
   }
 
   function renderUnder(max){
@@ -3254,7 +3292,7 @@
         stock: p.stock_quantity ?? 0, viewCount: p.view_count ?? 0
       }));
     }
-    filterCategory(null);
+    applyCategoryFromURL(true); // true = don't push a new history entry on first load
     renderUnder(199);
     renderCart();
     renderWishlist();
@@ -3488,5 +3526,6 @@
   initApp();
 </script>
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4aec8988ca524fb6b87c3d4e92c1497e","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
