@@ -1537,10 +1537,8 @@
   );
 
   function updateCategoryURL(cat, replace){
-    const slug = cat ? CATEGORY_SLUGS[cat] : null;
-    const newUrl = slug
-      ? `${location.pathname}?cat=${slug}#bestsellers`
-      : `${location.pathname}#bestsellers`;
+    const slug = cat ? CATEGORY_SLUGS[cat] : 'best-sellers';
+    const newUrl = `/${slug}`;
     if(replace){
       history.replaceState({ cat }, '', newUrl);
     } else {
@@ -1554,7 +1552,9 @@
   }
 
   function applyCategoryFromURL(replace){
-    const slug = new URLSearchParams(location.search).get('cat');
+    // Path-based: /claw-clips, /bracelets, etc. Falls back to bestsellers
+    // for "/" or any unrecognized path.
+    const slug = location.pathname.replace(/^\/|\/$/g, '');
     const cat = slug ? (SLUG_TO_CATEGORY[slug] || null) : null;
     filterCategory(cat, findNavElForCategory(cat), replace);
   }
