@@ -1742,7 +1742,7 @@
     document.getElementById('reviewsList').innerHTML = `<p class="pdesc" style="text-align:center; padding:24px; color:var(--charcoal-soft);">Loading reviews…</p>`;
     const { data: reviews, error } = await sb
       .from('reviews')
-      .select('id, product_id, rating, title, comment, created_at, profiles ( full_name )')
+      .select('id, product_id, rating, title, comment, image_url, created_at, profiles ( full_name )')
       .eq('product_id', productId)
       .order('created_at', { ascending: false });
 
@@ -1787,6 +1787,7 @@
         </div>
         <div style="font-weight:600; color:var(--charcoal); margin-bottom:6px; font-size:13px;">` + escapeHTML(review.title || '') + `</div>
         <div style="font-size:13px; line-height:1.6; color:var(--charcoal);">` + escapeHTML(review.comment || '') + `</div>
+        ` + (review.image_url ? `<img src="${transformImageUrl(review.image_url)}" alt="Customer photo" style="margin-top:10px; width:96px; height:96px; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:pointer;" onclick="window.open('${transformImageUrl(review.image_url)}','_blank')">` : '') + `
       </div>
     `).join('');
   }
@@ -1841,6 +1842,36 @@
 
     const submitBtn = document.getElementById('submitReviewBtn');
     submitBtn.disabled = true;
+
+    // Upload the photo first (if any), same R2 worker used for other
+    // review photos, so photos actually get saved instead of only
+    // being shown in the local file-picker preview.
+    const photoInput = document.getElementById('reviewPhoto');
+    const photoFile = photoInput && photoInput.files && photoInput.files[0];
+    let image_url = null;
+    if(photoFile){
+      submitBtn.textContent = 'Uploading photo…';
+      const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${session.user.id}/${modalProductId}-${Date.now()}.${ext}`;
+      const REVIEW_UPLOAD_ENDPOINT = 'https://review-photo-upload.m-bipul21.workers.dev';
+      try{
+        const fd = new FormData();
+        fd.append('file', photoFile);
+        fd.append('path', path);
+        const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+        const result = await res.json();
+        if(!res.ok || result.error){
+          console.error('Photo upload failed:', result.error);
+          showToast("Couldn't upload photo — posting review without it");
+        } else {
+          image_url = result.url || null;
+        }
+      }catch(uploadErr){
+        console.error('Photo upload failed:', uploadErr);
+        showToast("Couldn't upload photo — posting review without it");
+      }
+    }
+
     submitBtn.textContent = 'Submitting...';
 
     try {
@@ -1852,6 +1883,7 @@
           rating: modalSelectedRating,
           title: title,
           comment: text,
+          image_url: image_url,
           created_at: new Date().toISOString()
         }]);
 
@@ -1860,6 +1892,9 @@
       // Clear form and reload
       document.getElementById('modalReviewTitle').value = '';
       document.getElementById('modalReviewText').value = '';
+      if(photoInput) photoInput.value = '';
+      const previewEl = document.getElementById('reviewPhotoPreview');
+      if(previewEl) previewEl.innerHTML = '';
       modalSelectedRating = 0;
       document.querySelectorAll('.star-btn-modal').forEach(btn => {
         btn.classList.remove('active');
