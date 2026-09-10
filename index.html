@@ -1170,6 +1170,13 @@
           <textarea id="modalReviewText" placeholder="Share your thoughts about this product..." style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px; color:var(--charcoal); background:white; resize:vertical; min-height:100px;"></textarea>
         </div>
 
+        <!-- Photo Upload -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--charcoal-soft); margin-bottom:6px;">Add a Photo (Optional)</label>
+          <input type="file" id="reviewPhoto" accept="image/*" onchange="previewReviewPhoto(this)" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px;">
+          <div id="reviewPhotoPreview"></div>
+        </div>
+
         <button id="submitReviewBtn" onclick="submitModalReview()" style="background:var(--brass); color:white; padding:12px 24px; border:none; border-radius:4px; cursor:pointer; font-family:inherit; font-weight:600; font-size:12px; letter-spacing:0.06em; text-transform:uppercase;">Submit Review</button>
       </div>
     </div>
@@ -2340,7 +2347,7 @@
 
   /* ---------- CHECKOUT FLOW ---------- */
   const SHIPPING_FEE = 49;
-  const FREE_SHIP_THRESHOLD = 499;
+  const FREE_SHIP_THRESHOLD = 999;
   const COD_CHARGE = 39;
   const COD_CHARGE_THRESHOLD = 999; // COD charge applies only below this order value
 
