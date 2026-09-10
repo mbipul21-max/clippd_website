@@ -1173,7 +1173,8 @@
         <!-- Photo Upload -->
         <div style="margin-bottom:16px;">
           <label style="display:block; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--charcoal-soft); margin-bottom:6px;">Add a Photo (Optional)</label>
-          <input type="file" id="reviewPhoto" accept="image/*" onchange="previewReviewPhoto(this)" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px;">
+          <input type="file" id="reviewPhoto" accept="image/*" multiple onchange="previewReviewPhoto(this)" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px;">
+          <div style="font-size:11px; color:var(--charcoal-soft); margin-top:4px;">Up to 5 photos</div>
           <div id="reviewPhotoPreview"></div>
         </div>
 
@@ -1742,7 +1743,7 @@
     document.getElementById('reviewsList').innerHTML = `<p class="pdesc" style="text-align:center; padding:24px; color:var(--charcoal-soft);">Loading reviews…</p>`;
     const { data: reviews, error } = await sb
       .from('reviews')
-      .select('id, product_id, rating, title, comment, image_url, created_at, profiles ( full_name )')
+      .select('id, product_id, rating, title, comment, image_url, image_urls, created_at, profiles ( full_name )')
       .eq('product_id', productId)
       .order('created_at', { ascending: false });
 
@@ -1787,7 +1788,13 @@
         </div>
         <div style="font-weight:600; color:var(--charcoal); margin-bottom:6px; font-size:13px;">` + escapeHTML(review.title || '') + `</div>
         <div style="font-size:13px; line-height:1.6; color:var(--charcoal);">` + escapeHTML(review.comment || '') + `</div>
-        ` + (review.image_url ? `<img src="${transformImageUrl(review.image_url)}" alt="Customer photo" style="margin-top:10px; width:96px; height:96px; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:pointer;" onclick="window.open('${transformImageUrl(review.image_url)}','_blank')">` : '') + `
+        ` + (() => {
+          const urls = (review.image_urls && review.image_urls.length) ? review.image_urls : (review.image_url ? [review.image_url] : []);
+          if(!urls.length) return '';
+          return `<div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">` +
+            urls.map(u => `<img src="${transformImageUrl(u)}" alt="Customer photo" style="width:96px; height:96px; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:pointer;" onclick="window.open('${transformImageUrl(u)}','_blank')">`).join('') +
+            `</div>`;
+        })() + `
       </div>
     `).join('');
   }
@@ -1843,32 +1850,38 @@
     const submitBtn = document.getElementById('submitReviewBtn');
     submitBtn.disabled = true;
 
-    // Upload the photo first (if any), same R2 worker used for other
+    // Upload photos first (if any), same R2 worker used for other
     // review photos, so photos actually get saved instead of only
-    // being shown in the local file-picker preview.
+    // being shown in the local file-picker preview. Photos upload
+    // in parallel, each to its own path.
     const photoInput = document.getElementById('reviewPhoto');
-    const photoFile = photoInput && photoInput.files && photoInput.files[0];
-    let image_url = null;
-    if(photoFile){
-      submitBtn.textContent = 'Uploading photo…';
-      const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${session.user.id}/${modalProductId}-${Date.now()}.${ext}`;
+    const photoFiles = photoInput && photoInput.files ? Array.from(photoInput.files).slice(0, MAX_REVIEW_PHOTOS) : [];
+    let image_urls = [];
+    if(photoFiles.length){
+      submitBtn.textContent = photoFiles.length > 1 ? 'Uploading photos…' : 'Uploading photo…';
       const REVIEW_UPLOAD_ENDPOINT = 'https://review-photo-upload.m-bipul21.workers.dev';
-      try{
-        const fd = new FormData();
-        fd.append('file', photoFile);
-        fd.append('path', path);
-        const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
-        const result = await res.json();
-        if(!res.ok || result.error){
-          console.error('Photo upload failed:', result.error);
-          showToast("Couldn't upload photo — posting review without it");
-        } else {
-          image_url = result.url || null;
+      const uploadResults = await Promise.all(photoFiles.map(async (photoFile, i) => {
+        const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${session.user.id}/${modalProductId}-${Date.now()}-${i}.${ext}`;
+        try{
+          const fd = new FormData();
+          fd.append('file', photoFile);
+          fd.append('path', path);
+          const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+          const result = await res.json();
+          if(!res.ok || result.error){
+            console.error('Photo upload failed:', result.error);
+            return null;
+          }
+          return result.url || null;
+        }catch(uploadErr){
+          console.error('Photo upload failed:', uploadErr);
+          return null;
         }
-      }catch(uploadErr){
-        console.error('Photo upload failed:', uploadErr);
-        showToast("Couldn't upload photo — posting review without it");
+      }));
+      image_urls = uploadResults.filter(Boolean);
+      if(image_urls.length < photoFiles.length){
+        showToast(image_urls.length ? "Some photos couldn't be uploaded — posting the rest" : "Couldn't upload photos — posting review without them");
       }
     }
 
@@ -1883,7 +1896,8 @@
           rating: modalSelectedRating,
           title: title,
           comment: text,
-          image_url: image_url,
+          image_url: image_urls[0] || null,
+          image_urls: image_urls,
           created_at: new Date().toISOString()
         }]);
 
@@ -1963,8 +1977,8 @@
           <textarea id="reviewComment" required rows="3" placeholder="Share your experience..."></textarea>
         </div>
         <div class="field">
-          <label>Add a photo (optional)</label>
-          <input type="file" id="reviewPhoto" accept="image/*" onchange="previewReviewPhoto(this)">
+          <label>Add photos (optional, up to 5)</label>
+          <input type="file" id="reviewPhoto" accept="image/*" multiple onchange="previewReviewPhoto(this)">
           <div id="reviewPhotoPreview"></div>
         </div>
         <button type="submit" class="btn btn-primary" id="reviewSubmitBtn">Post Review</button>
@@ -1978,11 +1992,28 @@
       btn.classList.toggle('filled', parseInt(btn.dataset.val) <= n);
     });
   }
+  const MAX_REVIEW_PHOTOS = 5;
+
   function previewReviewPhoto(input){
     const el = document.getElementById('reviewPhotoPreview');
-    const file = input.files && input.files[0];
-    if(!file){ el.innerHTML = ''; return; }
-    el.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview">`;
+    let files = input.files ? Array.from(input.files) : [];
+    if(!files.length){ el.innerHTML = ''; return; }
+
+    if(files.length > MAX_REVIEW_PHOTOS){
+      showToast(`You can add up to ${MAX_REVIEW_PHOTOS} photos — using the first ${MAX_REVIEW_PHOTOS}`);
+      // Rebuild input.files so submit only ever sees the trimmed set
+      const dt = new DataTransfer();
+      files.slice(0, MAX_REVIEW_PHOTOS).forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      files = Array.from(input.files);
+    }
+
+    el.style.display = 'flex';
+    el.style.flexWrap = 'wrap';
+    el.style.gap = '8px';
+    el.innerHTML = files.map(file =>
+      `<img src="${URL.createObjectURL(file)}" alt="Preview">`
+    ).join('');
   }
 
   function renderReviewList(reviews){
@@ -2001,7 +2032,10 @@
           <div class="rdate">${new Date(r.created_at).toLocaleDateString()}</div>
         </div>
         <p class="rcomment">${escapeHTML(r.comment)}</p>
-        ${r.image_url ? `<img class="rphoto" src="${r.image_url}" alt="Customer photo" onclick="window.open('${r.image_url}','_blank')">` : ''}
+        ${(() => {
+          const urls = (r.image_urls && r.image_urls.length) ? r.image_urls : (r.image_url ? [r.image_url] : []);
+          return urls.map(u => `<img class="rphoto" src="${u}" alt="Customer photo" onclick="window.open('${u}','_blank')">`).join('');
+        })()}
       </div>
     `).join('');
   }
@@ -2025,35 +2059,40 @@
     const title = document.getElementById('reviewTitle').value.trim();
     const comment = document.getElementById('reviewComment').value.trim();
     const photoInput = document.getElementById('reviewPhoto');
-    const photoFile = photoInput && photoInput.files && photoInput.files[0];
+    const photoFiles = photoInput && photoInput.files ? Array.from(photoInput.files).slice(0, MAX_REVIEW_PHOTOS) : [];
     const submitBtn = document.getElementById('reviewSubmitBtn');
 
-    let image_url = null;
-    if(photoFile){
-      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Uploading photo…'; }
-      const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${account.id}/${productId}-${Date.now()}.${ext}`;
+    let image_urls = [];
+    if(photoFiles.length){
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = photoFiles.length > 1 ? 'Uploading photos…' : 'Uploading photo…'; }
 
       // Upload directly to R2 via the review-photo-upload Worker, instead
       // of Supabase Storage — see review-photo-upload-worker.js.
       // TODO: replace with your actual deployed Worker URL.
       const REVIEW_UPLOAD_ENDPOINT = 'https://review-photo-upload.m-bipul21.workers.dev';
 
-      try{
-        const fd = new FormData();
-        fd.append('file', photoFile);
-        fd.append('path', path);
-        const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
-        const result = await res.json();
-        if(!res.ok || result.error){
-          console.error('Photo upload failed:', result.error);
-          showToast("Couldn't upload photo — posting review without it");
-        } else {
-          image_url = result.url || null;
+      const uploadResults = await Promise.all(photoFiles.map(async (photoFile, i) => {
+        const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${account.id}/${productId}-${Date.now()}-${i}.${ext}`;
+        try{
+          const fd = new FormData();
+          fd.append('file', photoFile);
+          fd.append('path', path);
+          const res = await fetch(REVIEW_UPLOAD_ENDPOINT, { method: 'POST', body: fd });
+          const result = await res.json();
+          if(!res.ok || result.error){
+            console.error('Photo upload failed:', result.error);
+            return null;
+          }
+          return result.url || null;
+        }catch(uploadErr){
+          console.error('Photo upload failed:', uploadErr);
+          return null;
         }
-      }catch(uploadErr){
-        console.error('Photo upload failed:', uploadErr);
-        showToast("Couldn't upload photo — posting review without it");
+      }));
+      image_urls = uploadResults.filter(Boolean);
+      if(image_urls.length < photoFiles.length){
+        showToast(image_urls.length ? "Some photos couldn't be uploaded — posting the rest" : "Couldn't upload photos — posting review without them");
       }
     }
 
@@ -2064,7 +2103,8 @@
       rating: currentReviewRating,
       title,
       comment,
-      image_url
+      image_url: image_urls[0] || null,
+      image_urls: image_urls
     }]);
 
     if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Post Review'; }
