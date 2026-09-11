@@ -1314,7 +1314,7 @@
           <h3>Order Placed!</h3>
           <p class="pdesc">Thank you — your CLIPPD order is confirmed.</p>
           <div class="oid" id="orderIdDisplay"></div>
-          <p class="pdesc" style="margin-top:14px;">Estimated delivery in 3–6 business days.</p>
+          <p class="pdesc" style="margin-top:14px;">Estimated delivery in 3–7 business days.</p>
           <button class="btn btn-primary" style="margin-top:24px;" onclick="closeCheckout()">Continue Shopping</button>
         </div>
       </div>
@@ -3171,7 +3171,7 @@
       eyebrow: 'Help', title: 'Frequently Asked Questions',
       body: `<div class="faq-list">
         ${[
-          ['How long does delivery take?','Orders typically arrive within 3–6 business days across India.'],
+          ['How long does delivery take?','Orders typically arrive within 3–7 business days across India.'],
           ['What payment methods do you accept?','UPI, cards, net banking and cash on delivery, once checkout is live.'],
           ['Can I exchange an item?','Yes — see our Returns policy for the full exchange window and process.'],
           ['Are your earrings hypoallergenic?','Our oxidised and everyday pieces use nickel-free finishes wherever possible.'],
@@ -3185,8 +3185,8 @@
     },
     shipping: {
       eyebrow: 'Help', title: 'Shipping',
-      body: `<p>We offer free shipping on all orders over ₹499. Orders below that ship for a flat ₹49 fee.</p>
-        <p>Most orders are packed within 24 hours and delivered in 3–6 business days depending on location. You'll receive tracking details by email and SMS once your order ships.</p>`
+      body: `<p>We offer free shipping on all orders over ₹999. Orders below that ship for a flat ₹49 fee.</p>
+        <p>Most orders are packed within 24 hours and delivered in 3–7 business days depending on location. You'll receive tracking details by email and SMS once your order ships.</p>`
     },
     returns: {
       eyebrow: 'Help', title: 'Returns & Exchanges',
@@ -3278,9 +3278,25 @@
     if(!info) return;
     document.getElementById('infoEyebrow').textContent = info.eyebrow;
     document.getElementById('infoTitle').textContent = info.title;
-    document.getElementById('infoContentBody').innerHTML = info.body;
+    document.getElementById('infoContentBody').innerHTML = key === 'shipping' ? shippingInfoBody() : info.body;
     document.getElementById('scrim').classList.add('open');
     setOverlayOpen('infoModal', true);
+  }
+
+  // Builds the Shipping help-page body, adding a live banner on top of the
+  // static policy text that reflects what's actually in the bag right now.
+  function shippingInfoBody(){
+    const subtotal = cartSubtotal();
+    let banner;
+    if(subtotal === 0){
+      banner = `<p style="margin:0 0 16px; padding:12px 14px; border-radius:6px; background:var(--cream, #f6f1ea); font-weight:500;">Your bag is empty — add ${money(FREE_SHIP_THRESHOLD)} or more to qualify for free shipping.</p>`;
+    } else if(subtotal >= FREE_SHIP_THRESHOLD){
+      banner = `<p style="margin:0 0 16px; padding:12px 14px; border-radius:6px; background:var(--cream, #f6f1ea); font-weight:500;">🎉 Your bag (${money(subtotal)}) qualifies for free shipping!</p>`;
+    } else {
+      const remaining = FREE_SHIP_THRESHOLD - subtotal;
+      banner = `<p style="margin:0 0 16px; padding:12px 14px; border-radius:6px; background:var(--cream, #f6f1ea); font-weight:500;">Add ${money(remaining)} more to your bag to get free shipping.</p>`;
+    }
+    return banner + infoContent.shipping.body;
   }
   function closeInfo(){
     setOverlayOpen('infoModal', false);
