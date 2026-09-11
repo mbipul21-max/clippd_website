@@ -88,14 +88,27 @@
   /* ---------- ANNOUNCEMENT BAR ---------- */
   .announce{
     background:var(--charcoal); color:var(--ivory);
-    text-align:center; padding:10px 16px;
+    padding:10px 0;
     font-family:'Space Mono', monospace;
     font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    overflow:hidden; white-space:nowrap; position:relative;
   }
+  .announce-track{
+    display:inline-flex; width:max-content;
+    animation: announceScroll 16s linear infinite;
+  }
+  .announce:hover .announce-track{ animation-play-state:paused; }
+  .announce-item{ display:inline-flex; align-items:center; padding-right:48px; }
   .announce span.dot{ color:var(--brass-soft); margin:0 10px; }
+  @keyframes announceScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
   @keyframes blinkText{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
   .blink-text{ animation:blinkText 1.4s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce){ .blink-text{ animation:none; } }
+  @media (prefers-reduced-motion: reduce){
+    .blink-text{ animation:none; }
+    .announce-track{ animation:none; }
+    .announce{ text-align:center; }
+    .announce-item:last-child{ display:none; }
+  }
 
   /* ---------- HEADER ---------- */
   header.site{
@@ -791,7 +804,10 @@
 </head>
 <body>
 
-<div class="announce"><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">LAUNCHING SOON</strong> <span class="dot">✦</span> YOUR EVERYDAY SLAY, ALMOST HERE <span class="dot">✦</span> STAY TUNED</div>
+<div class="announce"><div class="announce-track">
+  <span class="announce-item"><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">LAUNCHING SOON</strong> <span class="dot">✦</span> YOUR EVERYDAY SLAY, ALMOST HERE <span class="dot">✦</span> STAY TUNED</span>
+  <span class="announce-item" aria-hidden="true"><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">LAUNCHING SOON</strong> <span class="dot">✦</span> YOUR EVERYDAY SLAY, ALMOST HERE <span class="dot">✦</span> STAY TUNED</span>
+</div></div>
 
 <header class="site">
   <div class="nav-row">
