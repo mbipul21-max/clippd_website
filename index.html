@@ -1123,6 +1123,7 @@
             <span id="modalPrice" style="font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--charcoal);">₹0</span>
             <span id="modalWas" style="font-size:14px; color:var(--charcoal-soft); text-decoration:line-through;"></span>
           </div>
+          <div style="font-size:11px; color:var(--charcoal-soft); margin-top:2px;">Inclusive of 3% GST</div>
         </div>
 
         <!-- Product Specs -->
@@ -1341,6 +1342,7 @@
       <div id="checkoutItems"></div>
       <div class="checkout-totals">
         <div class="row"><span>Subtotal</span><span class="mono" id="ckSubtotal">₹0</span></div>
+        <div class="row" style="font-size:11px; color:var(--charcoal-soft);"><span>&nbsp;&nbsp;Incl. GST (3%)</span><span class="mono" id="ckGstIncluded">₹0</span></div>
         <div class="row"><span>Shipping</span><span class="mono" id="ckShipping">₹0</span></div>
         <div class="row" id="ckCodRow" style="display:none;"><span>COD Charge</span><span class="mono" id="ckCodCharge">₹0</span></div>
         <div class="row grand"><span>Total</span><span class="mono" id="ckTotal">₹0</span></div>
@@ -2494,6 +2496,9 @@
   function updateCheckoutTotals(){
     const { subtotal, shipping, codCharge, total } = computeCheckoutTotals();
     document.getElementById('ckSubtotal').textContent = money(subtotal);
+    // Prices are GST-inclusive, so back out the 3% GST portion already
+    // baked into the subtotal for display purposes only (no extra charge).
+    document.getElementById('ckGstIncluded').textContent = money(Math.round(subtotal - subtotal / 1.03));
     document.getElementById('ckShipping').textContent = shipping === 0 ? 'Free' : money(shipping);
     const codRow = document.getElementById('ckCodRow');
     if(codCharge > 0){
@@ -3237,7 +3242,7 @@
         <p>You may browse as a guest, but features like wishlists, order tracking and reviews require an account. You're responsible for keeping your account credentials and OTP verifications confidential — CLIPPD is not liable for loss or damage from unauthorized access to your account.</p>
 
         <h4>3. Products, Pricing & Availability</h4>
-        <p>We display our claw clips, hair accessories and lifestyle items as accurately as possible, though colours and textures may vary slightly due to screen settings or photography lighting. Prices are listed in local currency, inclusive of applicable taxes unless stated otherwise, and we may modify prices, discounts or promotions at any time without prior notice. Free shipping applies on qualifying orders over ₹499; delivery timelines shown at checkout are estimates, not guarantees.</p>
+        <p>We display our claw clips, hair accessories and lifestyle items as accurately as possible, though colours and textures may vary slightly due to screen settings or photography lighting. Prices are listed in local currency, inclusive of 3% GST unless stated otherwise, and we may modify prices, discounts or promotions at any time without prior notice. Free shipping applies on qualifying orders over ₹999; delivery timelines shown at checkout are estimates, not guarantees.</p>
 
         <h4>4. Orders, Payments & Cancellation</h4>
         <p>An order confirmation email doesn't guarantee acceptance — we may refuse or cancel any order due to stock issues, pricing errors, or suspected fraud. We accept credit/debit cards, UPI and Cash on Delivery. COD orders carry an additional, non-refundable ₹39 delivery fee added at checkout.</p>
