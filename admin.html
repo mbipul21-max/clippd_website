@@ -337,7 +337,7 @@
 
   async function loadOrders(){
     const { data, error } = await sb.from('orders')
-      .select('id,user_id,total,subtotal,shipping,status,payment_method,created_at,customer_name,phone,address,city,state,pincode,courier_name,awb_code,tracking_status,return_type,return_reason')
+      .select('id,user_id,total,subtotal,shipping,status,payment_method,created_at,customer_name,phone,address,city,state,pincode,courier_name,awb_number,tracking_status,return_type,return_reason')
       .order('created_at', { ascending: false });
     if(error){ console.error(error); showToast("Couldn't load orders"); return; }
     orders = data || [];
@@ -480,7 +480,7 @@
           </div>
           <div class="field">
             <label>AWB / Tracking Number</label>
-            <input type="text" id="awbCode" value="${order.awb_code || ''}" placeholder="e.g. 14829384756">
+            <input type="text" id="awbCode" value="${order.awb_number || ''}" placeholder="e.g. 14829384756">
           </div>
         </div>
         <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="saveStatus()">Save Status</button>
@@ -498,7 +498,7 @@
     const update = { status: newStatus };
     if(newStatus === 'shipped'){
       update.courier_name = document.getElementById('courierName').value.trim();
-      update.awb_code = document.getElementById('awbCode').value.trim();
+      update.awb_number = document.getElementById('awbCode').value.trim();
       update.tracking_status = 'processing';
     }
     if(newStatus === 'delivered'){

@@ -1426,6 +1426,7 @@
 <!-- Supabase client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   /* ============================================================
      SUPABASE CONFIG — replace these two values with your own
@@ -2852,6 +2853,111 @@
   }
   // Statuses from which the customer can still cancel outright.
   const CANCELABLE_STATUSES = ['placed', 'pending_payment', 'processing'];
+
+  // ---------- INVOICE (PDF) ----------
+  // EDIT ME: fill these in with your real registered business details.
+  // SELLER_GSTIN stays blank until CLIPPD's GST registration is active —
+  // once you have it, put it here and it'll start showing on invoices.
+  const INVOICE_SELLER = {
+    name: 'CLIPPD',
+    address: 'Guwahati, Assam, India',
+    email: 'hello@clippd.in',
+    gstin: '' // e.g. '18ABCDE1234F1Z5' once registered
+  };
+
+  function downloadInvoice(orderId){
+    const order = accountOrders.find(o => o.id === orderId);
+    if(!order){ showToast("Couldn't find that order"); return; }
+    if(!orderDetailItems.length){ showToast('Still loading order items — try again in a moment'); return; }
+    generateInvoicePDF(order, orderDetailItems);
+  }
+
+  function generateInvoicePDF(order, items){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 40;
+    let y = 50;
+
+    // Header
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+    doc.text(INVOICE_SELLER.name, margin, y);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    doc.text(INVOICE_SELLER.address, margin, y + 16);
+    doc.text(INVOICE_SELLER.email, margin, y + 30);
+    if(INVOICE_SELLER.gstin){ doc.text(`GSTIN: ${INVOICE_SELLER.gstin}`, margin, y + 44); }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('INVOICE', pageWidth - margin, y, { align: 'right' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    doc.text(`Invoice #: ${order.id}`, pageWidth - margin, y + 18, { align: 'right' });
+    doc.text(`Date: ${new Date(order.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' })}`, pageWidth - margin, y + 32, { align: 'right' });
+
+    y += 70;
+    doc.setDrawColor(200); doc.line(margin, y, pageWidth - margin, y);
+    y += 24;
+
+    // Bill to
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.text('Bill To', margin, y);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    y += 16;
+    doc.text(order.customer_name || '—', margin, y); y += 14;
+    doc.text(`${order.address || ''}${order.address ? ',' : ''} ${order.city || ''}, ${order.state || ''} - ${order.pincode || ''}`, margin, y); y += 14;
+    doc.text(`Phone: ${order.phone || '—'}`, margin, y); y += 14;
+    doc.text(`Payment method: ${order.payment_method || '—'}`, margin, y);
+
+    y += 34;
+
+    // Items table header
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text('Item', margin, y);
+    doc.text('Qty', pageWidth - margin - 180, y, { align: 'right' });
+    doc.text('Price', pageWidth - margin - 90, y, { align: 'right' });
+    doc.text('Amount', pageWidth - margin, y, { align: 'right' });
+    y += 8;
+    doc.setDrawColor(220); doc.line(margin, y, pageWidth - margin, y);
+    y += 18;
+
+    doc.setFont('helvetica', 'normal');
+    items.forEach(it => {
+      if(y > 700){ doc.addPage(); y = 50; }
+      doc.text(String(it.product_name || ''), margin, y, { maxWidth: pageWidth - margin*2 - 220 });
+      doc.text(String(it.qty), pageWidth - margin - 180, y, { align: 'right' });
+      doc.text(`Rs. ${Number(it.price).toFixed(2)}`, pageWidth - margin - 90, y, { align: 'right' });
+      doc.text(`Rs. ${(it.price * it.qty).toFixed(2)}`, pageWidth - margin, y, { align: 'right' });
+      y += 20;
+    });
+
+    y += 10;
+    doc.setDrawColor(220); doc.line(margin, y, pageWidth - margin, y);
+    y += 24;
+
+    // Totals
+    const subtotal = Number(order.subtotal) || 0;
+    const gstIncluded = subtotal - subtotal / 1.03;
+    const shipping = Number(order.shipping) || 0;
+    const total = Number(order.total) || 0;
+    const totalsRow = (label, value, bold) => {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(bold ? 12 : 10);
+      doc.text(label, pageWidth - margin - 180, y, { align: 'right' });
+      doc.text(value, pageWidth - margin, y, { align: 'right' });
+      y += bold ? 20 : 16;
+    };
+    totalsRow('Subtotal', `Rs. ${subtotal.toFixed(2)}`);
+    totalsRow('  (incl. GST @ 3%)', `Rs. ${gstIncluded.toFixed(2)}`);
+    totalsRow('Shipping', shipping === 0 ? 'Free' : `Rs. ${shipping.toFixed(2)}`);
+    y += 6;
+    doc.setDrawColor(180); doc.line(pageWidth - margin - 200, y - 14, pageWidth - margin, y - 14);
+    totalsRow('Total', `Rs. ${total.toFixed(2)}`, true);
+
+    y += 30;
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(120);
+    doc.text('This is a computer-generated invoice.', margin, y);
+
+    doc.save(`CLIPPD-Invoice-${order.id}.pdf`);
+  }
+
   // Friendly labels for the raw status values stored on the orders row.
   // Accepts the full order (not just the status string) so a
   // return_requested row can show "Return Requested" vs "Replacement
@@ -2937,6 +3043,8 @@
           Phone: ${order.phone || '—'}
         </p>
       </div>
+      ${['shipped','delivered'].includes(order.status) ? `
+      <button class="btn btn-outline" style="margin-top:22px; width:100%; justify-content:center;" onclick="downloadInvoice('${order.id}')">Download Invoice (PDF)</button>` : ''}
       ${renderOrderActions(order)}
       <button class="btn btn-outline" style="margin-top:16px; width:100%; justify-content:center;" onclick="backToOrders()">Back to Orders</button>
     `;
@@ -3364,18 +3472,38 @@
     const phone = document.getElementById('trackPhone').value.trim();
     const resultEl = document.getElementById('trackResult');
     resultEl.innerHTML = `<p class="pdesc" style="margin-top:14px;">Looking it up…</p>`;
-    const { data, error } = await sb.from('orders').select('id,status,total,created_at,courier_name,awb_code,tracking_status').eq('id', orderId).eq('phone', phone).maybeSingle();
-    if(error || !data){
+
+    const { data, error } = await sb.functions.invoke('track-nimbuspost-shipment', { body: { orderId, phone } });
+
+    if(error || !data || data.error === 'not_found'){
       resultEl.innerHTML = `<p class="pdesc" style="margin-top:14px;">We couldn't find an order with those details. Double-check your order number and phone number and try again.</p>`;
       return false;
     }
-    const shippingLine = data.awb_code
-      ? `Shipped via ${data.courier_name || 'courier'} · AWB ${data.awb_code}`
-      : (data.tracking_status === 'processing' ? 'Preparing your shipment' : 'Awaiting shipment');
+
+    const order = data.order;
+    const live = data.live;
+
+    let shippingLine;
+    if(live && live.status){
+      // Live status from NimbusPost — this is the actual current courier status.
+      shippingLine = `${live.status}${live.status_description ? ' — ' + live.status_description : ''}`;
+      if(live.expected_delivery){
+        shippingLine += ` · Expected by ${new Date(live.expected_delivery).toLocaleDateString()}`;
+      }
+    } else if(order.awb_number){
+      // Order has shipped but the live NimbusPost lookup didn't return a
+      // usable status (e.g. API hiccup) — fall back to what we have on file.
+      shippingLine = `Shipped via ${order.courier_name || 'courier'} · AWB ${order.awb_number}`;
+    } else {
+      shippingLine = order.shipping_status === 'sync_failed'
+        ? "We're finalizing your shipment details — check back shortly"
+        : 'Awaiting shipment';
+    }
+
     resultEl.innerHTML = `
       <div style="padding:14px; background:var(--ivory); border-radius:8px; margin-top:14px;">
-        <div style="font-weight:600; color:var(--burgundy);">${data.id}</div>
-        <div class="pdesc" style="margin-top:6px;">Status: ${data.status} · Placed ${new Date(data.created_at).toLocaleDateString()} · ₹${data.total}</div>
+        <div style="font-weight:600; color:var(--burgundy);">${order.id}</div>
+        <div class="pdesc" style="margin-top:6px;">Status: ${order.status} · Placed ${new Date(order.created_at).toLocaleDateString()} · ₹${order.total}</div>
         <div class="pdesc" style="margin-top:6px;">${shippingLine}</div>
       </div>`;
     return false;
