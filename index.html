@@ -2825,7 +2825,7 @@
   }
   async function loadAccountOrders(userId){
     const { data } = await sb.from('orders')
-      .select('id,total,subtotal,shipping,status,payment_method,created_at,delivered_at,customer_name,phone,address,city,state,pincode,return_type,return_reason,awb_number,courier_name,shipping_status')
+      .select('id,total,subtotal,shipping,status,payment_method,created_at,delivered_at,customer_name,phone,address,city,state,pincode,return_type,return_reason,awb_number,courier_name,shipping_status,nimbus_shipment_id,shipping_provider_response')
       .eq('user_id', userId)
       .order('created_at', {ascending:false});
     accountOrders = data || [];
@@ -2872,88 +2872,235 @@
     generateInvoicePDF(order, orderDetailItems);
   }
 
+  // Brand palette lifted straight from the site's CSS variables so the
+  // invoice reads as the same brand as clippd.in.
+  // NimbusPost generates its own tax invoice when a shipment is booked, and
+  // that number is what appears on the physical label/paperwork — so the PDF
+  // should carry the same number rather than inventing its own.
+  //
+  // ⚠️ VERIFY: create-nimbuspost-shipment doesn't store the invoice number in
+  // its own column — it only saves the whole API reply into
+  // shipping_provider_response. The field names below are the likely ones;
+  // once you've shipped one real order, open that order's
+  // shipping_provider_response in Supabase, find the actual invoice-number
+  // key, and add it to the list below (or better, add a dedicated
+  // nimbus_invoice_number column and set it in the Edge Function).
+  //
+  // If no NimbusPost number is found, we fall back to a CLIPPD-side number
+  // derived from the order id, so an invoice is never issued without one.
+  function resolveInvoiceNumber(order){
+    const raw = order.shipping_provider_response || {};
+    const d = raw.data || raw;
+    const found = order.nimbus_invoice_number
+      || d.invoice_number || d.invoice_no || d.invoiceNumber
+      || d.tax_invoice_number || d.invoice
+      || null;
+    return found ? String(found) : `INV-${order.id}`;
+  }
+
+  const INV = {
+    ivory:       [248, 245, 238],
+    ivoryDeep:   [238, 231, 217],
+    charcoal:    [29, 26, 23],
+    charcoalSoft:[101, 93, 83],
+    burgundy:    [118, 43, 59],
+    brass:       [160, 124, 69],
+    brassSoft:   [213, 193, 154],
+    line:        [216, 204, 183]
+  };
+
   function generateInvoicePDF(order, items){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 40;
-    let y = 50;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 44;
+    const right = pageWidth - margin;
+    const inr = n => 'Rs. ' + Number(n || 0).toFixed(2);
 
-    // Header
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
-    doc.text(INVOICE_SELLER.name, margin, y);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-    doc.text(INVOICE_SELLER.address, margin, y + 16);
-    doc.text(INVOICE_SELLER.email, margin, y + 30);
-    if(INVOICE_SELLER.gstin){ doc.text(`GSTIN: ${INVOICE_SELLER.gstin}`, margin, y + 44); }
+    // jsPDF's built-in fonts don't include Fraunces/Manrope, and embedding
+    // them would bloat every PDF. 'times' stands in for the Fraunces serif
+    // headings, 'courier' for the Space Mono details — same serif/sans/mono
+    // rhythm as the site.
+    const serif = (style) => { doc.setFont('times', style || 'normal'); };
+    const sans  = (style) => { doc.setFont('helvetica', style || 'normal'); };
+    const mono  = (style) => { doc.setFont('courier', style || 'normal'); };
+    const fill  = (c) => doc.setFillColor(c[0], c[1], c[2]);
+    const stroke= (c) => doc.setDrawColor(c[0], c[1], c[2]);
+    const ink   = (c) => doc.setTextColor(c[0], c[1], c[2]);
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('INVOICE', pageWidth - margin, y, { align: 'right' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-    doc.text(`Invoice #: ${order.id}`, pageWidth - margin, y + 18, { align: 'right' });
-    doc.text(`Date: ${new Date(order.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' })}`, pageWidth - margin, y + 32, { align: 'right' });
+    // ---------- HEADER BAND ----------
+    const bandH = 104;
+    fill(INV.burgundy); doc.rect(0, 0, pageWidth, bandH, 'F');
+    // brass hairline along the bottom of the band
+    fill(INV.brass); doc.rect(0, bandH, pageWidth, 2.5, 'F');
 
-    y += 70;
-    doc.setDrawColor(200); doc.line(margin, y, pageWidth - margin, y);
-    y += 24;
+    ink(INV.ivory); serif('normal'); doc.setFontSize(30);
+    doc.text('CLIPPD', margin, 50);
+    ink(INV.brassSoft); mono('normal'); doc.setFontSize(7.5);
+    doc.text('Y O U R   E V E R Y D A Y   S L A Y', margin + 2, 66);
 
-    // Bill to
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text('Bill To', margin, y);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    ink(INV.ivory); serif('normal'); doc.setFontSize(19);
+    doc.text('INVOICE', right, 42, { align: 'right' });
+
+    // Invoice number and order id are deliberately separate: the invoice no.
+    // matches NimbusPost's paperwork, the order id is what the customer
+    // quotes to support / uses on the Track Order form.
+    const metaLine = (lbl, val, yy) => {
+      mono('normal'); doc.setFontSize(7.5);
+      ink(INV.brassSoft); doc.text(lbl, right - 104, yy, { align: 'right' });
+      ink(INV.ivory);     doc.text(String(val), right, yy, { align: 'right' });
+    };
+    metaLine('INVOICE NO', resolveInvoiceNumber(order), 60);
+    metaLine('ORDER ID', order.id, 73);
+    metaLine('DATE', new Date(order.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }).toUpperCase(), 86);
+
+    let y = bandH + 40;
+
+    // ---------- BILL TO  /  SELLER ----------
+    const colR = margin + (pageWidth - margin * 2) / 2 + 10;
+    const label = (txt, x, yy) => {
+      ink(INV.brass); mono('normal'); doc.setFontSize(7.5);
+      doc.text(txt.toUpperCase(), x, yy);
+    };
+    label('Billed to', margin, y);
+    label('Sold by', colR, y);
     y += 16;
-    doc.text(order.customer_name || '—', margin, y); y += 14;
-    doc.text(`${order.address || ''}${order.address ? ',' : ''} ${order.city || ''}, ${order.state || ''} - ${order.pincode || ''}`, margin, y); y += 14;
-    doc.text(`Phone: ${order.phone || '—'}`, margin, y); y += 14;
-    doc.text(`Payment method: ${order.payment_method || '—'}`, margin, y);
 
-    y += 34;
+    ink(INV.charcoal); sans('bold'); doc.setFontSize(11);
+    doc.text(order.customer_name || '—', margin, y);
+    doc.text(INVOICE_SELLER.name, colR, y);
+    y += 15;
 
-    // Items table header
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    doc.text('Item', margin, y);
-    doc.text('Qty', pageWidth - margin - 180, y, { align: 'right' });
-    doc.text('Price', pageWidth - margin - 90, y, { align: 'right' });
-    doc.text('Amount', pageWidth - margin, y, { align: 'right' });
-    y += 8;
-    doc.setDrawColor(220); doc.line(margin, y, pageWidth - margin, y);
-    y += 18;
+    ink(INV.charcoalSoft); sans('normal'); doc.setFontSize(9.5);
+    const custBlock = [
+      order.address || '',
+      [order.city, order.state].filter(Boolean).join(', ') + (order.pincode ? ' - ' + order.pincode : ''),
+      order.phone ? 'Ph: ' + order.phone : ''
+    ].filter(s => s && s.trim() && s.trim() !== '-');
+    const sellerBlock = [
+      INVOICE_SELLER.address,
+      INVOICE_SELLER.email,
+      INVOICE_SELLER.gstin ? 'GSTIN: ' + INVOICE_SELLER.gstin : ''
+    ].filter(Boolean);
+    const colW = (pageWidth - margin * 2) / 2 - 16;
+    let yL = y, yR = y;
+    custBlock.forEach(t => { doc.text(String(t), margin, yL, { maxWidth: colW }); yL += 13; });
+    sellerBlock.forEach(t => { doc.text(String(t), colR, yR, { maxWidth: colW }); yR += 13; });
+    y = Math.max(yL, yR) + 12;
 
-    doc.setFont('helvetica', 'normal');
-    items.forEach(it => {
-      if(y > 700){ doc.addPage(); y = 50; }
-      doc.text(String(it.product_name || ''), margin, y, { maxWidth: pageWidth - margin*2 - 220 });
-      doc.text(String(it.qty), pageWidth - margin - 180, y, { align: 'right' });
-      doc.text(`Rs. ${Number(it.price).toFixed(2)}`, pageWidth - margin - 90, y, { align: 'right' });
-      doc.text(`Rs. ${(it.price * it.qty).toFixed(2)}`, pageWidth - margin, y, { align: 'right' });
+    // payment chip — width follows the text so longer labels don't clip
+    mono('normal'); doc.setFontSize(8);
+    const payTxt = 'PAYMENT  ' + String(order.payment_method || '—').toUpperCase();
+    const chipW = doc.getTextWidth(payTxt) + 20;
+    fill(INV.ivoryDeep); doc.roundedRect(margin, y, chipW, 20, 3, 3, 'F');
+    ink(INV.charcoalSoft);
+    doc.text(payTxt, margin + 10, y + 13.5);
+    y += 44;
+
+    // ---------- ITEMS TABLE ----------
+    const xQty = right - 196, xPrice = right - 104, xAmt = right;
+    const drawTableHead = () => {
+      fill(INV.ivoryDeep); doc.rect(margin, y - 13, pageWidth - margin * 2, 22, 'F');
+      ink(INV.charcoalSoft); mono('normal'); doc.setFontSize(7.5);
+      doc.text('ITEM', margin + 10, y);
+      doc.text('QTY', xQty, y, { align: 'right' });
+      doc.text('PRICE', xPrice, y, { align: 'right' });
+      doc.text('AMOUNT', xAmt - 10, y, { align: 'right' });
+      y += 22;
+    };
+    drawTableHead();
+
+    doc.setFontSize(9.5);
+    items.forEach((it, i) => {
+      if(y > pageHeight - 150){
+        doc.addPage();
+        y = 60;
+        drawTableHead();
+        doc.setFontSize(9.5);
+      }
+      if(i % 2 === 1){
+        fill(INV.ivory); doc.rect(margin, y - 11, pageWidth - margin * 2, 20, 'F');
+      }
+      ink(INV.charcoal); sans('normal');
+      doc.text(String(it.product_name || ''), margin + 10, y, { maxWidth: xQty - margin - 30 });
+      ink(INV.charcoalSoft); mono('normal');
+      doc.text(String(it.qty), xQty, y, { align: 'right' });
+      doc.text(inr(it.price), xPrice, y, { align: 'right' });
+      ink(INV.charcoal);
+      doc.text(inr(it.price * it.qty), xAmt - 10, y, { align: 'right' });
       y += 20;
     });
 
-    y += 10;
-    doc.setDrawColor(220); doc.line(margin, y, pageWidth - margin, y);
-    y += 24;
+    stroke(INV.line); doc.setLineWidth(0.7);
+    doc.line(margin, y, right, y);
+    y += 26;
 
-    // Totals
+    // ---------- TOTALS ----------
     const subtotal = Number(order.subtotal) || 0;
     const gstIncluded = subtotal - subtotal / 1.03;
     const shipping = Number(order.shipping) || 0;
     const total = Number(order.total) || 0;
-    const totalsRow = (label, value, bold) => {
-      doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(bold ? 12 : 10);
-      doc.text(label, pageWidth - margin - 180, y, { align: 'right' });
-      doc.text(value, pageWidth - margin, y, { align: 'right' });
-      y += bold ? 20 : 16;
-    };
-    totalsRow('Subtotal', `Rs. ${subtotal.toFixed(2)}`);
-    totalsRow('  (incl. GST @ 3%)', `Rs. ${gstIncluded.toFixed(2)}`);
-    totalsRow('Shipping', shipping === 0 ? 'Free' : `Rs. ${shipping.toFixed(2)}`);
-    y += 6;
-    doc.setDrawColor(180); doc.line(pageWidth - margin - 200, y - 14, pageWidth - margin, y - 14);
-    totalsRow('Total', `Rs. ${total.toFixed(2)}`, true);
 
-    y += 30;
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(120);
-    doc.text('This is a computer-generated invoice.', margin, y);
+    const totRow = (lbl, val, opts) => {
+      opts = opts || {};
+      ink(opts.muted ? INV.charcoalSoft : INV.charcoal);
+      sans(opts.muted ? 'normal' : 'normal'); doc.setFontSize(opts.muted ? 8.5 : 9.5);
+      doc.text(lbl, xPrice, y, { align: 'right' });
+      mono('normal');
+      doc.text(val, xAmt - 10, y, { align: 'right' });
+      y += opts.muted ? 14 : 17;
+    };
+    totRow('Subtotal', inr(subtotal));
+    totRow('includes GST @ 3%', inr(gstIncluded), { muted: true });
+    totRow('Shipping', shipping === 0 ? 'Free' : inr(shipping));
+    y += 4;
+
+    // grand total strip
+    const stripY = y - 12, stripH = 30, stripX = xPrice - 150;
+    fill(INV.burgundy); doc.rect(stripX, stripY, right - stripX, stripH, 'F');
+    ink(INV.ivory); serif('normal'); doc.setFontSize(12);
+    doc.text('TOTAL', xPrice, stripY + 20, { align: 'right' });
+    mono('bold'); doc.setFontSize(12);
+    doc.text(inr(total), xAmt - 10, stripY + 20, { align: 'right' });
+    y = stripY + stripH + 40;
+
+    // ---------- TERMS (condensed from the site's Terms & Returns pages) ----------
+    const terms = [
+      'Returns or exchanges may be requested within 72 hours of delivery, provided the item is unused and in its original packaging.',
+      'Approved refunds are issued to the original payment method within 5\u20137 business days of us receiving the returned item.',
+      'All prices shown are inclusive of 3% GST. Free shipping applies on qualifying orders over Rs. 999.',
+      'COD orders carry an additional, non-refundable Rs. 39 delivery fee. Delivery timelines are estimates, not guarantees.',
+      'Full terms, returns and privacy policies are available at clippd.in.'
+    ];
+    const termsBoxW = pageWidth - margin * 2;
+    // keep the block on this page; push to a new one only if it genuinely won't fit
+    if(y > pageHeight - 210){ doc.addPage(); y = 60; }
+
+    ink(INV.brass); mono('normal'); doc.setFontSize(7.5);
+    doc.text('TERMS & CONDITIONS', margin, y);
+    y += 6;
+    stroke(INV.line); doc.setLineWidth(0.6);
+    doc.line(margin, y, margin + termsBoxW, y);
+    y += 14;
+
+    ink(INV.charcoalSoft); sans('normal'); doc.setFontSize(7.8);
+    terms.forEach(t => {
+      const lines = doc.splitTextToSize(t, termsBoxW - 12);
+      ink(INV.brassSoft); doc.text('\u2022', margin, y);
+      ink(INV.charcoalSoft); doc.text(lines, margin + 10, y);
+      y += lines.length * 10 + 3;
+    });
+
+    // ---------- FOOTER ----------
+    const footY = Math.max(y + 18, pageHeight - 96);
+    fill(INV.brass); doc.rect(margin, footY, pageWidth - margin * 2, 1.6, 'F');
+    ink(INV.burgundy); serif('italic'); doc.setFontSize(12);
+    doc.text('Thank you for choosing CLIPPD.', margin, footY + 26);
+    ink(INV.charcoalSoft); sans('normal'); doc.setFontSize(8);
+    doc.text('This is a computer-generated invoice and does not require a signature.', margin, footY + 42);
+    mono('normal'); doc.setFontSize(7.5); ink(INV.brass);
+    doc.text('clippd.in', right, footY + 42, { align: 'right' });
 
     doc.save(`CLIPPD-Invoice-${order.id}.pdf`);
   }
