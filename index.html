@@ -139,6 +139,24 @@
   .nav-icons{ display:flex; align-items:center; gap:20px; }
   .nav-icons button{ display:flex; align-items:center; color:var(--charcoal); position:relative; }
   .nav-icons svg{ width:19px; height:19px; }
+  .app-download-btn{
+    display:flex; align-items:center; gap:6px;
+    padding:8px 14px;
+    background:var(--burgundy);
+    color:var(--ivory);
+    border-radius:999px;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .app-download-btn svg{ width:14px; height:14px; }
+  .app-download-btn:hover{ background:var(--burgundy-deep); transform:translateY(-1px); }
+  @media (max-width:780px){
+    .app-download-btn span{ display:none; }
+    .app-download-btn{ padding:8px; }
+  }
   .bag-count{
     position:absolute; top:-7px; right:-9px;
     background:var(--burgundy); color:var(--ivory);
@@ -852,6 +870,10 @@
       <a href="#bestsellers" onclick="filterCategory(null, this); return false;">Best Sellers</a>
     </nav>
     <div class="nav-icons">
+      <a href="/CLIPPD.apk" download="CLIPPD.apk" class="app-download-btn" aria-label="Download the CLIPPD app">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+        <span>Get the App</span>
+      </a>
       <button aria-label="Search" onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
       <button aria-label="Account" onclick="openAccount()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg></button>
       <button aria-label="Wishlist" id="wishBtn" onclick="openWishlist()">
