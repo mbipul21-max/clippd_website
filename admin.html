@@ -216,6 +216,35 @@
   .report-table tr:last-child td{ border-bottom:none; }
   .pill-status{ display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; }
 
+  /* ---------- Sales report + live report panels ---------- */
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .panel-head h3{ margin-bottom:0; }
+  .btn-mini{
+    padding:6px 12px; font-size:11px; font-weight:700; border-radius:999px; cursor:pointer;
+    border:1px solid var(--line); color:var(--charcoal-soft); background:transparent;
+    text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;
+  }
+  .btn-mini:hover{ border-color:var(--brass); color:var(--brass); }
+  .kpi-grid.three{ grid-template-columns:repeat(3,1fr); }
+  .report-table th.num, .report-table td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .delta{ font-weight:700; }
+  .delta.up{ color:var(--sage); }
+  .delta.down{ color:var(--brick); }
+  .table-scroll{ overflow-x:auto; max-height:420px; overflow-y:auto; }
+  .table-scroll .report-table th{ position:sticky; top:0; background:var(--card); z-index:1; }
+  .muted{ color:var(--charcoal-soft); font-size:13px; }
+  .note-banner{
+    display:flex; align-items:flex-start; gap:8px; background:var(--ivory-deep); border:1px solid var(--line);
+    border-radius:8px; padding:10px 14px; font-size:13px; color:var(--charcoal-soft); margin-bottom:20px; line-height:1.5;
+  }
+  .note-banner code{ font-family:'Space Mono', monospace; font-size:12px; color:var(--burgundy); }
+  .clickable{ cursor:pointer; }
+  .clickable:hover{ background:var(--ivory); }
+  @media (max-width:900px){
+    .kpi-grid.three{ grid-template-columns:repeat(2,1fr); }
+    .panel-head{ flex-wrap:wrap; }
+  }
+
   @media (max-width:900px){
     .kpi-grid{ grid-template-columns:repeat(2,1fr); }
     .report-grid{ grid-template-columns:1fr; }
@@ -262,6 +291,7 @@
         <button class="side-link active" data-view="overview" onclick="showView('overview')"><span class="ic">📊</span> Overview</button>
         <button class="side-link" data-view="orders" onclick="showView('orders')"><span class="ic">📦</span> Orders</button>
         <button class="side-link" data-view="analytics" onclick="showView('analytics')"><span class="ic">📈</span> Analytics</button>
+        <button class="side-link" data-view="sales" onclick="showView('sales')"><span class="ic">🧾</span> Sales Report</button>
         <button class="side-link" data-view="returns" onclick="showView('returns')"><span class="ic">↩</span> Returns & Refunds</button>
         <button class="side-link" data-view="payments" onclick="showView('payments')"><span class="ic">💳</span> Payments</button>
         <button class="side-link" data-view="inventory" onclick="showView('inventory')"><span class="ic">🏷</span> Inventory</button>
@@ -331,67 +361,125 @@
           </div>
         </section>
 
-        <!-- ===== RETURNS & REFUNDS (sample) ===== -->
+        <!-- ===== SALES REPORT (live) ===== -->
+        <section id="view-sales" class="view">
+          <h1 style="margin-bottom: 18px; color: var(--charcoal);">Sales Report</h1>
+          <div class="filters" id="salesRangeTabs" style="margin-bottom:22px;"></div>
+          <div class="kpi-grid three" id="salesKpis"></div>
+
+          <div class="panel" style="margin-bottom:26px;">
+            <div class="panel-head">
+              <h3 id="salesChartTitle">Sales over time</h3>
+              <button class="btn-mini" onclick="exportSales('period')">Download CSV</button>
+            </div>
+            <div class="bar-chart" id="salesBars"></div>
+          </div>
+
+          <div class="report-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Sales by Product</h3>
+                <button class="btn-mini" onclick="exportSales('product')">Download CSV</button>
+              </div>
+              <div class="table-scroll">
+                <table class="report-table" id="salesProductTable">
+                  <thead><tr><th>Product</th><th class="num">Units</th><th class="num">Revenue</th><th class="num">Share</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Payment Method</h3>
+                <button class="btn-mini" onclick="exportSales('payment')">CSV</button>
+              </div>
+              <table class="report-table" id="salesPaymentTable">
+                <thead><tr><th>Method</th><th class="num">Orders</th><th class="num">Revenue</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="report-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3 id="salesBreakdownTitle">Daily Breakdown</h3>
+                <button class="btn-mini" onclick="exportSales('period')">Download CSV</button>
+              </div>
+              <div class="table-scroll">
+                <table class="report-table" id="salesPeriodTable">
+                  <thead><tr><th>Date</th><th class="num">Orders</th><th class="num">Units</th><th class="num">Gross</th><th class="num">Net</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Top Locations</h3>
+                <button class="btn-mini" onclick="exportSales('location')">CSV</button>
+              </div>
+              <div class="table-scroll">
+                <table class="report-table" id="salesLocationTable">
+                  <thead><tr><th>City</th><th class="num">Orders</th><th class="num">Revenue</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== RETURNS & REFUNDS (live) ===== -->
         <section id="view-returns" class="view">
-          <h1 style="margin-bottom: 22px; color: var(--charcoal);">Returns & Refunds</h1>
-          <div class="sample-banner"><span class="dot"></span> Sample data — connect a returns table to see live figures here.</div>
-          <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:22px;">
-            <div class="kpi-card"><div class="kpi-label">Open Returns</div><div class="kpi-value">7</div><div class="kpi-sub">Awaiting pickup or inspection</div></div>
-            <div class="kpi-card"><div class="kpi-label">Refunded (30d)</div><div class="kpi-value">₹9,240</div><div class="kpi-sub">Across 12 orders</div></div>
-            <div class="kpi-card"><div class="kpi-label">Return Rate</div><div class="kpi-value">3.2%</div><div class="kpi-sub">Of delivered orders</div></div>
-          </div>
+          <h1 style="margin-bottom: 22px; color: var(--charcoal);">Returns &amp; Refunds</h1>
+          <div class="kpi-grid three" id="returnsKpis"></div>
           <div class="panel">
-            <h3>Recent Return Requests</h3>
-            <table class="report-table">
-              <thead><tr><th>Order</th><th>Customer</th><th>Reason</th><th>Type</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td class="oid">SAMPLE-1042</td><td>Aditi Rao</td><td>Size too small</td><td>Return</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--brick);">Pending Pickup</span></td></tr>
-                <tr><td class="oid">SAMPLE-1039</td><td>Meera Nair</td><td>Wrong item shipped</td><td>Replace</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--charcoal-soft);">Inspecting</span></td></tr>
-                <tr><td class="oid">SAMPLE-1031</td><td>Riya Sharma</td><td>Changed mind</td><td>Return</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">Refunded</span></td></tr>
-              </tbody>
-            </table>
+            <div class="panel-head">
+              <h3>Return &amp; Replacement Requests</h3>
+              <button class="btn-mini" onclick="exportReturns()">Download CSV</button>
+            </div>
+            <div class="table-scroll">
+              <table class="report-table" id="returnsTable">
+                <thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Reason</th><th>Type</th><th class="num">Value</th><th>Status</th></tr></thead>
+                <tbody><tr><td colspan="7" class="muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
-        <!-- ===== PAYMENTS / SETTLEMENTS (sample) ===== -->
+        <!-- ===== PAYMENTS / SETTLEMENTS (live) ===== -->
         <section id="view-payments" class="view">
-          <h1 style="margin-bottom: 22px; color: var(--charcoal);">Payments & Settlements</h1>
-          <div class="sample-banner"><span class="dot"></span> Sample data — connect your payment gateway/settlement table to see live figures here.</div>
-          <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:22px;">
-            <div class="kpi-card"><div class="kpi-label">Next Settlement</div><div class="kpi-value">₹42,180</div><div class="kpi-sub">Expected 22 Sep 2026</div></div>
-            <div class="kpi-card"><div class="kpi-label">In Escrow</div><div class="kpi-value">₹18,650</div><div class="kpi-sub">Delivered, not yet settled</div></div>
-            <div class="kpi-card"><div class="kpi-label">Gateway Fees (30d)</div><div class="kpi-value">₹2,110</div><div class="kpi-sub">~2.1% of volume</div></div>
-          </div>
-          <div class="panel">
-            <h3>Recent Settlements</h3>
-            <table class="report-table">
-              <thead><tr><th>Settlement ID</th><th>Date</th><th>Orders</th><th>Amount</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td class="oid">SAMPLE-STL-118</td><td>15 Sep 2026</td><td>34</td><td>₹38,420</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">Paid</span></td></tr>
-                <tr><td class="oid">SAMPLE-STL-117</td><td>08 Sep 2026</td><td>29</td><td>₹31,050</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">Paid</span></td></tr>
-                <tr><td class="oid">SAMPLE-STL-116</td><td>01 Sep 2026</td><td>41</td><td>₹44,760</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">Paid</span></td></tr>
-              </tbody>
-            </table>
+          <h1 style="margin-bottom: 22px; color: var(--charcoal);">Payments &amp; Settlements</h1>
+          <div class="kpi-grid" id="paymentsKpis"></div>
+          <div class="report-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Recent Transactions</h3>
+                <button class="btn-mini" onclick="exportPayments()">Download CSV</button>
+              </div>
+              <div class="table-scroll">
+                <table class="report-table" id="paymentsTable">
+                  <thead><tr><th>Order</th><th>Date</th><th>Method</th><th class="num">Amount</th><th>Status</th></tr></thead>
+                  <tbody><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Collected by Method</h3>
+              <div class="status-bars" id="paymentsMethodBars"></div>
+              <table class="report-table" id="paymentsMethodTable" style="margin-top:16px;">
+                <thead><tr><th>Method</th><th class="num">Orders</th><th class="num">Value</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
-        <!-- ===== INVENTORY (sample) ===== -->
+        <!-- ===== INVENTORY (live) ===== -->
         <section id="view-inventory" class="view">
           <h1 style="margin-bottom: 22px; color: var(--charcoal);">Inventory</h1>
-          <div class="sample-banner"><span class="dot"></span> Sample data — connect a products/stock table to see live figures here.</div>
-          <div class="panel">
-            <h3>Stock Levels</h3>
-            <table class="report-table">
-              <thead><tr><th>Product</th><th>SKU</th><th>In Stock</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td>Pearl Claw Clip — Ivory</td><td>CLW-IVR-01</td><td>142</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">In Stock</span></td></tr>
-                <tr><td>Gold Chain Bracelet</td><td>BRC-GLD-04</td><td>18</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--brass);">Low Stock</span></td></tr>
-                <tr><td>Burgundy Hoop Earrings</td><td>ERR-BUR-02</td><td>0</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--brick);">Out of Stock</span></td></tr>
-                <tr><td>Classic Chain Anklet</td><td>CHN-CLS-07</td><td>76</td><td><span class="pill-status" style="background:var(--ivory-deep); color:var(--sage);">In Stock</span></td></tr>
-              </tbody>
-            </table>
-          </div>
+          <div id="inventoryBody"><p class="muted">Loading…</p></div>
         </section>
+
 
       </main>
     </div>
@@ -496,6 +584,9 @@
   async function adminSignOut(){
     await sb.auth.signOut();
     orders = [];
+    allItems = null;
+    itemsByOrder = {};
+    loadedViews = {};
     document.getElementById('dash').style.display = 'none';
     document.getElementById('gate').style.display = 'flex';
     document.getElementById('gateBody').innerHTML = `
@@ -540,25 +631,31 @@
       .order('created_at', { ascending: false });
     if(error){ console.error(error); showToast("Couldn't load orders"); return; }
     orders = data || [];
+    allItems = null;            // force a refetch of order_items on next report
+    loadedViews = {};           // reports re-render with the fresh order set
     renderFilterTabs();
     renderOrders();
     renderOverview();
+    const open = document.querySelector('.side-link.active')?.dataset.view;
+    if(open && VIEW_LOADERS[open]){ loadedViews[open] = true; VIEW_LOADERS[open](); }
   }
 
   /* ---------- Sidebar view switching ---------- */
   const VIEW_LABELS = {
-    overview: 'Overview', orders: 'Orders', analytics: 'Analytics',
+    overview: 'Overview', orders: 'Orders', analytics: 'Analytics', sales: 'Sales Report',
     returns: 'Returns & Refunds', payments: 'Payments & Settlements', inventory: 'Inventory'
   };
-  let analyticsLoaded = false;
+  // Each report view loads its own data the first time it's opened.
+  let loadedViews = {};
   function showView(view){
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
     document.querySelectorAll('.side-link').forEach(b => b.classList.toggle('active', b.dataset.view === view));
     document.getElementById('crumbSection').textContent = VIEW_LABELS[view] || view;
-    if(view === 'analytics' && !analyticsLoaded){
-      analyticsLoaded = true;
-      renderAnalytics();
+    const loader = VIEW_LOADERS[view];
+    if(loader && !loadedViews[view]){
+      loadedViews[view] = true;
+      loader();
     }
   }
 
@@ -865,6 +962,647 @@
     sb.functions.invoke('send-order-email', { body: { orderId: order.id, event: 'status_update' } })
       .catch(err => console.error('Status update email failed:', err));
   }
+
+  /* ==========================================================================
+     LIVE REPORTS  —  Sales Report, Returns, Payments, Inventory
+     Every figure below is computed from Supabase rows (orders, order_items,
+     products). Nothing here is hard-coded sample data.
+     ========================================================================== */
+
+  const LOW_STOCK_THRESHOLD = 20;   // units at or below this read as "Low Stock"
+  const PRODUCTS_TABLE = 'products'; // rename if your stock lives elsewhere
+
+  const inr  = n => '\u20B9' + Math.round(Number(n || 0)).toLocaleString('en-IN');
+  const esc  = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dmy  = d => new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  const pct  = (part, whole) => whole ? ((part / whole) * 100).toFixed(1) + '%' : '0%';
+
+  const CANCELLED = o => o.status === 'cancelled';
+  const RETURNED  = o => o.status === 'return_requested';
+  const UNPAID    = o => o.status === 'pending_payment';
+  // A row counts as a sale once it is paid for and not cancelled.
+  const countsAsSale = o => !CANCELLED(o) && !UNPAID(o);
+  const isCOD = o => /cod|cash/i.test(o.payment_method || '');
+
+  let allItems = null;        // order_items cache
+  let itemsByOrder = {};
+
+  async function ensureItems(){
+    if(allItems) return allItems;
+    const { data, error } = await sb.from('order_items').select('order_id,product_name,price,qty');
+    if(error){ console.error(error); showToast("Couldn't load order items"); allItems = []; }
+    else allItems = data || [];
+    itemsByOrder = {};
+    allItems.forEach(it => { (itemsByOrder[it.order_id] = itemsByOrder[it.order_id] || []).push(it); });
+    return allItems;
+  }
+  const unitsIn = o => (itemsByOrder[o.id] || []).reduce((n, it) => n + Number(it.qty || 0), 0);
+
+  function downloadCSV(filename, rows){
+    const csv = rows.map(r => r.map(c => {
+      const v = String(c ?? '');
+      return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    showToast('Downloaded ' + filename);
+  }
+
+  /* ---------------------------- SALES REPORT ---------------------------- */
+
+  const SALES_RANGES = [
+    ['7',   'Last 7 days'],
+    ['30',  'Last 30 days'],
+    ['90',  'Last 90 days'],
+    ['mtd', 'This month'],
+    ['all', 'All time'],
+  ];
+  let salesRange = '30';
+  let salesCache = null;   // last computed report, used by the CSV buttons
+
+  function rangeBounds(key){
+    const end = new Date(); end.setHours(23, 59, 59, 999);
+    let start;
+    if(key === 'all'){
+      const first = orders.reduce((min, o) => {
+        const t = new Date(o.created_at);
+        return (!min || t < min) ? t : min;
+      }, null);
+      start = first ? new Date(first) : new Date(end);
+      start.setHours(0, 0, 0, 0);
+    } else if(key === 'mtd'){
+      start = new Date(end.getFullYear(), end.getMonth(), 1);
+    } else {
+      start = new Date(end); start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - (Number(key) - 1));
+    }
+    return { start, end };
+  }
+  const ordersBetween = (start, end) => orders.filter(o => {
+    const t = new Date(o.created_at);
+    return t >= start && t <= end;
+  });
+
+  function setSalesRange(key){ salesRange = key; renderSales(); }
+
+  function deltaHtml(cur, prev){
+    if(!prev) return 'No comparable previous period';
+    const change = ((cur - prev) / prev) * 100;
+    const cls = change >= 0 ? 'up' : 'down';
+    const arrow = change >= 0 ? '\u25B2' : '\u25BC';
+    return `<span class="delta ${cls}">${arrow} ${Math.abs(change).toFixed(1)}%</span> vs previous period`;
+  }
+
+  async function renderSales(){
+    await ensureItems();
+
+    const { start, end } = rangeBounds(salesRange);
+    const span = Math.max(1, end - start);
+    const prevEnd = new Date(start.getTime() - 1);
+    const prevStart = new Date(start.getTime() - span);
+
+    const inRange = ordersBetween(start, end);
+    const sales = inRange.filter(countsAsSale);
+    const prevSales = salesRange === 'all' ? [] : ordersBetween(prevStart, prevEnd).filter(countsAsSale);
+
+    const gross        = sales.reduce((s, o) => s + Number(o.total || 0), 0);
+    const returnedVal  = inRange.filter(RETURNED).reduce((s, o) => s + Number(o.total || 0), 0);
+    const cancelledVal = inRange.filter(CANCELLED).reduce((s, o) => s + Number(o.total || 0), 0);
+    const shippingVal  = sales.reduce((s, o) => s + Number(o.shipping || 0), 0);
+    const net          = gross - returnedVal;
+    const units        = sales.reduce((s, o) => s + unitsIn(o), 0);
+    const aov          = sales.length ? gross / sales.length : 0;
+    const prevGross    = prevSales.reduce((s, o) => s + Number(o.total || 0), 0);
+    const prevOrders   = prevSales.length;
+
+    // Range tabs
+    document.getElementById('salesRangeTabs').innerHTML =
+      SALES_RANGES.map(([k, label]) =>
+        `<button class="tab ${salesRange === k ? 'active' : ''}" onclick="setSalesRange('${k}')">${label}</button>`
+      ).join('') +
+      `<button class="btn-mini" style="margin-left:auto;" onclick="exportSales('summary')">Export full report</button>`;
+
+    const label = (SALES_RANGES.find(r => r[0] === salesRange) || [])[1] || '';
+    document.getElementById('salesKpis').innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Gross Sales</div>
+        <div class="kpi-value">${inr(gross)}</div>
+        <div class="kpi-sub">${deltaHtml(gross, prevGross)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Net Sales</div>
+        <div class="kpi-value">${inr(net)}</div>
+        <div class="kpi-sub">After ${inr(returnedVal)} in returns</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Orders</div>
+        <div class="kpi-value">${sales.length}</div>
+        <div class="kpi-sub">${deltaHtml(sales.length, prevOrders)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Units Sold</div>
+        <div class="kpi-value">${units}</div>
+        <div class="kpi-sub">${(units / (sales.length || 1)).toFixed(1)} per order</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Avg. Order Value</div>
+        <div class="kpi-value">${inr(aov)}</div>
+        <div class="kpi-sub">${label}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Shipping Collected</div>
+        <div class="kpi-value">${inr(shippingVal)}</div>
+        <div class="kpi-sub">${inr(cancelledVal)} cancelled, not counted</div>
+      </div>
+    `;
+
+    // --- Buckets: by day for short ranges, by month for long ones ---
+    const days = Math.round(span / 86400000) + 1;
+    const byMonth = days > 62;
+    const buckets = new Map();
+    const keyOf = d => byMonth ? d.toISOString().slice(0, 7) : d.toISOString().slice(0, 10);
+    if(!byMonth){
+      for(let i = 0; i < days; i++){
+        const d = new Date(start); d.setDate(d.getDate() + i);
+        buckets.set(keyOf(d), { orders: 0, units: 0, gross: 0, net: 0 });
+      }
+    }
+    inRange.forEach(o => {
+      const k = keyOf(new Date(o.created_at));
+      if(!buckets.has(k)) buckets.set(k, { orders: 0, units: 0, gross: 0, net: 0 });
+      const b = buckets.get(k);
+      if(!countsAsSale(o)) return;
+      b.orders += 1;
+      b.units  += unitsIn(o);
+      b.gross  += Number(o.total || 0);
+      b.net    += RETURNED(o) ? 0 : Number(o.total || 0);
+    });
+    const periods = [...buckets.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
+
+    document.getElementById('salesChartTitle').textContent = byMonth ? 'Sales by month' : 'Sales by day';
+    document.getElementById('salesBreakdownTitle').textContent = byMonth ? 'Monthly Breakdown' : 'Daily Breakdown';
+
+    const maxBar = Math.max(1, ...periods.map(([, v]) => v.gross));
+    document.getElementById('salesBars').innerHTML = periods.map(([k, v]) => {
+      const h = Math.max(2, Math.round((v.gross / maxBar) * 100));
+      const d = byMonth ? new Date(k + '-01') : new Date(k);
+      const lbl = byMonth
+        ? d.toLocaleDateString('en-IN', { month: 'short' })
+        : d.getDate();
+      return `<div class="bar-col" title="${inr(v.gross)} \u00B7 ${v.orders} orders \u00B7 ${dmy(d)}">
+        <div class="bar" style="height:${h}%;"></div>
+        <div class="bar-lbl">${lbl}</div>
+      </div>`;
+    }).join('') || '<p class="muted">No orders in this period.</p>';
+
+    const periodRows = periods.slice().reverse();
+    document.querySelector('#salesPeriodTable tbody').innerHTML = periodRows.length
+      ? periodRows.map(([k, v]) => `<tr>
+          <td>${byMonth ? new Date(k + '-01').toLocaleDateString('en-IN', { month:'long', year:'numeric' }) : dmy(k)}</td>
+          <td class="num">${v.orders}</td>
+          <td class="num">${v.units}</td>
+          <td class="num">${inr(v.gross)}</td>
+          <td class="num">${inr(v.net)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="5" class="muted">No orders in this period.</td></tr>';
+
+    // --- By product ---
+    const saleIds = new Set(sales.map(o => o.id));
+    const byProduct = {};
+    allItems.forEach(it => {
+      if(!saleIds.has(it.order_id)) return;
+      const k = it.product_name || 'Unknown';
+      byProduct[k] = byProduct[k] || { units: 0, revenue: 0 };
+      byProduct[k].units   += Number(it.qty || 0);
+      byProduct[k].revenue += Number(it.price || 0) * Number(it.qty || 0);
+    });
+    const products = Object.entries(byProduct).sort((a, b) => b[1].revenue - a[1].revenue);
+    const productTotal = products.reduce((s, [, v]) => s + v.revenue, 0);
+    document.querySelector('#salesProductTable tbody').innerHTML = products.length
+      ? products.map(([name, v]) => `<tr>
+          <td>${esc(name)}</td>
+          <td class="num">${v.units}</td>
+          <td class="num">${inr(v.revenue)}</td>
+          <td class="num">${pct(v.revenue, productTotal)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" class="muted">No product data in this period.</td></tr>';
+
+    // --- By payment method ---
+    const byMethod = {};
+    sales.forEach(o => {
+      const k = o.payment_method || 'Unknown';
+      byMethod[k] = byMethod[k] || { orders: 0, revenue: 0 };
+      byMethod[k].orders += 1;
+      byMethod[k].revenue += Number(o.total || 0);
+    });
+    const methods = Object.entries(byMethod).sort((a, b) => b[1].revenue - a[1].revenue);
+    document.querySelector('#salesPaymentTable tbody').innerHTML = methods.length
+      ? methods.map(([m, v]) => `<tr>
+          <td>${esc(m)}</td>
+          <td class="num">${v.orders}</td>
+          <td class="num">${inr(v.revenue)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="3" class="muted">No orders in this period.</td></tr>';
+
+    // --- By location ---
+    const byCity = {};
+    sales.forEach(o => {
+      const k = [o.city, o.state].filter(Boolean).join(', ') || 'Unknown';
+      byCity[k] = byCity[k] || { orders: 0, revenue: 0 };
+      byCity[k].orders += 1;
+      byCity[k].revenue += Number(o.total || 0);
+    });
+    const cities = Object.entries(byCity).sort((a, b) => b[1].revenue - a[1].revenue);
+    document.querySelector('#salesLocationTable tbody').innerHTML = cities.length
+      ? cities.map(([c, v]) => `<tr>
+          <td>${esc(c)}</td>
+          <td class="num">${v.orders}</td>
+          <td class="num">${inr(v.revenue)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="3" class="muted">No orders in this period.</td></tr>';
+
+    salesCache = { label, start, end, byMonth, periods, products, methods, cities,
+                   gross, net, units, aov, shippingVal, returnedVal, cancelledVal, orderCount: sales.length };
+  }
+
+  function exportSales(kind){
+    if(!salesCache){ showToast('Open the Sales Report first'); return; }
+    const c = salesCache;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const head = ['CLIPPD Sales Report'], meta = [
+      ['Range', c.label], ['From', dmy(c.start)], ['To', dmy(c.end)], []
+    ];
+    let rows, name;
+    if(kind === 'product'){
+      name = `sales-by-product-${stamp}.csv`;
+      rows = [head, ...meta, ['Product', 'Units Sold', 'Revenue (INR)'],
+        ...c.products.map(([n, v]) => [n, v.units, Math.round(v.revenue)])];
+    } else if(kind === 'payment'){
+      name = `sales-by-payment-${stamp}.csv`;
+      rows = [head, ...meta, ['Payment Method', 'Orders', 'Revenue (INR)'],
+        ...c.methods.map(([m, v]) => [m, v.orders, Math.round(v.revenue)])];
+    } else if(kind === 'location'){
+      name = `sales-by-location-${stamp}.csv`;
+      rows = [head, ...meta, ['City', 'Orders', 'Revenue (INR)'],
+        ...c.cities.map(([m, v]) => [m, v.orders, Math.round(v.revenue)])];
+    } else if(kind === 'period'){
+      name = `sales-by-${c.byMonth ? 'month' : 'day'}-${stamp}.csv`;
+      rows = [head, ...meta, [c.byMonth ? 'Month' : 'Date', 'Orders', 'Units', 'Gross (INR)', 'Net (INR)'],
+        ...c.periods.map(([k, v]) => [k, v.orders, v.units, Math.round(v.gross), Math.round(v.net)])];
+    } else {
+      name = `sales-report-${stamp}.csv`;
+      rows = [head, ...meta,
+        ['SUMMARY'],
+        ['Gross Sales (INR)', Math.round(c.gross)],
+        ['Net Sales (INR)', Math.round(c.net)],
+        ['Returns (INR)', Math.round(c.returnedVal)],
+        ['Cancelled (INR)', Math.round(c.cancelledVal)],
+        ['Shipping Collected (INR)', Math.round(c.shippingVal)],
+        ['Orders', c.orderCount], ['Units Sold', c.units],
+        ['Avg. Order Value (INR)', Math.round(c.aov)],
+        [],
+        [c.byMonth ? 'MONTH' : 'DATE', 'Orders', 'Units', 'Gross (INR)', 'Net (INR)'],
+        ...c.periods.map(([k, v]) => [k, v.orders, v.units, Math.round(v.gross), Math.round(v.net)]),
+        [],
+        ['PRODUCT', 'Units Sold', 'Revenue (INR)'],
+        ...c.products.map(([n, v]) => [n, v.units, Math.round(v.revenue)]),
+        [],
+        ['PAYMENT METHOD', 'Orders', 'Revenue (INR)'],
+        ...c.methods.map(([m, v]) => [m, v.orders, Math.round(v.revenue)]),
+        [],
+        ['CITY', 'Orders', 'Revenue (INR)'],
+        ...c.cities.map(([m, v]) => [m, v.orders, Math.round(v.revenue)]),
+      ];
+    }
+    downloadCSV(name, rows);
+  }
+
+  /* ------------------------ RETURNS & REFUNDS ------------------------ */
+
+  let returnsCache = [];
+
+  function returnStage(o){
+    if(RETURNED(o))         return { label: 'Open Request',  color: 'var(--brick)' };
+    if(CANCELLED(o))        return { label: 'Refunded',      color: 'var(--sage)' };
+    if(o.status === 'shipped') return { label: 'Replacement Shipped', color: 'var(--burgundy)' };
+    if(o.status === 'delivered') return { label: 'Resolved', color: 'var(--sage)' };
+    return { label: STATUS_META[o.status]?.label || o.status, color: 'var(--charcoal-soft)' };
+  }
+
+  function renderReturns(){
+    // Anything the customer has raised a return/replacement on, current or past.
+    const list = orders.filter(o => RETURNED(o) || o.return_reason || o.return_type)
+                       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    returnsCache = list;
+
+    const open = list.filter(RETURNED);
+    const cutoff = Date.now() - 30 * 86400000;
+    const refunded30 = list.filter(o => CANCELLED(o) && new Date(o.created_at).getTime() >= cutoff);
+    const refundedVal = refunded30.reduce((s, o) => s + Number(o.total || 0), 0);
+    const delivered = orders.filter(o => o.status === 'delivered').length;
+    const base = delivered + list.length;
+    const rate = base ? (list.length / base) * 100 : 0;
+
+    document.getElementById('returnsKpis').innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Open Returns</div>
+        <div class="kpi-value">${open.length}</div>
+        <div class="kpi-sub">${inr(open.reduce((s, o) => s + Number(o.total || 0), 0))} in value</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Refunded (30d)</div>
+        <div class="kpi-value">${inr(refundedVal)}</div>
+        <div class="kpi-sub">Across ${refunded30.length} order${refunded30.length === 1 ? '' : 's'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Return Rate</div>
+        <div class="kpi-value">${rate.toFixed(1)}%</div>
+        <div class="kpi-sub">${list.length} of ${base} delivered-or-returned</div>
+      </div>
+    `;
+
+    document.querySelector('#returnsTable tbody').innerHTML = list.length
+      ? list.map(o => {
+          const st = returnStage(o);
+          return `<tr class="clickable" onclick="openDrawer('${esc(o.id)}')">
+            <td class="oid">${esc(o.id)}</td>
+            <td>${dmy(o.created_at)}</td>
+            <td>${esc(o.customer_name || '\u2014')}</td>
+            <td>${esc(o.return_reason || '\u2014')}</td>
+            <td>${o.return_type === 'replace' ? 'Replacement' : 'Return'}</td>
+            <td class="num">${inr(o.total)}</td>
+            <td><span class="status-dot" style="background:${st.color};"></span>${st.label}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="7" class="muted">No return or replacement requests yet.</td></tr>';
+  }
+
+  function exportReturns(){
+    if(!returnsCache.length){ showToast('Nothing to export'); return; }
+    downloadCSV(`returns-${new Date().toISOString().slice(0,10)}.csv`, [
+      ['Order', 'Date', 'Customer', 'Phone', 'Reason', 'Type', 'Value (INR)', 'Status'],
+      ...returnsCache.map(o => [
+        o.id, dmy(o.created_at), o.customer_name || '', o.phone || '',
+        o.return_reason || '', o.return_type === 'replace' ? 'Replacement' : 'Return',
+        Math.round(Number(o.total || 0)), returnStage(o).label
+      ])
+    ]);
+  }
+
+  /* --------------------- PAYMENTS & SETTLEMENTS --------------------- */
+
+  let paymentsCache = [];
+
+  function paymentStage(o){
+    if(UNPAID(o))    return { label: 'Awaiting Payment', color: 'var(--brass)' };
+    if(CANCELLED(o)) return { label: 'Refunded / Void',  color: 'var(--brick)' };
+    if(RETURNED(o))  return { label: 'Refund Pending',   color: 'var(--brick)' };
+    if(isCOD(o) && o.status !== 'delivered') return { label: 'COD In Transit', color: 'var(--charcoal-soft)' };
+    return { label: 'Settled', color: 'var(--sage)' };
+  }
+
+  function renderPayments(){
+    const settled   = orders.filter(o => countsAsSale(o) && !RETURNED(o) && !(isCOD(o) && o.status !== 'delivered'));
+    const awaiting  = orders.filter(UNPAID);
+    const codTransit = orders.filter(o => isCOD(o) && countsAsSale(o) && o.status !== 'delivered');
+    const refundDue = orders.filter(RETURNED);
+
+    const sum = list => list.reduce((s, o) => s + Number(o.total || 0), 0);
+    const prepaidCount = orders.filter(o => countsAsSale(o) && !isCOD(o)).length;
+    const paidCount = orders.filter(countsAsSale).length;
+
+    document.getElementById('paymentsKpis').innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Settled</div>
+        <div class="kpi-value">${inr(sum(settled))}</div>
+        <div class="kpi-sub">${settled.length} order${settled.length === 1 ? '' : 's'} cleared</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">COD In Transit</div>
+        <div class="kpi-value">${inr(sum(codTransit))}</div>
+        <div class="kpi-sub">${codTransit.length} order${codTransit.length === 1 ? '' : 's'} to collect on delivery</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Awaiting Payment</div>
+        <div class="kpi-value">${inr(sum(awaiting))}</div>
+        <div class="kpi-sub">${awaiting.length} unpaid order${awaiting.length === 1 ? '' : 's'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Refunds Pending</div>
+        <div class="kpi-value">${inr(sum(refundDue))}</div>
+        <div class="kpi-sub">${prepaidCount} of ${paidCount} paid orders prepaid</div>
+      </div>
+    `;
+
+    // Collected by method
+    const byMethod = {};
+    orders.filter(countsAsSale).forEach(o => {
+      const k = o.payment_method || 'Unknown';
+      byMethod[k] = byMethod[k] || { orders: 0, value: 0 };
+      byMethod[k].orders += 1;
+      byMethod[k].value += Number(o.total || 0);
+    });
+    const methods = Object.entries(byMethod).sort((a, b) => b[1].value - a[1].value);
+    const maxVal = Math.max(1, ...methods.map(([, v]) => v.value));
+    document.getElementById('paymentsMethodBars').innerHTML = methods.length
+      ? methods.map(([m, v]) => `<div class="status-row">
+          <span class="lbl">${esc(m)}</span>
+          <div class="track"><div class="fill" style="width:${Math.round((v.value / maxVal) * 100)}%; background:var(--burgundy);"></div></div>
+          <span class="cnt">${v.orders}</span>
+        </div>`).join('')
+      : '<p class="muted">No payments yet.</p>';
+    document.querySelector('#paymentsMethodTable tbody').innerHTML = methods.length
+      ? methods.map(([m, v]) => `<tr><td>${esc(m)}</td><td class="num">${v.orders}</td><td class="num">${inr(v.value)}</td></tr>`).join('')
+      : '<tr><td colspan="3" class="muted">\u2014</td></tr>';
+
+    // Recent transactions
+    const recent = orders.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    paymentsCache = recent;
+    document.querySelector('#paymentsTable tbody').innerHTML = recent.length
+      ? recent.slice(0, 50).map(o => {
+          const st = paymentStage(o);
+          return `<tr class="clickable" onclick="openDrawer('${esc(o.id)}')">
+            <td class="oid">${esc(o.id)}</td>
+            <td>${dmy(o.created_at)}</td>
+            <td>${esc(o.payment_method || '\u2014')}</td>
+            <td class="num">${inr(o.total)}</td>
+            <td><span class="status-dot" style="background:${st.color};"></span>${st.label}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="5" class="muted">No transactions yet.</td></tr>';
+  }
+
+  function exportPayments(){
+    if(!paymentsCache.length){ showToast('Nothing to export'); return; }
+    downloadCSV(`payments-${new Date().toISOString().slice(0,10)}.csv`, [
+      ['Order', 'Date', 'Customer', 'Method', 'Subtotal (INR)', 'Shipping (INR)', 'Total (INR)', 'Order Status', 'Payment Stage'],
+      ...paymentsCache.map(o => [
+        o.id, dmy(o.created_at), o.customer_name || '', o.payment_method || '',
+        Math.round(Number(o.subtotal || 0)), Math.round(Number(o.shipping || 0)),
+        Math.round(Number(o.total || 0)), o.status || '', paymentStage(o).label
+      ])
+    ]);
+  }
+
+  /* ------------------------------ INVENTORY ------------------------------ */
+
+  const NAME_KEYS  = ['name', 'title', 'product_name', 'product', 'label'];
+  const SKU_KEYS   = ['sku', 'code', 'product_code', 'slug', 'handle', 'id'];
+  const STOCK_KEYS = ['stock', 'stock_quantity', 'stock_qty', 'quantity', 'qty', 'inventory', 'inventory_count', 'available', 'units', 'in_stock'];
+  const PRICE_KEYS = ['price', 'sale_price', 'mrp', 'amount'];
+  const firstKey = (row, keys) => keys.find(k => k in row);
+
+  let inventoryCache = [];
+  let inventorySearch = '';
+
+  function setInventorySearch(v){
+    inventorySearch = v.toLowerCase();
+    renderInventoryTable();
+  }
+
+  async function renderInventory(){
+    const wrap = document.getElementById('inventoryBody');
+    wrap.innerHTML = '<p class="muted">Loading\u2026</p>';
+    await ensureItems();
+
+    // Units sold per product name, so inventory reads against real demand.
+    const sold = {};
+    const saleIds = new Set(orders.filter(countsAsSale).map(o => o.id));
+    allItems.forEach(it => {
+      if(!saleIds.has(it.order_id)) return;
+      const k = (it.product_name || '').trim().toLowerCase();
+      sold[k] = (sold[k] || 0) + Number(it.qty || 0);
+    });
+
+    const { data, error } = await sb.from(PRODUCTS_TABLE).select('*');
+
+    if(error || !data || !data.length){
+      const why = error
+        ? `Couldn't read the <code>${PRODUCTS_TABLE}</code> table \u2014 ${esc(error.message)}. Check the table name and its RLS select policy for admins, or change <code>PRODUCTS_TABLE</code> near the top of the reports script.`
+        : `The <code>${PRODUCTS_TABLE}</code> table is empty.`;
+      wrap.innerHTML = `<div class="note-banner">${why}</div>
+        <div class="panel">
+          <h3>Units Sold by Product</h3>
+          <p class="muted" style="margin-bottom:14px;">Derived from <code>order_items</code> so you still have a demand view.</p>
+          <table class="report-table">
+            <thead><tr><th>Product</th><th class="num">Units Sold</th></tr></thead>
+            <tbody>${
+              Object.entries(sold).sort((a, b) => b[1] - a[1])
+                .map(([k, v]) => `<tr><td>${esc(k.replace(/\b\w/g, c => c.toUpperCase()))}</td><td class="num">${v}</td></tr>`).join('')
+              || '<tr><td colspan="2" class="muted">No sales yet.</td></tr>'
+            }</tbody>
+          </table>
+        </div>`;
+      return;
+    }
+
+    const sample = data[0];
+    const nk = firstKey(sample, NAME_KEYS);
+    const sk = firstKey(sample, SKU_KEYS);
+    const qk = firstKey(sample, STOCK_KEYS);
+    const pk = firstKey(sample, PRICE_KEYS);
+
+    inventoryCache = data.map(row => {
+      const name = nk ? row[nk] : 'Unnamed';
+      const raw = qk ? row[qk] : null;
+      const boolStock = typeof raw === 'boolean';
+      const stock = boolStock ? (raw ? null : 0) : (raw === null || raw === undefined ? null : Number(raw));
+      return {
+        name, sku: sk ? row[sk] : '\u2014',
+        price: pk ? Number(row[pk] || 0) : null,
+        stock, boolStock, boolValue: boolStock ? raw : null,
+        sold: sold[String(name || '').trim().toLowerCase()] || 0
+      };
+    }).sort((a, b) => (a.stock ?? Infinity) - (b.stock ?? Infinity));
+
+    const known = inventoryCache.filter(p => p.stock !== null || p.boolStock);
+    const out = known.filter(p => p.boolStock ? p.boolValue === false : p.stock === 0).length;
+    const low = known.filter(p => !p.boolStock && p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD).length;
+    const totalUnits = inventoryCache.reduce((s, p) => s + (p.stock || 0), 0);
+
+    wrap.innerHTML = `
+      ${qk ? '' : `<div class="note-banner">No stock column found on <code>${PRODUCTS_TABLE}</code>. Add one (e.g. <code>stock</code>) or list its name in <code>STOCK_KEYS</code> to see stock levels.</div>`}
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Products</div><div class="kpi-value">${inventoryCache.length}</div><div class="kpi-sub">In the ${PRODUCTS_TABLE} table</div></div>
+        <div class="kpi-card"><div class="kpi-label">Units On Hand</div><div class="kpi-value">${totalUnits}</div><div class="kpi-sub">Across all products</div></div>
+        <div class="kpi-card"><div class="kpi-label">Low Stock</div><div class="kpi-value">${low}</div><div class="kpi-sub">At or below ${LOW_STOCK_THRESHOLD} units</div></div>
+        <div class="kpi-card"><div class="kpi-label">Out of Stock</div><div class="kpi-value">${out}</div><div class="kpi-sub">Needs restocking</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Stock Levels</h3>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <input class="search" style="margin:0;" placeholder="Search product or SKU\u2026" oninput="setInventorySearch(this.value)">
+            <button class="btn-mini" onclick="exportInventory()">CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="report-table" id="inventoryTable">
+            <thead><tr><th>Product</th><th>SKU</th><th class="num">In Stock</th><th class="num">Sold</th><th class="num">Price</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    renderInventoryTable();
+  }
+
+  function stockStatus(p){
+    if(p.boolStock) return p.boolValue
+      ? { label: 'In Stock', color: 'var(--sage)' }
+      : { label: 'Out of Stock', color: 'var(--brick)' };
+    if(p.stock === null) return { label: 'Unknown', color: 'var(--charcoal-soft)' };
+    if(p.stock === 0) return { label: 'Out of Stock', color: 'var(--brick)' };
+    if(p.stock <= LOW_STOCK_THRESHOLD) return { label: 'Low Stock', color: 'var(--brass)' };
+    return { label: 'In Stock', color: 'var(--sage)' };
+  }
+
+  function renderInventoryTable(){
+    const tbody = document.querySelector('#inventoryTable tbody');
+    if(!tbody) return;
+    const list = inventoryCache.filter(p =>
+      !inventorySearch ||
+      String(p.name || '').toLowerCase().includes(inventorySearch) ||
+      String(p.sku || '').toLowerCase().includes(inventorySearch)
+    );
+    tbody.innerHTML = list.length
+      ? list.map(p => {
+          const st = stockStatus(p);
+          return `<tr>
+            <td>${esc(p.name)}</td>
+            <td class="oid">${esc(p.sku)}</td>
+            <td class="num">${p.boolStock ? '\u2014' : (p.stock ?? '\u2014')}</td>
+            <td class="num">${p.sold}</td>
+            <td class="num">${p.price === null ? '\u2014' : inr(p.price)}</td>
+            <td><span class="pill-status" style="background:var(--ivory-deep); color:${st.color};">${st.label}</span></td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="6" class="muted">No products match that search.</td></tr>';
+  }
+
+  function exportInventory(){
+    if(!inventoryCache.length){ showToast('Nothing to export'); return; }
+    downloadCSV(`inventory-${new Date().toISOString().slice(0,10)}.csv`, [
+      ['Product', 'SKU', 'In Stock', 'Units Sold', 'Price (INR)', 'Status'],
+      ...inventoryCache.map(p => [
+        p.name, p.sku, p.boolStock ? '' : (p.stock ?? ''), p.sold,
+        p.price === null ? '' : Math.round(p.price), stockStatus(p).label
+      ])
+    ]);
+  }
+
+  /* ---- Which loader runs when a sidebar view is opened for the first time ---- */
+  const VIEW_LOADERS = {
+    analytics: renderAnalytics,
+    sales:     renderSales,
+    returns:   renderReturns,
+    payments:  renderPayments,
+    inventory: renderInventory,
+  };
 </script>
 </body>
 </html>
