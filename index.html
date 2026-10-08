@@ -340,6 +340,8 @@
   .stars-row{ display:flex; align-items:center; gap:6px; margin-top:8px; }
   .stars-row .stars{ color:var(--brass); font-size:12px; letter-spacing:1px; }
   .stars-row .count{ font-size:11px; color:var(--charcoal-soft); }
+  /* CLIPPD brand word inside product names, set in a different typeface */
+  .brand-word{ font-family:'Fraunces',serif; font-weight:700; letter-spacing:.14em; font-size:.9em; color:var(--burgundy); }
   .price-row{ display:flex; align-items:baseline; gap:8px; margin-top:10px; }
   .price-row .now{ font-family:'Fraunces',serif; font-size:20px; }
   .price-row .was{ font-size:12px; color:#9a9186; text-decoration:line-through; }
@@ -1604,6 +1606,10 @@
     });
   }
   function money(n){ return '₹' + n; }
+  // Wraps a leading "CLIPPD" in the product name so it can be styled in its own font.
+  function brandName(name){
+    return String(name || '').replace(/^\s*CLIPPD\b/i, '<span class="brand-word">CLIPPD</span>');
+  }
   function productById(id){ return products.find(p => p.id === id); }
 
   function cardHTML(p){
@@ -1619,7 +1625,7 @@
         </button>
       </div>
       <div class="prod-body">
-        <div class="pname">${p.name}</div>
+        <div class="pname">${brandName(p.name)}</div>
         <div class="pdesc">${p.desc}</div>
         ${ratingRowHTML(p)}
         <div class="price-row">
@@ -1750,7 +1756,7 @@
 
     // Populate modal with full product details
     document.getElementById('modalCat').textContent = p.cat;
-    document.getElementById('modalName').textContent = p.name;
+    document.getElementById('modalName').innerHTML = brandName(p.name);
     document.getElementById('modalDesc').textContent = p.desc;
     document.getElementById('modalPrice').textContent = money(p.price);
     document.getElementById('modalWas').textContent = p.was ? money(p.was) : '';
@@ -2501,7 +2507,7 @@
         <div class="cart-row">
           <div class="cart-thumb" style="${imgStyleFor(p)}"></div>
           <div class="cart-info">
-            <div class="cname">${p.name}</div>
+            <div class="cname">${brandName(p.name)}</div>
             ${c.color ? `<div class="ccolor mono">${c.color}</div>` : ''}
             <div class="cprice mono">${money(p.price)}</div>
             <div class="cart-row-bottom">
@@ -2778,7 +2784,7 @@
         <div class="cart-row">
           <div class="cart-thumb" style="${imgStyleFor(p)}" onclick="closeWishlist(); openProduct(${p.id});"></div>
           <div class="cart-info">
-            <div class="cname">${p.name}</div>
+            <div class="cname">${brandName(p.name)}</div>
             <div class="cprice mono">${money(p.price)}</div>
             <div class="cart-row-bottom">
               <button class="cart-remove" onclick="moveWishToBag(${p.id})" style="color:var(--burgundy);border-color:var(--burgundy);">Move to Bag</button>
@@ -2828,7 +2834,7 @@
       <div class="search-result-row" onclick="closeSearch(); openProduct(${p.id});">
         <div class="sr-thumb" style="${imgStyleFor(p)}"></div>
         <div class="sr-info">
-          <div class="sname">${p.name}</div>
+          <div class="sname">${brandName(p.name)}</div>
           <div class="sprice">${p.cat} · ${money(p.price)}</div>
         </div>
       </div>`).join('');
