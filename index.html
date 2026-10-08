@@ -1558,7 +1558,51 @@
 
   let wishlist = JSON.parse(localStorage.getItem('clippd-wishlist')) || []; // array of product ids
 
-  function starRow(){ return '★'.repeat(5); }
+  // Real rating row for product cards. Returns '' when a product has no reviews yet.
+  function ratingRowHTML(p){
+    const n = p.reviewCount || 0;
+    if(n <= 0) return `<div class="stars-row" data-rating-row="${p.id}" style="display:none;"></div>`;
+    const filled = Math.max(0, Math.min(5, Math.round(p.ratingAvg || 0)));
+    const stars = '★'.repeat(filled) + '<span style="color:#ddd;">' + '★'.repeat(5 - filled) + '</span>';
+    return `<div class="stars-row" data-rating-row="${p.id}" title="${(p.ratingAvg || 0).toFixed(1)} out of 5">` +
+           `<span class="stars">${stars}</span><span class="count">(${n})</span></div>`;
+  }
+
+  // Fetch every review's (product_id, rating) and compute avg + count per product.
+  async function loadRatingStats(){
+    const stats = {};
+    const pageSize = 1000;
+    let from = 0;
+    while(true){
+      const { data, error } = await sb.from('reviews').select('product_id, rating').range(from, from + pageSize - 1);
+      if(error){ console.error('Failed to load rating stats:', error); break; }
+      (data || []).forEach(r => {
+        const st = stats[r.product_id] || (stats[r.product_id] = { sum: 0, n: 0 });
+        st.sum += Number(r.rating) || 0;
+        st.n += 1;
+      });
+      if(!data || data.length < pageSize) break;
+      from += pageSize;
+    }
+    products.forEach(p => {
+      const st = stats[p.id];
+      p.reviewCount = st ? st.n : 0;
+      p.ratingAvg = st ? st.sum / st.n : 0;
+    });
+  }
+
+  // After a new review is posted, refresh one product's rating and update its cards in place.
+  async function refreshProductRating(productId){
+    const { data, error } = await sb.from('reviews').select('rating').eq('product_id', productId);
+    if(error) return;
+    const p = productById(productId);
+    if(!p) return;
+    p.reviewCount = (data || []).length;
+    p.ratingAvg = p.reviewCount ? data.reduce((s, r) => s + (Number(r.rating) || 0), 0) / p.reviewCount : 0;
+    document.querySelectorAll(`[data-rating-row="${productId}"]`).forEach(el => {
+      el.outerHTML = ratingRowHTML(p);
+    });
+  }
   function money(n){ return '₹' + n; }
   function productById(id){ return products.find(p => p.id === id); }
 
@@ -1577,7 +1621,7 @@
       <div class="prod-body">
         <div class="pname">${p.name}</div>
         <div class="pdesc">${p.desc}</div>
-        <div class="stars-row"><span class="stars">${starRow()}</span><span class="count">(${120+p.id*13})</span></div>
+        ${ratingRowHTML(p)}
         <div class="price-row">
           <span class="now mono">${money(p.price)}</span>
           ${p.was ? `<span class="was mono">${money(p.was)}</span>` : ''}
@@ -1991,6 +2035,7 @@
 
       // Reload reviews
       await loadReviews(modalProductId);
+      refreshProductRating(modalProductId);
 
     } catch(error){
       console.error('Error submitting review:', error);
@@ -2180,7 +2225,7 @@
       showToast('Failed to submit review');
     } else {
       showToast('Review posted! Thank you');
-      loadReviews(productId);
+      loadReviews(productId); refreshProductRating(productId);
     }
     return false;
   }
@@ -3490,6 +3535,7 @@
         stock: p.stock_quantity ?? 0, viewCount: p.view_count ?? 0
       }));
     }
+    await loadRatingStats(); // real ratings from the reviews table
     applyCategoryFromURL(true); // true = don't push a new history entry on first load
     renderUnder(299);
     renderCart();
