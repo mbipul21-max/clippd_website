@@ -969,7 +969,7 @@
      products). Nothing here is hard-coded sample data.
      ========================================================================== */
 
-  const LOW_STOCK_THRESHOLD = 20;   // units at or below this read as "Low Stock"
+  const LOW_STOCK_THRESHOLD = 10;   // stock strictly below this reads as "Low Stock"
   const PRODUCTS_TABLE = 'products'; // rename if your stock lives elsewhere
 
   const inr  = n => '\u20B9' + Math.round(Number(n || 0)).toLocaleString('en-IN');
@@ -1521,7 +1521,7 @@
 
     const known = inventoryCache.filter(p => p.stock !== null || p.boolStock);
     const out = known.filter(p => p.boolStock ? p.boolValue === false : p.stock === 0).length;
-    const low = known.filter(p => !p.boolStock && p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD).length;
+    const low = known.filter(p => !p.boolStock && p.stock > 0 && p.stock < LOW_STOCK_THRESHOLD).length;
     const totalUnits = inventoryCache.reduce((s, p) => s + (p.stock || 0), 0);
 
     wrap.innerHTML = `
@@ -1529,7 +1529,7 @@
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
         <div class="kpi-card"><div class="kpi-label">Products</div><div class="kpi-value">${inventoryCache.length}</div><div class="kpi-sub">In the ${PRODUCTS_TABLE} table</div></div>
         <div class="kpi-card"><div class="kpi-label">Units On Hand</div><div class="kpi-value">${totalUnits}</div><div class="kpi-sub">Across all products</div></div>
-        <div class="kpi-card"><div class="kpi-label">Low Stock</div><div class="kpi-value">${low}</div><div class="kpi-sub">At or below ${LOW_STOCK_THRESHOLD} units</div></div>
+        <div class="kpi-card"><div class="kpi-label">Low Stock</div><div class="kpi-value">${low}</div><div class="kpi-sub">Fewer than ${LOW_STOCK_THRESHOLD} units</div></div>
         <div class="kpi-card"><div class="kpi-label">Out of Stock</div><div class="kpi-value">${out}</div><div class="kpi-sub">Needs restocking</div></div>
       </div>
       <div class="panel">
@@ -1557,7 +1557,7 @@
       : { label: 'Out of Stock', color: 'var(--brick)' };
     if(p.stock === null) return { label: 'Unknown', color: 'var(--charcoal-soft)' };
     if(p.stock === 0) return { label: 'Out of Stock', color: 'var(--brick)' };
-    if(p.stock <= LOW_STOCK_THRESHOLD) return { label: 'Low Stock', color: 'var(--brass)' };
+    if(p.stock < LOW_STOCK_THRESHOLD) return { label: 'Low Stock', color: 'var(--brass)' };
     return { label: 'In Stock', color: 'var(--sage)' };
   }
 
