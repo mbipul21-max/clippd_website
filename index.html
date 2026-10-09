@@ -267,8 +267,13 @@
   @media(max-width:720px){.trust-inner{justify-content:center;padding:14px 18px;gap:10px 18px;font-size:9px;}}
 
   /* ---------- SECTION HEADERS ---------- */
-  .section{ padding:110px 32px; }
-  .section-head{ text-align:center; max-width:640px; margin:0 auto 64px; }
+  .section{ padding:72px 32px; }
+  /* Desktop spacing: gap between hero buttons and trust strip, tighter gap after strip */
+  @media (min-width:921px){
+    .hero{ padding-bottom:44px; }
+    .trust-strip + .section{ padding-top:52px; }
+  }
+  .section-head{ text-align:center; max-width:640px; margin:0 auto 44px; }
   .section-head h2{ font-size:clamp(30px,4vw,44px); font-weight:450; margin-top:14px; }
   .section-head p{ margin-top:14px; color:var(--charcoal-soft); font-size:15px; }
   .section.alt{ background:var(--ivory-deep); }
@@ -336,12 +341,15 @@
   }
   .prod-body{ padding:18px 18px 20px; }
   .prod-body .pname{ font-size:15px; font-weight:600; }
+  /* CLIPPD brand mark shown before every product name */
+  .brand-mark{
+    font-family:'Fraunces',serif; font-weight:700; color:var(--burgundy);
+    letter-spacing:0.14em; font-size:0.82em; margin-right:0.35em;
+  }
   .prod-body .pdesc{ font-size:12px; color:var(--charcoal-soft); margin-top:3px; }
   .stars-row{ display:flex; align-items:center; gap:6px; margin-top:8px; }
   .stars-row .stars{ color:var(--brass); font-size:12px; letter-spacing:1px; }
   .stars-row .count{ font-size:11px; color:var(--charcoal-soft); }
-  /* CLIPPD brand word inside product names, set in a different typeface */
-  .brand-word{ font-family:'Fraunces',serif; font-weight:700; letter-spacing:.14em; font-size:.9em; color:var(--burgundy); }
   .price-row{ display:flex; align-items:baseline; gap:8px; margin-top:10px; }
   .price-row .now{ font-family:'Fraunces',serif; font-size:20px; }
   .price-row .was{ font-size:12px; color:#9a9186; text-decoration:line-through; }
@@ -515,7 +523,7 @@
   @media (max-width:920px){
     nav.center{ display:none; }
     .mobile-toggle{ display:flex; }
-    .section{ padding:64px 20px; }
+    .section{ padding:48px 20px; }
     .statement, .why-grid{ gap:20px; }
   }
 
@@ -524,12 +532,23 @@
     .wrap{ padding:0 18px; }
     .nav-row{ padding:14px 18px; }
     .logo{ font-size:21px; }
-    .hero{ padding:28px 18px 0; }
-    .hero-grid{ gap:26px; padding-bottom:36px; }
-    .hero-visual{ height:300px; margin-top:14px; }
-    .hero-copy .eyebrow{ margin-bottom:12px; }
-    .section{ padding:40px 18px; }
-    .section-head{ margin:0 auto 32px; }
+    .hero{ padding:16px 18px 0; }
+    .hero-grid{ gap:14px; padding-bottom:22px; }
+    .hero-visual{ height:190px; margin-top:6px; }
+    .hero-copy .eyebrow{ margin-bottom:8px; font-size:10px; }
+    .hero-copy h1{ font-size:34px; line-height:1; }
+    .hero-sub{ font-size:16px; margin-top:10px; }
+    .hero-copy p.desc{ font-size:12.5px; line-height:1.55; margin-top:8px; }
+    .hero-ctas{ gap:8px; margin-top:14px; }
+    .hero-ctas .btn{ padding:11px 16px; font-size:10px; }
+    .hero-card.float1{ width:112px; height:auto; padding:8px; left:-4px; bottom:10px; }
+    .hero-card.float1 .clip-swatch{ height:38px; }
+    .hero-card.float1 .price{ font-size:15px; }
+    .hero-card.float1 .mono, .hero-card.float2 .mono{ font-size:8px; }
+    .hero-card.float2{ width:84px; padding:8px 10px; left:10px; top:8px; }
+    .hero-card.float2 .stars{ font-size:9px; margin-top:3px; }
+    .section{ padding:30px 18px; }
+    .section-head{ margin:0 auto 24px; }
     .section-head p{ margin-top:8px; }
     .announce{ padding:8px 0; }
     footer{ padding:44px 18px 20px; }
@@ -1473,6 +1492,12 @@
   function imgFor(id){ return imgGradients[id % imgGradients.length]; }
   // Returns an ordered list of image URLs for a product's gallery.
   // Accepts image_urls as a JSON array string or a comma-separated string.
+  // Renders a product name with the CLIPPD brand mark in front. Any existing
+  // leading "CLIPPD" in the stored name is stripped so it never doubles up.
+  function brandName(name){
+    const clean = String(name || '').replace(/^\s*clippd\b[\s\-–—:]*/i, '').trim();
+    return `<span class="brand-mark">CLIPPD</span>${escapeHTML(clean)}`;
+  }
   function getImageList(p){
     let list = [];
     if(p && p.image_urls){
@@ -1606,10 +1631,6 @@
     });
   }
   function money(n){ return '₹' + n; }
-  // Wraps a leading "CLIPPD" in the product name so it can be styled in its own font.
-  function brandName(name){
-    return String(name || '').replace(/^\s*CLIPPD\b/i, '<span class="brand-word">CLIPPD</span>');
-  }
   function productById(id){ return products.find(p => p.id === id); }
 
   function cardHTML(p){
@@ -1690,12 +1711,26 @@
 
   window.addEventListener('popstate', () => applyCategoryFromURL(true));
 
+  // Best Sellers & New Arrivals show a limited set: 8 on desktop, 4 on phones.
+  const mobileMQ = window.matchMedia('(max-width:720px)');
+  const featuredLimit = () => mobileMQ.matches ? 4 : 8;
+  let currentShopCat = null;
+  const onMQChange = () => {
+    if(currentShopCat === null || currentShopCat === 'New'){
+      filterCategory(currentShopCat, findNavElForCategory(currentShopCat), true);
+    }
+  };
+  if(mobileMQ.addEventListener) mobileMQ.addEventListener('change', onMQChange);
+  else if(mobileMQ.addListener) mobileMQ.addListener(onMQChange);
+
   function filterCategory(cat, navEl, isUrlSync){
-    const list = cat === 'New' ? products.filter(p => p.isNew)
+    currentShopCat = cat || null;
+    let list = cat === 'New' ? products.filter(p => p.isNew)
                : cat ? products.filter(p => p.cat === cat)
                // "Best Sellers" (cat === null): most-viewed products first,
                // based on view_count tracked via increment_product_view().
                : [...products].sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
+    if(!cat || cat === 'New') list = list.slice(0, featuredLimit());
     document.getElementById('prodGrid1').innerHTML = list.length
       ? list.map(cardHTML).join('')
       : `<p class="pdesc" style="grid-column:1/-1; text-align:center; padding:40px 0;">No products in this category yet — check back soon.</p>`;
@@ -2583,7 +2618,7 @@
       <div class="checkout-summary-item">
         <div class="cs-thumb" style="${imgStyleFor(p)}"></div>
         <div class="cs-info">
-          <div class="cs-name">${p.name}${c.color ? ` — ${c.color}` : ''}</div>
+          <div class="cs-name">${brandName(p.name)}${c.color ? ` — ${c.color}` : ''}</div>
           <div class="cs-qty">Qty ${c.qty}</div>
         </div>
         <div class="cs-price mono">${money(p.price * c.qty)}</div>
@@ -3636,32 +3671,50 @@
   // photo of one of that category's products, replacing the plain
   // gradient background. Falls back to the gradient if no product in
   // that category has an image yet.
+  // Category cards (Claw Clips / Bracelets / Earrings / Chains): each card
+  // cycles through every photo of every product in its category, swapping
+  // to a different random one every 10 seconds with a soft fade.
+  let catThumbTimer = null;
   function hydrateCategoryThumbs(){
-    const setThumb = (selector, product) => {
-      const url = getImageList(product)[0];
-      if(!url) return;
-      const el = document.querySelector(selector);
-      if(el){
-        el.style.backgroundImage = `url('${url}')`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-      }
+    const cards = [
+      { sel:'#claw-clips .cat-thumb', cat:'Claw Clips' },
+      { sel:'#bracelets .cat-thumb',  cat:'Bracelets'  },
+      { sel:'#earrings .cat-thumb',   cat:'Earrings'   },
+      { sel:'#chains .cat-thumb',     cat:'Chains'     },
+    ];
+    const states = cards.map(c => {
+      const urls = [...new Set(products.filter(p => p.cat === c.cat).flatMap(p => getImageList(p)).filter(Boolean))];
+      return { el: document.querySelector(c.sel), urls, current: null };
+    }).filter(st => st.el && st.urls.length);
+
+    const pickNext = st => {
+      if(st.urls.length === 1) return st.urls[0];
+      let u;
+      do { u = st.urls[Math.floor(Math.random() * st.urls.length)]; } while(u === st.current);
+      return u;
     };
-    const byCat = cat => products.filter(p => p.cat === cat && getImageList(p).length > 0);
+    const show = (st, instant) => {
+      const url = pickNext(st);
+      const img = new Image();
+      img.onload = () => {
+        const apply = () => {
+          st.el.style.backgroundImage = `url('${url}')`;
+          st.el.style.backgroundSize = 'cover';
+          st.el.style.backgroundPosition = 'center';
+          st.current = url;
+          st.el.style.opacity = '1';
+        };
+        if(instant){ apply(); return; }
+        st.el.style.transition = 'opacity .5s ease';
+        st.el.style.opacity = '0.15';
+        setTimeout(apply, 500);
+      };
+      img.src = url;
+    };
 
-    const clawClips = byCat('Claw Clips');
-    if(clawClips.length) setThumb('#claw-clips .cat-thumb', clawClips[Math.floor(Math.random() * clawClips.length)]);
-
-    const bracelets = byCat('Bracelets');
-    if(bracelets.length) setThumb('#bracelets .cat-thumb', bracelets[Math.floor(Math.random() * bracelets.length)]);
-
-    // "Earrings" and "Chains" are now two separate categories, each
-    // pulling its thumbnail from its own matching products.
-    const earrings = byCat('Earrings');
-    if(earrings.length) setThumb('#earrings .cat-thumb', earrings[Math.floor(Math.random() * earrings.length)]);
-
-    const chains = byCat('Chains');
-    if(chains.length) setThumb('#chains .cat-thumb', chains[Math.floor(Math.random() * chains.length)]);
+    states.forEach(st => show(st, true));
+    clearInterval(catThumbTimer);
+    catThumbTimer = setInterval(() => states.forEach(st => show(st, false)), 10000);
   }
   // Sets the "Brand Statement" panel's background to a random photo from
   // the Style Edit lookbook (style_edits table), re-picking a new random
@@ -3763,6 +3816,7 @@
       filterCategory(null);
       return;
     }
+    currentShopCat = '__edit__'; // style-edit view: not capped, don't re-render on resize
     const ids = new Set((data || []).map(r => r.product_id));
     const list = products.filter(p => ids.has(p.id));
     document.getElementById('prodGrid1').innerHTML = list.length
