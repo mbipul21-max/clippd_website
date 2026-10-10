@@ -866,6 +866,39 @@
   }
   .acct-tab.active{ background:var(--charcoal); color:var(--ivory); border-color:var(--charcoal); }
   .otp-hint{ font-size:12px; color:var(--charcoal-soft); margin-top:10px; }
+  .acct-tabs{ flex-wrap:wrap; }
+  .acct-tab{ cursor:pointer; background:transparent; transition:background .15s, color .15s; }
+  .acct-tab:not(.active):hover{ background:var(--ivory-deep); }
+  .acct-panel{ margin-top:22px; }
+  .acct-avatar{
+    width:56px; height:56px; border-radius:50%; background:var(--burgundy); color:var(--ivory);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:24px; flex:none;
+  }
+  .acct-head{ display:flex; align-items:center; gap:16px; }
+  .acct-head h3{ margin-top:2px; }
+  .info-form input[readonly]{ background:var(--ivory-deep); color:var(--charcoal-soft); cursor:not-allowed; }
+  .info-form .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .acct-actions{ display:flex; gap:10px; margin-top:22px; }
+  .acct-actions .btn{ margin-top:0 !important; }
+  .addr-card{ padding:14px 16px; background:var(--ivory); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; }
+  .addr-card.default{ border-color:var(--burgundy); }
+  .addr-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .addr-label{ font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--burgundy); font-weight:700; }
+  .addr-badge{ font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; background:var(--burgundy); color:var(--ivory); padding:3px 8px; border-radius:999px; }
+  .addr-body{ font-size:13px; line-height:1.6; margin-top:8px; color:var(--charcoal); }
+  .addr-body .addr-phone{ color:var(--charcoal-soft); font-size:12px; }
+  .addr-links{ display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; }
+  .addr-links button{
+    font-family:'Space Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--charcoal-soft); border-bottom:1px solid transparent; padding:0;
+  }
+  .addr-links button:hover{ color:var(--burgundy); border-color:var(--burgundy); }
+  .addr-empty{ text-align:center; padding:30px 10px; color:var(--charcoal-soft); font-size:13.5px; border:1px dashed var(--line); border-radius:8px; }
+  .addr-check{ display:flex !important; align-items:center; gap:10px; text-transform:none !important; letter-spacing:0 !important; font-family:inherit !important; font-size:13px !important; color:var(--charcoal) !important; cursor:pointer; }
+  .addr-check input{ width:auto !important; margin:0 !important; accent-color:var(--burgundy); }
+  .addr-pick{ margin-top:14px; }
+  .addr-pick select{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:6px; font-family:inherit; font-size:13.5px; background:var(--ivory); color:var(--charcoal); margin-top:6px; }
+  @media (max-width:520px){ .info-modal{ padding:36px 22px; } .info-form .form-row{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -1368,6 +1401,7 @@
 
       <div id="checkoutStep1">
         <h3 style="font-family:'Fraunces',serif;font-weight:450;font-size:22px;">Shipping Details</h3>
+        <div class="addr-pick" id="savedAddrPicker" style="display:none;"></div>
         <form class="info-form" id="shippingForm" onsubmit="return goToPayment(event)">
           <label>Full Name</label><input type="text" id="shipName" required placeholder="Your name">
           <label>Email</label><input type="email" id="shipEmail" required placeholder="you@email.com">
@@ -2597,6 +2631,7 @@
     renderCheckoutSummary();
     const emailField = document.getElementById('shipEmail');
     if(emailField && account?.contact) emailField.value = account.contact;
+    renderSavedAddrPicker();
     document.getElementById('checkoutStep1').style.display = '';
     document.getElementById('checkoutStep2').style.display = 'none';
     document.getElementById('checkoutSuccess').style.display = 'none';
@@ -2880,6 +2915,10 @@
   /* ---------- ACCOUNT (real auth via Supabase — email OTP code) ---------- */
   let account = null;      // {name, contact} once signed in, else null
   let accountOrders = [];  // this user's past orders, loaded from Supabase
+  let acctTab = 'profile';      // 'profile' | 'addresses' | 'orders'
+  let accountAddresses = [];    // this user's saved addresses
+  let addrEditing = null;       // null = list view, 'new' = add form, else the id being edited
+  let addrBackend = 'supabase'; // flips to 'local' if the saved_addresses table isn't set up yet
   let otpSent = false;     // true once we've asked Supabase to email a code
   let verifying = false;   // true while a code submission is in flight
   let lastSignInEmail = '';
@@ -2923,11 +2962,13 @@
       if(upsertErr) console.error('Failed to sync profile:', upsertErr);
       // isAdmin drives the admin-only "add photo"/"add testimonial" controls
       // in the Community section — see renderCommunityPosts/renderCommunityTestimonials.
-      account = { id: session.user.id, name: fullName, contact: session.user.email, isAdmin: profileRow?.is_admin === true };
+      account = { id: session.user.id, name: fullName, contact: session.user.email, phone: meta.phone || '', isAdmin: profileRow?.is_admin === true };
       await loadAccountOrders(session.user.id);
+      await loadAccountAddresses(session.user.id);
     } else {
       account = null;
       accountOrders = [];
+      accountAddresses = [];
     }
   }
   async function loadAccountOrders(userId){
@@ -2946,10 +2987,12 @@
     renderCommunityTestimonials();
   });
 
-  function openAccount(){
+  function openAccount(tab){
     otpSent = false;
     verifying = false;
     viewingOrderId = null;
+    addrEditing = null;
+    acctTab = (typeof tab === 'string' && ['profile','addresses','orders'].includes(tab)) ? tab : 'profile';
     renderAccount();
     document.getElementById('scrim').classList.add('open');
     setOverlayOpen('accountModal', true);
@@ -2980,6 +3023,7 @@
   let viewingOrderId = null; // set while the order-detail screen is showing
   async function viewOrderDetail(orderId){
     viewingOrderId = orderId;
+    acctTab = 'orders';
     renderAccount(); // show a loading state immediately
     const { data: items, error } = await sb.from('order_items')
       .select('product_id,product_name,price,qty')
@@ -3138,30 +3182,27 @@
     const body = document.getElementById('accountBody');
     if(account){
       if(viewingOrderId){ renderOrderDetail(); return; }
+      const firstName = escapeHTML(account.name.split(' ')[0]);
+      const initial = escapeHTML((account.name.trim()[0] || '?').toUpperCase());
+      const tabBtn = (id, label) => `<button type="button" class="acct-tab ${acctTab===id?'active':''}" onclick="switchAcctTab('${id}')">${label}</button>`;
+      let panel = '';
+      if(acctTab === 'profile') panel = renderProfileTab();
+      else if(acctTab === 'addresses') panel = renderAddressesTab();
+      else panel = renderOrdersTab();
       body.innerHTML = `
-        <span class="eyebrow">My Account</span>
-        <h3>Hey, ${account.name.split(' ')[0]} 👋</h3>
-        <p class="pdesc">Signed in as ${account.contact}</p>
-        <div style="margin-top:26px;">
-          <span class="mono" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--charcoal-soft);">Order History</span>
-          ${accountOrders.length ? `
-            <div style="margin-top:12px;">
-              ${accountOrders.map(order => `
-                <div style="padding:12px; background:var(--ivory); border-radius:8px; margin-bottom:8px; cursor:pointer;"
-                  onclick="viewOrderDetail('${order.id}')">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-weight:600; color:var(--burgundy);">${order.id}</div>
-                    <span class="mono" style="font-size:11px; text-transform:uppercase; color:var(--charcoal-soft);">${orderStatusLabel(order)} ›</span>
-                  </div>
-                  <div style="font-size:12px; color:var(--charcoal-soft); margin-top:4px;">${new Date(order.created_at).toLocaleDateString()} · ₹${order.total}</div>
-                </div>
-              `).join('')}
-            </div>
-          ` : `
-            <p class="pdesc" style="margin-top:8px;">No orders yet — place your first order to see it here.</p>
-          `}
+        <div class="acct-head">
+          <div class="acct-avatar">${initial}</div>
+          <div>
+            <span class="eyebrow">My Account</span>
+            <h3>Hey, ${firstName} 👋</h3>
+          </div>
         </div>
-        <button class="btn btn-outline" style="margin-top:26px;" onclick="signOut()">Sign Out</button>
+        <div class="acct-tabs">
+          ${tabBtn('profile','Profile')}
+          ${tabBtn('addresses','Saved Addresses')}
+          ${tabBtn('orders','Orders')}
+        </div>
+        <div class="acct-panel">${panel}</div>
       `;
       return;
     }
@@ -3305,11 +3346,278 @@
     await sb.auth.signOut();
     account = null;
     accountOrders = [];
+    accountAddresses = [];
+    addrEditing = null;
+    acctTab = 'profile';
     otpSent = false;
     viewingOrderId = null;
     orderDetailItems = [];
     renderAccount();
     showToast('Signed out');
+  }
+
+
+  /* ---------- ACCOUNT TABS: Profile / Saved Addresses / Orders ---------- */
+
+  function switchAcctTab(tab){
+    acctTab = tab;
+    addrEditing = null;
+    renderAccount();
+  }
+
+  /* ----- Profile tab ----- */
+  function renderProfileTab(){
+    return `
+      <form class="info-form" style="margin-top:0;" onsubmit="return saveProfile(event)">
+        <label style="margin-top:0;">Full Name</label>
+        <input type="text" id="profName" value="${escapeHTML(account.name)}" required>
+        <label>Email</label>
+        <input type="email" value="${escapeHTML(account.contact)}" readonly>
+        <p class="otp-hint" style="margin-top:6px;">Email is your login, so it can't be changed here.</p>
+        <label>Phone Number</label>
+        <input type="tel" id="profPhone" value="${escapeHTML(account.phone || '')}" placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" required>
+        <button type="submit" class="btn btn-primary" id="profSaveBtn">Save Changes</button>
+      </form>
+      <button class="btn btn-outline" style="margin-top:12px; width:100%; justify-content:center;" onclick="signOut()">Sign Out</button>
+    `;
+  }
+  async function saveProfile(e){
+    e.preventDefault();
+    const name = document.getElementById('profName').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    if(!name) return false;
+    const btn = document.getElementById('profSaveBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Saving…'; }
+    const { error: profErr } = await sb.from('profiles').update({ full_name: name, phone }).eq('id', account.id);
+    // Also update auth metadata, because refreshAccountFromSession() re-syncs
+    // the profiles row from it on every load and would otherwise undo the edit.
+    const { error: authErr } = await sb.auth.updateUser({ data: { full_name: name, phone } });
+    if(profErr || authErr){
+      console.error(profErr || authErr);
+      showToast("Couldn't save — try again");
+      renderAccount();
+      return false;
+    }
+    account.name = name;
+    account.phone = phone;
+    showToast('Profile updated');
+    renderAccount();
+    return false;
+  }
+
+  /* ----- Orders tab ----- */
+  function renderOrdersTab(){
+    if(!accountOrders.length){
+      return `<div class="addr-empty">No orders yet — place your first order to see it here.</div>`;
+    }
+    return accountOrders.map(order => `
+      <div style="padding:12px; background:var(--ivory); border-radius:8px; margin-bottom:8px; cursor:pointer;"
+        onclick="viewOrderDetail('${order.id}')">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:600; color:var(--burgundy);">${escapeHTML(order.id)}</div>
+          <span class="mono" style="font-size:11px; text-transform:uppercase; color:var(--charcoal-soft);">${orderStatusLabel(order)} ›</span>
+        </div>
+        <div style="font-size:12px; color:var(--charcoal-soft); margin-top:4px;">${new Date(order.created_at).toLocaleDateString()} · ₹${order.total}</div>
+      </div>
+    `).join('');
+  }
+
+  /* ----- Saved addresses: storage layer -----
+     Uses the Supabase table `saved_addresses` (see saved_addresses.sql). If that
+     table doesn't exist yet, it quietly falls back to this browser's
+     localStorage so the feature still works while you set the table up. */
+  function localAddrKey(){ return 'clippd-addresses-' + (account?.id || 'guest'); }
+  function readLocalAddrs(userId){
+    try{ return JSON.parse(localStorage.getItem('clippd-addresses-' + userId)) || []; }catch(_){ return []; }
+  }
+  function writeLocalAddrs(){
+    try{ localStorage.setItem(localAddrKey(), JSON.stringify(accountAddresses)); }catch(_){}
+  }
+  function sortAddrs(){
+    accountAddresses.sort((a,b) => (b.is_default?1:0) - (a.is_default?1:0) || String(a.created_at).localeCompare(String(b.created_at)));
+  }
+  async function loadAccountAddresses(userId){
+    const { data, error } = await sb.from('saved_addresses').select('*').eq('user_id', userId).order('created_at', {ascending:true});
+    if(error){
+      addrBackend = 'local';
+      accountAddresses = readLocalAddrs(userId);
+    } else {
+      addrBackend = 'supabase';
+      accountAddresses = data || [];
+    }
+    sortAddrs();
+  }
+
+  /* ----- Saved addresses: UI ----- */
+  function renderAddressesTab(){
+    if(addrEditing) return renderAddressForm();
+    const list = accountAddresses.length ? accountAddresses.map(a => `
+      <div class="addr-card ${a.is_default ? 'default' : ''}">
+        <div class="addr-top">
+          <span class="addr-label">${escapeHTML(a.label || 'Address')}</span>
+          ${a.is_default ? '<span class="addr-badge">Default</span>' : ''}
+        </div>
+        <div class="addr-body">
+          <strong>${escapeHTML(a.full_name)}</strong><br>
+          ${escapeHTML(a.address)}<br>
+          ${escapeHTML(a.city)}, ${escapeHTML(a.state)} — ${escapeHTML(a.pincode)}<br>
+          <span class="addr-phone">${escapeHTML(a.phone)}</span>
+        </div>
+        <div class="addr-links">
+          <button type="button" onclick="editAddress('${a.id}')">Edit</button>
+          ${a.is_default ? '' : `<button type="button" onclick="makeDefaultAddress('${a.id}')">Set as default</button>`}
+          <button type="button" onclick="deleteAddress('${a.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('') : `<div class="addr-empty">No saved addresses yet. Add one to check out faster.</div>`;
+    return `
+      ${list}
+      <button class="btn btn-primary" style="margin-top:14px; width:100%; justify-content:center;" onclick="startAddAddress()">+ Add New Address</button>
+    `;
+  }
+  function renderAddressForm(){
+    const a = addrEditing === 'new'
+      ? { label:'Home', full_name: account.name, phone: account.phone || '', address:'', city:'', state:'', pincode:'', is_default: accountAddresses.length === 0 }
+      : (accountAddresses.find(x => x.id === addrEditing) || {});
+    const v = k => escapeHTML(a[k] || '');
+    const labelOpt = l => `<option value="${l}" ${a.label === l ? 'selected' : ''}>${l}</option>`;
+    return `
+      <h4 style="font-family:'Fraunces',serif; font-size:18px; font-weight:450;">${addrEditing === 'new' ? 'Add New Address' : 'Edit Address'}</h4>
+      <form class="info-form" style="margin-top:6px;" onsubmit="return saveAddress(event)">
+        <label style="margin-top:12px;">Save As</label>
+        <select id="addrLabel" style="width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:6px; font-family:inherit; font-size:13.5px; margin-top:6px; background:var(--ivory); color:var(--charcoal);">
+          ${labelOpt('Home')}${labelOpt('Work')}${labelOpt('Other')}
+        </select>
+        <label>Full Name</label>
+        <input type="text" id="addrName" value="${v('full_name')}" required placeholder="Receiver's name">
+        <label>Phone Number</label>
+        <input type="tel" id="addrPhone" value="${v('phone')}" required pattern="[0-9]{10}" maxlength="10" placeholder="10-digit mobile number">
+        <label>Address</label>
+        <textarea rows="2" id="addrLine" required placeholder="House no, street, area">${v('address')}</textarea>
+        <div class="form-row">
+          <div><label>City</label><input type="text" id="addrCity" value="${v('city')}" required placeholder="City"></div>
+          <div><label>State</label><input type="text" id="addrState" value="${v('state')}" required placeholder="State"></div>
+        </div>
+        <label>Pincode</label>
+        <input type="text" id="addrPin" value="${v('pincode')}" required pattern="[0-9]{6}" maxlength="6" placeholder="6-digit pincode">
+        <label class="addr-check" style="margin-top:18px;"><input type="checkbox" id="addrDefault" ${a.is_default ? 'checked' : ''}> Make this my default address</label>
+        <div class="acct-actions">
+          <button type="button" class="btn btn-outline" onclick="cancelAddressForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="addrSaveBtn" style="flex:1; justify-content:center;">Save Address</button>
+        </div>
+      </form>
+    `;
+  }
+  function startAddAddress(){ addrEditing = 'new'; renderAccount(); }
+  function editAddress(id){ addrEditing = id; renderAccount(); }
+  function cancelAddressForm(){ addrEditing = null; renderAccount(); }
+
+  async function saveAddress(e){
+    e.preventDefault();
+    const btn = document.getElementById('addrSaveBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Saving…'; }
+    const row = {
+      label: document.getElementById('addrLabel').value,
+      full_name: document.getElementById('addrName').value.trim(),
+      phone: document.getElementById('addrPhone').value.trim(),
+      address: document.getElementById('addrLine').value.trim(),
+      city: document.getElementById('addrCity').value.trim(),
+      state: document.getElementById('addrState').value.trim(),
+      pincode: document.getElementById('addrPin').value.trim(),
+      is_default: document.getElementById('addrDefault').checked
+    };
+    // The very first address is always the default.
+    if(accountAddresses.length === 0 || (accountAddresses.length === 1 && addrEditing !== 'new')) row.is_default = true;
+    const isNew = addrEditing === 'new';
+
+    if(addrBackend === 'supabase'){
+      if(row.is_default){
+        await sb.from('saved_addresses').update({ is_default:false }).eq('user_id', account.id);
+      }
+      const q = isNew
+        ? sb.from('saved_addresses').insert({ ...row, user_id: account.id }).select().single()
+        : sb.from('saved_addresses').update(row).eq('id', addrEditing).eq('user_id', account.id).select().single();
+      const { data, error } = await q;
+      if(error){
+        console.error(error);
+        showToast("Couldn't save address — try again");
+        if(btn){ btn.disabled = false; btn.textContent = 'Save Address'; }
+        return false;
+      }
+      if(row.is_default) accountAddresses.forEach(x => x.is_default = false);
+      if(isNew) accountAddresses.push(data);
+      else accountAddresses = accountAddresses.map(x => x.id === data.id ? data : x);
+    } else {
+      if(row.is_default) accountAddresses.forEach(x => x.is_default = false);
+      if(isNew){
+        accountAddresses.push({ ...row, id: 'loc' + Date.now(), created_at: new Date().toISOString() });
+      } else {
+        accountAddresses = accountAddresses.map(x => x.id === addrEditing ? { ...x, ...row } : x);
+      }
+      writeLocalAddrs();
+    }
+    sortAddrs();
+    addrEditing = null;
+    showToast('Address saved');
+    renderAccount();
+    return false;
+  }
+  async function makeDefaultAddress(id){
+    if(addrBackend === 'supabase'){
+      await sb.from('saved_addresses').update({ is_default:false }).eq('user_id', account.id);
+      const { error } = await sb.from('saved_addresses').update({ is_default:true }).eq('id', id).eq('user_id', account.id);
+      if(error){ console.error(error); showToast("Couldn't update — try again"); return; }
+    }
+    accountAddresses.forEach(x => x.is_default = (x.id === id));
+    if(addrBackend === 'local') writeLocalAddrs();
+    sortAddrs();
+    showToast('Default address updated');
+    renderAccount();
+  }
+  async function deleteAddress(id){
+    if(!confirm('Delete this address?')) return;
+    if(addrBackend === 'supabase'){
+      const { error } = await sb.from('saved_addresses').delete().eq('id', id).eq('user_id', account.id);
+      if(error){ console.error(error); showToast("Couldn't delete — try again"); return; }
+    }
+    const wasDefault = accountAddresses.find(x => x.id === id)?.is_default;
+    accountAddresses = accountAddresses.filter(x => x.id !== id);
+    // If the default was deleted, promote the oldest remaining address.
+    if(wasDefault && accountAddresses.length){
+      const next = accountAddresses[0];
+      next.is_default = true;
+      if(addrBackend === 'supabase') await sb.from('saved_addresses').update({ is_default:true }).eq('id', next.id);
+    }
+    if(addrBackend === 'local') writeLocalAddrs();
+    sortAddrs();
+    showToast('Address deleted');
+    renderAccount();
+  }
+
+  /* ----- Checkout: pick a saved address ----- */
+  function renderSavedAddrPicker(){
+    const box = document.getElementById('savedAddrPicker');
+    if(!box) return;
+    if(!account || !accountAddresses.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = '';
+    box.innerHTML = `
+      <label style="font-family:'Space Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--charcoal-soft); display:block;">Use a saved address</label>
+      <select onchange="fillShippingFromSaved(this.value)">
+        <option value="">Enter a new address…</option>
+        ${accountAddresses.map(a => `<option value="${a.id}" ${a.is_default ? 'selected' : ''}>${escapeHTML(a.label || 'Address')} — ${escapeHTML(a.address.slice(0,32))}${a.address.length > 32 ? '…' : ''}, ${escapeHTML(a.city)}</option>`).join('')}
+      </select>`;
+    const def = accountAddresses.find(a => a.is_default);
+    if(def) fillShippingFromSaved(def.id);
+  }
+  function fillShippingFromSaved(id){
+    const a = accountAddresses.find(x => x.id === id);
+    const set = (el, val) => { const n = document.getElementById(el); if(n) n.value = val; };
+    if(!a){
+      ['shipName','shipPhone','shipAddress','shipCity','shipState','shipPincode'].forEach(k => set(k, ''));
+      return;
+    }
+    set('shipName', a.full_name); set('shipPhone', a.phone); set('shipAddress', a.address);
+    set('shipCity', a.city); set('shipState', a.state); set('shipPincode', a.pincode);
   }
 
   /* ---------- INFO MODAL (Help & About) ---------- */
