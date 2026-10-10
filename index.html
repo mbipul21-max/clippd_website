@@ -870,6 +870,11 @@
   .acct-tab{ cursor:pointer; background:transparent; transition:background .15s, color .15s; }
   .acct-tab:not(.active):hover{ background:var(--ivory-deep); }
   .acct-panel{ margin-top:22px; }
+  .prof-card{ border:1px solid var(--line); border-radius:8px; background:var(--ivory); }
+  .prof-row{ display:flex; flex-direction:column; gap:4px; padding:14px 16px; border-bottom:1px solid var(--line); }
+  .prof-row:last-child{ border-bottom:none; }
+  .prof-label{ font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--charcoal-soft); }
+  .prof-value{ font-size:14.5px; color:var(--charcoal); word-break:break-word; }
   .acct-avatar{
     width:56px; height:56px; border-radius:50%; background:var(--burgundy); color:var(--ivory);
     display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:24px; flex:none;
@@ -2916,6 +2921,7 @@
   let account = null;      // {name, contact} once signed in, else null
   let accountOrders = [];  // this user's past orders, loaded from Supabase
   let acctTab = 'profile';      // 'profile' | 'addresses' | 'orders'
+  let profileEditing = false;   // false = static profile view, true = edit form
   let accountAddresses = [];    // this user's saved addresses
   let addrEditing = null;       // null = list view, 'new' = add form, else the id being edited
   let addrBackend = 'supabase'; // flips to 'local' if the saved_addresses table isn't set up yet
@@ -2992,6 +2998,7 @@
     verifying = false;
     viewingOrderId = null;
     addrEditing = null;
+    profileEditing = false;
     acctTab = (typeof tab === 'string' && ['profile','addresses','orders'].includes(tab)) ? tab : 'profile';
     renderAccount();
     document.getElementById('scrim').classList.add('open');
@@ -3358,6 +3365,7 @@
     accountOrders = [];
     accountAddresses = [];
     addrEditing = null;
+    profileEditing = false;
     acctTab = 'profile';
     otpSent = false;
     viewingOrderId = null;
@@ -3372,11 +3380,28 @@
   function switchAcctTab(tab){
     acctTab = tab;
     addrEditing = null;
+    profileEditing = false;
     renderAccount();
   }
 
   /* ----- Profile tab ----- */
   function renderProfileTab(){
+    if(!profileEditing){
+      const row = (label, value) => `
+        <div class="prof-row">
+          <span class="prof-label">${label}</span>
+          <span class="prof-value">${value}</span>
+        </div>`;
+      return `
+        <div class="prof-card">
+          ${row('Full Name', escapeHTML(account.name))}
+          ${row('Email', escapeHTML(account.contact))}
+          ${row('Phone Number', account.phone ? escapeHTML(account.phone) : '<span style="color:var(--charcoal-soft);">Not added yet</span>')}
+        </div>
+        <button class="btn btn-primary" style="margin-top:18px; width:100%; justify-content:center;" onclick="startEditProfile()">Edit Profile</button>
+        <button class="btn btn-outline" style="margin-top:12px; width:100%; justify-content:center;" onclick="signOut()">Sign Out</button>
+      `;
+    }
     return `
       <form class="info-form" style="margin-top:0;" onsubmit="return saveProfile(event)">
         <label style="margin-top:0;">Full Name</label>
@@ -3386,11 +3411,15 @@
         <p class="otp-hint" style="margin-top:6px;">Email is your login, so it can't be changed here.</p>
         <label>Phone Number</label>
         <input type="tel" id="profPhone" value="${escapeHTML(account.phone || '')}" placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" required>
-        <button type="submit" class="btn btn-primary" id="profSaveBtn">Save Changes</button>
+        <div class="acct-actions">
+          <button type="button" class="btn btn-outline" onclick="cancelEditProfile()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="profSaveBtn" style="flex:1; justify-content:center;">Save Changes</button>
+        </div>
       </form>
-      <button class="btn btn-outline" style="margin-top:12px; width:100%; justify-content:center;" onclick="signOut()">Sign Out</button>
     `;
   }
+  function startEditProfile(){ profileEditing = true; renderAccount(); }
+  function cancelEditProfile(){ profileEditing = false; renderAccount(); }
   async function saveProfile(e){
     e.preventDefault();
     const name = document.getElementById('profName').value.trim();
@@ -3410,6 +3439,7 @@
     }
     account.name = name;
     account.phone = phone;
+    profileEditing = false;
     showToast('Profile updated');
     renderAccount();
     return false;
