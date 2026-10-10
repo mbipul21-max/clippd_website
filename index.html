@@ -3144,14 +3144,24 @@
   }
   async function cancelOrder(orderId){
     if(!confirm('Cancel this order? This cannot be undone.')) return;
-    const { error } = await sb.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
-    if(error){
-      showToast("Couldn't cancel order — try again");
-      console.error(error);
+    // The Edge Function cancels the shipment in NimbusPost first (if one was
+    // booked), then marks the order cancelled in the database, so the two
+    // can never disagree. See cancel-nimbuspost-shipment/index.ts.
+    showToast('Cancelling order…');
+    const { data, error } = await sb.functions.invoke('cancel-nimbuspost-shipment', { body: { orderId } });
+    if(error || !data?.ok){
+      let msg = data?.error || '';
+      // supabase-js puts non-2xx JSON bodies on error.context
+      if(!msg && error?.context?.json){ try{ msg = (await error.context.json()).error || ''; }catch(_){} }
+      console.error(error || data);
+      showToast(msg || "Couldn't cancel order — try again or contact us");
       return;
     }
     const idx = accountOrders.findIndex(o => o.id === orderId);
-    if(idx > -1) accountOrders[idx].status = 'cancelled';
+    if(idx > -1){
+      accountOrders[idx].status = 'cancelled';
+      accountOrders[idx].shipping_status = 'cancelled';
+    }
     showToast('Order cancelled');
     renderAccount();
   }
