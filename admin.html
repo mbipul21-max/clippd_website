@@ -344,11 +344,11 @@
           <h1 style="margin-bottom: 22px; color: var(--charcoal);">Analytics</h1>
           <div class="report-grid">
             <div class="panel">
-              <h3>Revenue — last 30 days</h3>
+              <h3>Shipped Revenue — last 30 days</h3>
               <div class="bar-chart" id="revenueBars30"></div>
             </div>
             <div class="panel">
-              <h3>Payment Method Split</h3>
+              <h3>Payment Method Split (shipped)</h3>
               <div class="status-bars" id="paymentBars"></div>
             </div>
           </div>
@@ -706,7 +706,7 @@
     renderStatusBars();
   }
 
-  function revenueByDay(days){
+  function revenueByDay(days, include){
     const map = {};
     const today = new Date(); today.setHours(0,0,0,0);
     for(let i = days - 1; i >= 0; i--){
@@ -714,16 +714,17 @@
       map[d.toISOString().slice(0,10)] = 0;
     }
     orders.forEach(o => {
+      if(include && !include(o)) return;
       const key = new Date(o.created_at).toISOString().slice(0,10);
       if(key in map) map[key] += Number(o.total || 0);
     });
     return map;
   }
 
-  function renderRevenueBarChart(elId, days){
+  function renderRevenueBarChart(elId, days, include){
     const el = document.getElementById(elId);
     if(!el) return;
-    const map = revenueByDay(days);
+    const map = revenueByDay(days, include);
     const values = Object.values(map);
     const max = Math.max(1, ...values);
     el.innerHTML = Object.entries(map).map(([date, val]) => {
@@ -758,11 +759,12 @@
 
   /* ---------- Analytics: deeper real-data reports ---------- */
   async function renderAnalytics(){
-    renderRevenueBarChart('revenueBars30', 30);
+    // Analytics only counts orders that have shipped (or been delivered)
+    renderRevenueBarChart('revenueBars30', 30, SHIPPED_SALE);
 
     // Payment method split — from orders already loaded
     const pmCounts = {};
-    orders.forEach(o => {
+    orders.filter(SHIPPED_SALE).forEach(o => {
       const pm = o.payment_method || 'Unknown';
       pmCounts[pm] = (pmCounts[pm] || 0) + 1;
     });
@@ -775,7 +777,7 @@
         <div class="track"><div class="fill" style="width:${pct}%; background:var(--burgundy);"></div></div>
         <span class="cnt">${cnt}</span>
       </div>`;
-    }).join('') || `<p style="color:var(--charcoal-soft); font-size:13px;">No orders yet.</p>`;
+    }).join('') || `<p style="color:var(--charcoal-soft); font-size:13px;">No shipped orders yet.</p>`;
 
     // Top products by revenue — only items from shipped / delivered orders count as sold
     const { data: items, error } = await sb.from('order_items').select('order_id,product_name,price,qty');
