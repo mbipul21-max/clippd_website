@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLIPPD — Admin Dashboard</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+			background: #faf8f6;
+			color: #2d2d2d;
+			overflow-x: hidden;
+		}
+
+		.container {
+			display: flex;
+			height: 100vh;
+		}
+
+		.sidebar {
+			width: 250px;
+			background: #3d1a1a;
+			color: #f5f0ed;
+			padding: 20px;
+			overflow-y: auto;
+			position: fixed;
+			left: 0;
+			top: 0;
+			height: 100vh;
+		}
+
+		.sidebar h2 {
+			font-size: 18px;
+			margin-bottom: 30px;
+			color: #f5f0ed;
+		}
+
+		.sidebar .nav-item {
+			padding: 12px 16px;
+			margin-bottom: 8px;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 14px;
+			transition: all 0.3s;
+			border-left: 3px solid transparent;
+		}
+
+		.sidebar .nav-item:hover {
+			background: rgba(245, 240, 237, 0.1);
+		}
+
+		.sidebar .nav-item.active {
+			background: #6b2d2d;
+			border-left-color: #c77373;
+		}
+
+		.main-content {
+			margin-left: 250px;
+			flex: 1;
+			overflow-y: auto;
+			padding: 30px;
+		}
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 30px;
+		}
+
+		.header h1 {
+			font-size: 28px;
+			color: #3d1a1a;
+		}
+
+		.logout-btn {
+			padding: 10px 20px;
+			background: #c77373;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 14px;
+		}
+
+		.logout-btn:hover {
+			background: #a85a5a;
+		}
+
+		.section {
+			display: none;
+		}
+
+		.section.active {
+			display: block;
+		}
+
+		/* KPI Cards */
+		.kpi-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 20px;
+			margin-bottom: 30px;
+		}
+
+		.kpi-card {
+			background: white;
+			padding: 24px;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		}
+
+		.kpi-label {
+			font-size: 12px;
+			color: #8b7b7b;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			margin-bottom: 8px;
+		}
+
+		.kpi-value {
+			font-size: 28px;
+			font-weight: 600;
+			color: #3d1a1a;
+			margin-bottom: 8px;
+		}
+
+		.kpi-change {
+			font-size: 12px;
+			color: #6b9e3d;
+		}
+
+		/* Tables */
+		.table-container {
+			background: white;
+			padding: 24px;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			overflow-x: auto;
+		}
+
+		.table-container h3 {
+			margin-bottom: 16px;
+			font-size: 16px;
+			color: #3d1a1a;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 14px;
+		}
+
+		table thead {
+			background: #faf8f6;
+		}
+
+		table th {
+			padding: 12px;
+			text-align: left;
+			font-weight: 600;
+			color: #3d1a1a;
+			border-bottom: 2px solid #e0d8d6;
+		}
+
+		table td {
+			padding: 12px;
+			border-bottom: 1px solid #e0d8d6;
+		}
+
+		table tbody tr:hover {
+			background: #faf8f6;
+		}
+
+		/* Report Filters */
+		.filter-section {
+			background: white;
+			padding: 20px;
+			border-radius: 8px;
+			margin-bottom: 24px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		}
+
+		.filter-group {
+			display: flex;
+			gap: 16px;
+			flex-wrap: wrap;
+			align-items: center;
+		}
+
+		.filter-group label {
+			font-size: 14px;
+			color: #3d1a1a;
+			font-weight: 500;
+		}
+
+		.filter-group select,
+		.filter-group input {
+			padding: 8px 12px;
+			border: 1px solid #d9d1cf;
+			border-radius: 4px;
+			font-size: 14px;
+		}
+
+		.filter-group button {
+			padding: 8px 20px;
+			background: #c77373;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 14px;
+		}
+
+		.filter-group button:hover {
+			background: #a85a5a;
+		}
+
+		/* Chart Container */
+		.chart-container {
+			background: white;
+			padding: 24px;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			margin-bottom: 24px;
+		}
+
+		.chart-container h3 {
+			margin-bottom: 16px;
+			font-size: 16px;
+			color: #3d1a1a;
+		}
+
+		.chart-bar {
+			display: flex;
+			align-items: flex-end;
+			gap: 8px;
+			height: 300px;
+		}
+
+		.bar {
+			flex: 1;
+			background: #c77373;
+			border-radius: 4px 4px 0 0;
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			align-items: center;
+			cursor: pointer;
+			transition: all 0.3s;
+		}
+
+		.bar:hover {
+			background: #a85a5a;
+		}
+
+		.bar-label {
+			position: absolute;
+			bottom: -25px;
+			font-size: 12px;
+			color: #3d1a1a;
+			width: 100%;
+			text-align: center;
+		}
+
+		.bar-value {
+			color: white;
+			font-weight: 600;
+			margin-bottom: 8px;
+			font-size: 12px;
+		}
+
+		/* Loading States */
+		.loading {
+			text-align: center;
+			padding: 40px;
+			color: #8b7b7b;
+		}
+
+		.spinner {
+			border: 3px solid #e0d8d6;
+			border-top: 3px solid #c77373;
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 16px;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		/* Modal */
+		.modal {
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0,0,0,0.5);
+			animation: fadeIn 0.3s ease;
+		}
+
+		.modal.active {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.modal-content {
+			background-color: white;
+			padding: 30px;
+			border-radius: 8px;
+			width: 90%;
+			max-width: 600px;
+			max-height: 90vh;
+			overflow-y: auto;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+		}
+
+		.modal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 24px;
+			padding-bottom: 16px;
+			border-bottom: 2px solid #e0d8d6;
+		}
+
+		.modal-header h2 {
+			font-size: 20px;
+			color: #3d1a1a;
+			font-weight: 600;
+		}
+
+		.close-btn {
+			background: none;
+			border: none;
+			font-size: 28px;
+			cursor: pointer;
+			color: #8b7b7b;
+			line-height: 1;
+		}
+
+		.close-btn:hover {
+			color: #3d1a1a;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(400px);
+				opacity: 0;
+			}
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
+
+		.status-badge {
+			display: inline-block;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		/* Payment Method Badges */
+		.status-cod {
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		.status-prepaid {
+			background: #d1ecf1;
+			color: #0c5460;
+		}
+
+		.status-online {
+			background: #d1ecf1;
+			color: #0c5460;
+		}
+
+		/* Order Status Badges */
+		.status-pending {
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		.status-confirmed {
+			background: #d1ecf1;
+			color: #0c5460;
+		}
+
+		.status-shipped {
+			background: #cfe2ff;
+			color: #084298;
+		}
+
+		.status-delivered {
+			background: #d1e7dd;
+			color: #0f5132;
+		}
+
+		.status-returned {
+			background: #f8d7da;
+			color: #721c24;
+		}
+
+		.status-cancelled {
+			background: #f5f5f5;
+			color: #333;
+		}
+
+		.status-cancel {
+			background: #f5f5f5;
+			color: #333;
+		}
+
+		/* Responsive */
+		@media (max-width: 768px) {
+			.sidebar {
+				width: 100%;
+				height: auto;
+				position: relative;
+				margin-bottom: 20px;
+			}
+
+			.main-content {
+				margin-left: 0;
+			}
+
+			.kpi-cards {
+				grid-template-columns: 1fr;
+			}
+
+			.filter-group {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="sidebar">
+			<h2>CLIPPD</h2>
+			<div class="nav-item active" onclick="switchSection('overview')">📊 Overview</div>
+			<div class="nav-item" onclick="switchSection('orders')">📦 Orders</div>
+			<div class="nav-item" onclick="switchSection('reports')">📈 Reports</div>
+			<div class="nav-item" onclick="switchSection('analytics')">📉 Analytics</div>
+			<div style="margin-top: 40px; border-top: 1px solid rgba(245,240,237,0.2); padding-top: 20px;">
+				<div class="nav-item" onclick="logout()">🚪 Logout</div>
+			</div>
+		</div>
+
+		<div class="main-content">
+			<div class="header">
+				<h1>Admin Dashboard</h1>
+				<button class="logout-btn" onclick="logout()">Logout</button>
+			</div>
+
+			<!-- Overview Section -->
+			<div id="overview" class="section active">
+				<h2 style="margin-bottom: 24px; color: #3d1a1a;">Dashboard Overview</h2>
+				<div class="kpi-cards" id="kpiCards">
+					<div class="loading"><div class="spinner"></div>Loading KPIs...</div>
+				</div>
+			</div>
+
+			<!-- Reports Section -->
+			<div id="reports" class="section">
+				<h2 style="margin-bottom: 24px; color: #3d1a1a;">Sales Reports</h2>
+				
+				<div class="filter-section">
+					<div class="filter-group">
+						<label>Month:</label>
+						<input type="month" id="reportMonth" value="">
+						<button onclick="generateReport()">Generate Report</button>
+					</div>
+				</div>
+
+				<div id="reportContent">
+					<div class="loading"><div class="spinner"></div>Loading reports...</div>
+				</div>
+			</div>
+
+			<!-- Orders Section -->
+			<div id="orders" class="section" style="display:none;">
+				<h2 style="margin-bottom: 24px; color: #3d1a1a;">Recent Orders</h2>
+				
+				<div class="filter-section">
+					<div class="filter-group">
+						<label>Filter by Status:</label>
+						<select id="statusFilter" onchange="loadOrdersWithFilter()">
+							<option value="">All Orders</option>
+							<option value="pending">Pending</option>
+							<option value="confirmed">Confirmed</option>
+							<option value="shipped">Shipped</option>
+							<option value="delivered">Delivered</option>
+							<option value="returned">Returned</option>
+							<option value="cancelled">Cancelled</option>
+						</select>
+						<label style="margin-left: 20px;">Filter by Payment:</label>
+						<select id="paymentFilter" onchange="loadOrdersWithFilter()">
+							<option value="">All Methods</option>
+							<option value="COD">Cash on Delivery</option>
+							<option value="PREPAID">Prepaid</option>
+							<option value="Online">Online</option>
+						</select>
+						<button onclick="loadOrders()" style="margin-left: 20px;">Clear Filters</button>
+					</div>
+				</div>
+
+				<div id="ordersContent">
+					<div class="loading"><div class="spinner"></div>Loading orders...</div>
+				</div>
+			</div>
+
+			<!-- Analytics Section -->
+			<div id="analytics" class="section" style="display:none;">
+				<h2 style="margin-bottom: 24px; color: #3d1a1a;">Analytics</h2>
+				<div id="analyticsContent">
+					<div class="loading"><div class="spinner"></div>Loading analytics...</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="detailModal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Order Details</h2>
+				<button class="close-btn" onclick="closeModal()">&times;</button>
+			</div>
+			<div id="modalBody"></div>
+		</div>
+	</div>
+
+	<script>
+		// Supabase Configuration
+		const supabaseUrl = 'https://tghmxutqpbxrrtlarvmjx.supabase.co';
+		const supabaseAnonKey = 'sb_publishable_lr4xdh4MJQQLUA-ZTc4bfQ_I95yCHor';
+
+		// Initialize Supabase client
+		const { createClient } = window.supabase;
+		const sb = createClient(supabaseUrl, supabaseAnonKey);
+
+		// Auth State
+		let currentUser = null;
+
+		// Initialize
+		document.addEventListener('DOMContentLoaded', async () => {
+			await checkAuth();
+			setReportMonth();
+			await loadOverview();
+		});
+
+		// Auth Functions
+		async function checkAuth() {
+			const { data: { user } } = await sb.auth.getUser();
+			if (!user) {
+				window.location.href = 'login.html';
+			}
+			currentUser = user;
+		}
+
+		async function logout() {
+			await sb.auth.signOut();
+			window.location.href = 'login.html';
+		}
+
+		// Section Navigation
+		function switchSection(section) {
+			// Hide all sections
+			document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+			document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+			
+			// Show selected section
+			document.getElementById(section).classList.add('active');
+			event.target.classList.add('active');
+
+			// Load section data
+			if (section === 'reports') {
+				generateReport();
+			} else if (section === 'analytics') {
+				loadAnalytics();
+			} else if (section === 'orders') {
+				loadOrders();
+			}
+		}
+
+		// Set current month for report
+		function setReportMonth() {
+			const now = new Date();
+			const year = now.getFullYear();
+			const month = String(now.getMonth() + 1).padStart(2, '0');
+			document.getElementById('reportMonth').value = `${year}-${month}`;
+		}
+
+		// Load Overview KPIs
+		async function loadOverview() {
+			try {
+				const { data: orders, error } = await sb
+					.from('orders')
+					.select('*')
+					.order('created_at', { ascending: false });
+
+				if (error) throw error;
+
+				const currentMonth = new Date().getMonth();
+				const currentYear = new Date().getFullYear();
+
+				const monthOrders = orders.filter(o => {
+					const d = new Date(o.created_at);
+					return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+				});
+
+				const totalSales = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+				const monthSales = monthOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+				const codOrders = monthOrders.filter(o => o.payment_method === 'COD').length;
+				const cancelledOrders = monthOrders.filter(o => o.status === 'cancelled').length;
+
+				const kpiHtml = `
+					<div class="kpi-card">
+						<div class="kpi-label">Total Revenue</div>
+						<div class="kpi-value">₹${(totalSales || 0).toLocaleString()}</div>
+						<div class="kpi-change">All time</div>
+					</div>
+					<div class="kpi-card">
+						<div class="kpi-label">This Month Sales</div>
+						<div class="kpi-value">₹${(monthSales || 0).toLocaleString()}</div>
+						<div class="kpi-change">${monthOrders.length} orders</div>
+					</div>
+					<div class="kpi-card">
+						<div class="kpi-label">COD Orders</div>
+						<div class="kpi-value">${codOrders}</div>
+						<div class="kpi-change">Cash on Delivery</div>
+					</div>
+					<div class="kpi-card">
+						<div class="kpi-label">Cancelled Orders</div>
+						<div class="kpi-value">${cancelledOrders}</div>
+						<div class="kpi-change">This month</div>
+					</div>
+				`;
+
+				document.getElementById('kpiCards').innerHTML = kpiHtml;
+			} catch (error) {
+				console.error('Error loading overview:', error);
+				document.getElementById('kpiCards').innerHTML = '<div class="loading" style="color: red;">Error loading data</div>';
+			}
+		}
+
+		// Generate Sales Report
+		async function generateReport() {
+			try {
+				const monthStr = document.getElementById('reportMonth').value;
+				const [year, month] = monthStr.split('-');
+
+				const { data: orders, error } = await sb
+					.from('orders')
+					.select('*')
+					.gte('created_at', `${year}-${month}-01T00:00:00Z`)
+					.lt('created_at', `${year}-${parseInt(month) + 1}-01T00:00:00Z`);
+
+				if (error) throw error;
+
+				const codOrders = orders.filter(o => o.payment_method === 'COD');
+				const prepaidOrders = orders.filter(o => o.payment_method === 'PREPAID' || o.payment_method === 'Online');
+				const returnedOrders = orders.filter(o => o.status === 'returned');
+				const cancelledOrders = orders.filter(o => o.status === 'cancelled');
+
+				const totalSales = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+				const codSales = codOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+				const prepaidSales = prepaidOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+				let reportHtml = `
+					<div class="kpi-cards">
+						<div class="kpi-card">
+							<div class="kpi-label">Total Sales</div>
+							<div class="kpi-value">₹${totalSales.toLocaleString()}</div>
+							<div class="kpi-change">${orders.length} orders</div>
+						</div>
+						<div class="kpi-card">
+							<div class="kpi-label">COD Sales</div>
+							<div class="kpi-value">₹${codSales.toLocaleString()}</div>
+							<div class="kpi-change">${codOrders.length} orders</div>
+						</div>
+						<div class="kpi-card">
+							<div class="kpi-label">Prepaid Sales</div>
+							<div class="kpi-value">₹${prepaidSales.toLocaleString()}</div>
+							<div class="kpi-change">${prepaidOrders.length} orders</div>
+						</div>
+						<div class="kpi-card">
+							<div class="kpi-label">Returns</div>
+							<div class="kpi-value">${returnedOrders.length}</div>
+							<div class="kpi-change">₹${returnedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0).toLocaleString()}</div>
+						</div>
+						<div class="kpi-card">
+							<div class="kpi-label">Cancellations</div>
+							<div class="kpi-value">${cancelledOrders.length}</div>
+							<div class="kpi-change">₹${cancelledOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0).toLocaleString()}</div>
+						</div>
+					</div>
+
+					<div class="table-container">
+						<h3>Detailed Sales Report</h3>
+						<table>
+							<thead>
+								<tr>
+									<th>Order ID</th>
+									<th>Amount</th>
+									<th>Payment Method</th>
+									<th>Status</th>
+									<th>Date</th>
+								</tr>
+							</thead>
+							<tbody>
+								${orders.map(o => `
+									<tr onclick="showOrderDetail('${o.id}')">
+										<td><strong>#${o.id.substring(0, 8)}</strong></td>
+										<td>₹${(o.total_amount || 0).toLocaleString()}</td>
+										<td><span class="status-badge status-${(o.payment_method || 'UNKNOWN').toLowerCase()}">${o.payment_method || 'N/A'}</span></td>
+										<td><span class="status-badge status-${(o.status || 'unknown').toLowerCase()}">${o.status || 'unknown'}</span></td>
+										<td>${new Date(o.created_at).toLocaleDateString()}</td>
+									</tr>
+								`).join('')}
+							</tbody>
+						</table>
+					</div>
+
+					<div class="chart-container">
+						<h3>Sales by Payment Method</h3>
+						<div class="chart-bar">
+							<div class="bar" style="height: ${(codSales / totalSales * 100) || 10}%">
+								<span class="bar-value">₹${codSales.toLocaleString()}</span>
+								<span class="bar-label">COD</span>
+							</div>
+							<div class="bar" style="height: ${(prepaidSales / totalSales * 100) || 10}%">
+								<span class="bar-value">₹${prepaidSales.toLocaleString()}</span>
+								<span class="bar-label">Prepaid</span>
+							</div>
+						</div>
+					</div>
+				`;
+
+				document.getElementById('reportContent').innerHTML = reportHtml;
+			} catch (error) {
+				console.error('Error generating report:', error);
+				document.getElementById('reportContent').innerHTML = '<div class="loading" style="color: red;">Error generating report</div>';
+			}
+		}
+
+		// Store current orders globally for filtering
+		let allOrders = [];
+
+		// Load Orders
+		async function loadOrders() {
+			try {
+				const { data: orders, error } = await sb
+					.from('orders')
+					.select('*')
+					.order('created_at', { ascending: false })
+					.limit(100);
+
+				if (error) throw error;
+
+				allOrders = orders;
+				document.getElementById('statusFilter').value = '';
+				document.getElementById('paymentFilter').value = '';
+				renderOrdersTable(orders);
+			} catch (error) {
+				console.error('Error loading orders:', error);
+				document.getElementById('ordersContent').innerHTML = '<div class="loading" style="color: red;">Error loading orders</div>';
+			}
+		}
+
+		// Load Orders with Filters
+		function loadOrdersWithFilter() {
+			const statusFilter = document.getElementById('statusFilter').value;
+			const paymentFilter = document.getElementById('paymentFilter').value;
+
+			let filtered = allOrders;
+
+			if (statusFilter) {
+				filtered = filtered.filter(o => o.status === statusFilter);
+			}
+
+			if (paymentFilter) {
+				filtered = filtered.filter(o => o.payment_method === paymentFilter);
+			}
+
+			renderOrdersTable(filtered);
+		}
+
+		// Render Orders Table
+		function renderOrdersTable(orders) {
+			let html = `
+				<div class="table-container">
+					<p style="margin-bottom: 16px; color: #8b7b7b;">Showing ${orders.length} orders</p>
+					<table>
+						<thead>
+							<tr>
+								<th>Order ID</th>
+								<th>Customer</th>
+								<th>Amount</th>
+								<th>Payment Method</th>
+								<th>Status</th>
+								<th>Date</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							${orders.map(o => `
+								<tr>
+									<td><strong>#${o.id.substring(0, 8)}</strong></td>
+									<td>${o.customer_name || 'N/A'}</td>
+									<td>₹${(o.total_amount || 0).toLocaleString()}</td>
+									<td><span class="status-badge status-${(o.payment_method || 'UNKNOWN').toLowerCase()}">${o.payment_method || 'N/A'}</span></td>
+									<td><span class="status-badge status-${(o.status || 'unknown').toLowerCase()}">${o.status || 'unknown'}</span></td>
+									<td>${new Date(o.created_at).toLocaleDateString()}</td>
+									<td><button onclick="openOrderModal('${o.id}')" style="padding: 6px 12px; background: #c77373; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Update</button></td>
+								</tr>
+							`).join('')}
+						</tbody>
+					</table>
+				</div>
+			`;
+
+			document.getElementById('ordersContent').innerHTML = html;
+		}
+
+		// Open Order Modal for Status Update
+		async function openOrderModal(orderId) {
+			try {
+				const { data: order, error } = await sb
+					.from('orders')
+					.select('*')
+					.eq('id', orderId)
+					.single();
+
+				if (error) throw error;
+
+				const statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'returned', 'cancelled'];
+
+				const modalHtml = `
+					<div class="modal-header">
+						<h2>Order #${orderId.substring(0, 8)}</h2>
+						<button class="close-btn" onclick="closeModal()">&times;</button>
+					</div>
+					<div style="margin-bottom: 20px;">
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Customer</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">${order.customer_name || 'N/A'}</div>
+							</div>
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Email</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">${order.customer_email || 'N/A'}</div>
+							</div>
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Amount</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">₹${(order.total_amount || 0).toLocaleString()}</div>
+							</div>
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Payment Method</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">${order.payment_method || 'N/A'}</div>
+							</div>
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Current Status</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">${order.status || 'unknown'}</div>
+							</div>
+							<div>
+								<label style="font-size: 12px; color: #8b7b7b; text-transform: uppercase;">Date</label>
+								<div style="font-size: 16px; color: #3d1a1a; font-weight: 500;">${new Date(order.created_at).toLocaleDateString()}</div>
+							</div>
+						</div>
+
+						<div style="border-top: 1px solid #e0d8d6; padding-top: 20px;">
+							<label style="font-size: 14px; color: #3d1a1a; font-weight: 500; margin-bottom: 8px; display: block;">Update Status</label>
+							<select id="statusSelect" style="width: 100%; padding: 10px; border: 1px solid #d9d1cf; border-radius: 4px; font-size: 14px; margin-bottom: 16px;">
+								<option value="">-- Select New Status --</option>
+								${statuses.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+							</select>
+
+							<div style="display: flex; gap: 12px;">
+								<button onclick="updateOrderStatus('${orderId}')" style="flex: 1; padding: 12px; background: #c77373; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Update Status & Send Email</button>
+								<button onclick="closeModal()" style="flex: 1; padding: 12px; background: #e0d8d6; color: #3d1a1a; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Cancel</button>
+							</div>
+						</div>
+
+						<div style="border-top: 1px solid #e0d8d6; margin-top: 20px; padding-top: 20px;">
+							<h3 style="margin-bottom: 12px; font-size: 14px; color: #3d1a1a;">Order Items</h3>
+							<div style="background: #faf8f6; padding: 12px; border-radius: 4px;">
+								<p style="color: #8b7b7b; font-size: 13px;">${order.items_count || 1} item(s) in this order</p>
+								<p style="color: #8b7b7b; font-size: 13px; margin-top: 8px;">Total: <strong>₹${(order.total_amount || 0).toLocaleString()}</strong></p>
+							</div>
+						</div>
+					</div>
+				`;
+
+				document.getElementById('modalBody').innerHTML = modalHtml;
+				document.getElementById('detailModal').classList.add('active');
+				window.currentOrderId = orderId; // Store for update function
+			} catch (error) {
+				console.error('Error opening order:', error);
+				alert('Error loading order details');
+			}
+		}
+
+		// Update Order Status
+		async function updateOrderStatus(orderId) {
+			try {
+				const newStatus = document.getElementById('statusSelect').value;
+				
+				if (!newStatus) {
+					alert('Please select a status');
+					return;
+				}
+
+				// Get order details for email
+				const { data: order, error: fetchError } = await sb
+					.from('orders')
+					.select('*')
+					.eq('id', orderId)
+					.single();
+
+				if (fetchError) throw fetchError;
+
+				// Update status
+				const { error: updateError } = await sb
+					.from('orders')
+					.update({ status: newStatus })
+					.eq('id', orderId);
+
+				if (updateError) throw updateError;
+
+				// Show success message
+				showToast(`Order status updated to ${newStatus}!`);
+				
+				// Send email notification
+				sendStatusUpdateEmail(order, newStatus);
+
+				// Close modal and reload orders
+				closeModal();
+				loadOrders();
+			} catch (error) {
+				console.error('Error updating order:', error);
+				alert('Error updating order: ' + error.message);
+			}
+		}
+
+		// Send Status Update Email
+		function sendStatusUpdateEmail(order, newStatus) {
+			// This calls your Supabase Edge Function for sending emails
+			// The function will not block the status update if it fails
+			sb.functions.invoke('send-order-email', {
+				body: {
+					orderId: order.id,
+					customerEmail: order.customer_email,
+					customerName: order.customer_name,
+					event: 'status_update',
+					newStatus: newStatus,
+					orderAmount: order.total_amount
+				}
+			}).catch(err => {
+				console.error('Email notification failed:', err);
+				// Email failure doesn't affect the order status update
+			});
+		}
+
+		// Toast Notification
+		function showToast(message) {
+			const toast = document.createElement('div');
+			toast.textContent = message;
+			toast.style.cssText = `
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				background: #4caf50;
+				color: white;
+				padding: 16px 24px;
+				border-radius: 4px;
+				z-index: 10000;
+				animation: slideIn 0.3s ease;
+			`;
+			document.body.appendChild(toast);
+			setTimeout(() => toast.remove(), 3000);
+		}
+
+		// Load Analytics
+		async function loadAnalytics() {
+			try {
+				const { data: orders, error } = await sb
+					.from('orders')
+					.select('*')
+					.order('created_at', { ascending: false });
+
+				if (error) throw error;
+
+				// Daily sales data for last 30 days
+				const last30Days = {};
+				const today = new Date();
+				for (let i = 30; i >= 0; i--) {
+					const d = new Date(today);
+					d.setDate(d.getDate() - i);
+					const key = d.toISOString().split('T')[0];
+					last30Days[key] = 0;
+				}
+
+				orders.forEach(o => {
+					const date = o.created_at.split('T')[0];
+					if (last30Days.hasOwnProperty(date)) {
+						last30Days[date] += o.total_amount || 0;
+					}
+				});
+
+				const dates = Object.keys(last30Days);
+				const maxSales = Math.max(...Object.values(last30Days), 1);
+
+				let html = `
+					<div class="chart-container">
+						<h3>Last 30 Days Sales Trend</h3>
+						<div class="chart-bar">
+							${dates.map(date => {
+								const sales = last30Days[date];
+								const barHeight = (sales / maxSales * 100);
+								return `
+									<div class="bar" style="height: ${Math.max(barHeight, 5)}%">
+										<span class="bar-value">₹${Math.round(sales / 1000)}k</span>
+										<span class="bar-label">${new Date(date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</span>
+									</div>
+								`;
+							}).join('')}
+						</div>
+					</div>
+
+					<div class="table-container">
+						<h3>Top 10 Products by Revenue</h3>
+						<table>
+							<thead>
+								<tr>
+									<th>Product Name</th>
+									<th>Orders</th>
+									<th>Total Revenue</th>
+									<th>Avg Price</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td colspan="4" style="text-align: center; color: #8b7b7b;">Loading product data...</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				`;
+
+				document.getElementById('analyticsContent').innerHTML = html;
+			} catch (error) {
+				console.error('Error loading analytics:', error);
+				document.getElementById('analyticsContent').innerHTML = '<div class="loading" style="color: red;">Error loading analytics</div>';
+			}
+		}
+
+		// Modal Functions
+		function closeModal() {
+			document.getElementById('detailModal').classList.remove('active');
+			document.getElementById('modalBody').innerHTML = '';
+			window.currentOrderId = null;
+		}
+
+		// Supabase Client via CDN
+		const script = document.createElement('script');
+		script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+		script.onload = () => {
+			console.log('Supabase loaded');
+		};
+		document.head.appendChild(script);
+	</script>
+</body>
+</html>
