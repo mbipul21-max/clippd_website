@@ -355,8 +355,8 @@
           <div class="panel" style="margin-bottom:26px;">
             <h3>Top Products by Revenue</h3>
             <table class="report-table" id="topProductsTable">
-              <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
-              <tbody><tr><td colspan="3" style="color:var(--charcoal-soft);">Loading…</td></tr></tbody>
+              <thead><tr><th>Product</th><th>Orders</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+              <tbody><tr><td colspan="4" style="color:var(--charcoal-soft);">Loading…</td></tr></tbody>
             </table>
           </div>
         </section>
@@ -777,25 +777,35 @@
       </div>`;
     }).join('') || `<p style="color:var(--charcoal-soft); font-size:13px;">No orders yet.</p>`;
 
-    // Top products by revenue — needs a fresh query across ALL order_items
-    const { data: items, error } = await sb.from('order_items').select('product_name,price,qty');
+    // Top products by revenue — only items from shipped / delivered orders count as sold
+    const { data: items, error } = await sb.from('order_items').select('order_id,product_name,price,qty');
     const tbody = document.querySelector('#topProductsTable tbody');
     if(error){
       console.error(error);
-      tbody.innerHTML = `<tr><td colspan="3" style="color:var(--charcoal-soft);">Couldn't load product data.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--charcoal-soft);">Couldn't load product data.</td></tr>`;
       return;
     }
+    const soldOrderIds = new Set(orders.filter(SHIPPED_SALE).map(o => o.id));
     const byProduct = {};
+    const allOrderIds = new Set();
+    let totalUnits = 0, totalRevenue = 0;
     (items || []).forEach(it => {
+      if(!soldOrderIds.has(it.order_id)) return;
       const key = it.product_name || 'Unknown';
-      if(!byProduct[key]) byProduct[key] = { units: 0, revenue: 0 };
-      byProduct[key].units += Number(it.qty || 0);
-      byProduct[key].revenue += Number(it.price || 0) * Number(it.qty || 0);
+      if(!byProduct[key]) byProduct[key] = { orders: new Set(), units: 0, revenue: 0 };
+      const qty = Number(it.qty || 0), rev = Number(it.price || 0) * qty;
+      byProduct[key].orders.add(it.order_id);
+      byProduct[key].units += qty;
+      byProduct[key].revenue += rev;
+      allOrderIds.add(it.order_id);
+      totalUnits += qty;
+      totalRevenue += rev;
     });
     const top = Object.entries(byProduct).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10);
     tbody.innerHTML = top.length
-      ? top.map(([name, v]) => `<tr><td>${name}</td><td>${v.units}</td><td>₹${v.revenue.toLocaleString('en-IN')}</td></tr>`).join('')
-      : `<tr><td colspan="3" style="color:var(--charcoal-soft);">No product data yet.</td></tr>`;
+      ? top.map(([name, v]) => `<tr><td>${esc(name)}</td><td>${v.orders.size}</td><td>${v.units}</td><td>₹${v.revenue.toLocaleString('en-IN')}</td></tr>`).join('')
+        + `<tr style="font-weight:600; border-top:2px solid var(--line);"><td>Total (shipped &amp; delivered)</td><td>${allOrderIds.size}</td><td>${totalUnits}</td><td>₹${totalRevenue.toLocaleString('en-IN')}</td></tr>`
+      : `<tr><td colspan="4" style="color:var(--charcoal-soft);">No shipped orders yet. Products appear here once an order is marked Shipped.</td></tr>`;
   }
 
   function renderFilterTabs(){
@@ -994,6 +1004,9 @@
   // A row counts as a sale once it is paid for and not cancelled.
   const countsAsSale = o => !CANCELLED(o) && !UNPAID(o);
   const isCOD = o => /cod|cash/i.test(o.payment_method || '');
+  // "Sold" for product reporting = the order has actually left the warehouse
+  // (shipped or delivered). Placed / processing / cancelled / unpaid orders don't count.
+  const SHIPPED_SALE = o => o.status === 'shipped' || o.status === 'delivered';
 
   let allItems = null;        // order_items cache
   let itemsByOrder = {};
@@ -1482,7 +1495,7 @@
 
     // Units sold per product name, so inventory reads against real demand.
     const sold = {};
-    const saleIds = new Set(orders.filter(countsAsSale).map(o => o.id));
+    const saleIds = new Set(orders.filter(SHIPPED_SALE).map(o => o.id));
     allItems.forEach(it => {
       if(!saleIds.has(it.order_id)) return;
       const k = (it.product_name || '').trim().toLowerCase();
