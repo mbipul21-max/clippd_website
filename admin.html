@@ -787,21 +787,24 @@
       tbody.innerHTML = `<tr><td colspan="5" style="color:var(--charcoal-soft);">Couldn't load product data.</td></tr>`;
       return;
     }
-    // Orders / Order Value = every live order (placed, processing, shipped, delivered;
-    // cancelled and unpaid excluded). Units Sold / Revenue = shipped or delivered only.
-    const liveOrderIds = new Set(orders.filter(countsAsSale).map(o => o.id));
-    const shippedOrderIds = new Set(orders.filter(SHIPPED_SALE).map(o => o.id));
+    // Units Sold / Revenue = shipped or delivered orders only.
+    // Orders / Order Value count EVERY order, whatever its status (cancelled included).
+    const liveOrderIds = new Set(orders.map(o => String(o.id)));
+    const shippedOrderIds = new Set(orders.filter(SHIPPED_SALE).map(o => String(o.id)));
+    console.info('Analytics: ' + orders.length + ' orders, ' + (items || []).length + ' order items, statuses:',
+      orders.reduce((m, o) => (m[o.status] = (m[o.status] || 0) + 1, m), {}),
+      'sample item order_id:', (items || [])[0]?.order_id, 'sample order id:', orders[0]?.id);
     const byProduct = {};
     const T = { orders: new Set(), orderValue: 0, units: 0, revenue: 0 };
     (items || []).forEach(it => {
-      if(!liveOrderIds.has(it.order_id)) return;
+      if(!liveOrderIds.has(String(it.order_id))) return;
       const key = it.product_name || 'Unknown';
       if(!byProduct[key]) byProduct[key] = { orders: new Set(), orderValue: 0, units: 0, revenue: 0 };
       const row = byProduct[key];
       const qty = Number(it.qty || 0), val = Number(it.price || 0) * qty;
       row.orders.add(it.order_id);   row.orderValue += val;
       T.orders.add(it.order_id);     T.orderValue += val;
-      if(shippedOrderIds.has(it.order_id)){
+      if(shippedOrderIds.has(String(it.order_id))){
         row.units += qty;  row.revenue += val;
         T.units += qty;    T.revenue += val;
       }
@@ -813,7 +816,11 @@
     tbody.innerHTML = top.length
       ? top.map(([name, v]) => `<tr><td>${esc(name)}</td><td>${v.orders.size}</td><td>${money(v.orderValue)}</td><td>${v.units}</td><td>${money(v.revenue)}</td></tr>`).join('')
         + `<tr style="font-weight:600; border-top:2px solid var(--line);"><td>Total</td><td>${T.orders.size}</td><td>${money(T.orderValue)}</td><td>${T.units}</td><td>${money(T.revenue)}</td></tr>`
-      : `<tr><td colspan="5" style="color:var(--charcoal-soft);">No orders yet.</td></tr>`;
+      : `<tr><td colspan="5" style="color:var(--charcoal-soft);">${
+          (items || []).length
+            ? 'Found ' + items.length + ' order items, but none match an order id. Check that order_items.order_id equals orders.id.'
+            : (orders.length ? 'No order items could be read. Check the order_items RLS policy for admins.' : 'No orders yet.')
+        }</td></tr>`;
   }
 
   function renderFilterTabs(){
