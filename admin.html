@@ -355,8 +355,8 @@
           <div class="panel" style="margin-bottom:26px;">
             <h3>Top Products by Revenue</h3>
             <table class="report-table" id="topProductsTable">
-              <thead><tr><th>Product</th><th>Orders</th><th>Units Sold</th><th>Revenue</th></tr></thead>
-              <tbody><tr><td colspan="4" style="color:var(--charcoal-soft);">Loading…</td></tr></tbody>
+              <thead><tr><th>Product</th><th>Orders</th><th>Order Value</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+              <tbody><tr><td colspan="5" style="color:var(--charcoal-soft);">Loading…</td></tr></tbody>
             </table>
           </div>
         </section>
@@ -784,30 +784,36 @@
     const tbody = document.querySelector('#topProductsTable tbody');
     if(error){
       console.error(error);
-      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--charcoal-soft);">Couldn't load product data.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--charcoal-soft);">Couldn't load product data.</td></tr>`;
       return;
     }
-    const soldOrderIds = new Set(orders.filter(SHIPPED_SALE).map(o => o.id));
+    // Orders / Order Value = every live order (placed, processing, shipped, delivered;
+    // cancelled and unpaid excluded). Units Sold / Revenue = shipped or delivered only.
+    const liveOrderIds = new Set(orders.filter(countsAsSale).map(o => o.id));
+    const shippedOrderIds = new Set(orders.filter(SHIPPED_SALE).map(o => o.id));
     const byProduct = {};
-    const allOrderIds = new Set();
-    let totalUnits = 0, totalRevenue = 0;
+    const T = { orders: new Set(), orderValue: 0, units: 0, revenue: 0 };
     (items || []).forEach(it => {
-      if(!soldOrderIds.has(it.order_id)) return;
+      if(!liveOrderIds.has(it.order_id)) return;
       const key = it.product_name || 'Unknown';
-      if(!byProduct[key]) byProduct[key] = { orders: new Set(), units: 0, revenue: 0 };
-      const qty = Number(it.qty || 0), rev = Number(it.price || 0) * qty;
-      byProduct[key].orders.add(it.order_id);
-      byProduct[key].units += qty;
-      byProduct[key].revenue += rev;
-      allOrderIds.add(it.order_id);
-      totalUnits += qty;
-      totalRevenue += rev;
+      if(!byProduct[key]) byProduct[key] = { orders: new Set(), orderValue: 0, units: 0, revenue: 0 };
+      const row = byProduct[key];
+      const qty = Number(it.qty || 0), val = Number(it.price || 0) * qty;
+      row.orders.add(it.order_id);   row.orderValue += val;
+      T.orders.add(it.order_id);     T.orderValue += val;
+      if(shippedOrderIds.has(it.order_id)){
+        row.units += qty;  row.revenue += val;
+        T.units += qty;    T.revenue += val;
+      }
     });
-    const top = Object.entries(byProduct).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10);
+    const money = n => '₹' + n.toLocaleString('en-IN');
+    const top = Object.entries(byProduct)
+      .sort((a, b) => (b[1].revenue - a[1].revenue) || (b[1].orderValue - a[1].orderValue))
+      .slice(0, 10);
     tbody.innerHTML = top.length
-      ? top.map(([name, v]) => `<tr><td>${esc(name)}</td><td>${v.orders.size}</td><td>${v.units}</td><td>₹${v.revenue.toLocaleString('en-IN')}</td></tr>`).join('')
-        + `<tr style="font-weight:600; border-top:2px solid var(--line);"><td>Total (shipped &amp; delivered)</td><td>${allOrderIds.size}</td><td>${totalUnits}</td><td>₹${totalRevenue.toLocaleString('en-IN')}</td></tr>`
-      : `<tr><td colspan="4" style="color:var(--charcoal-soft);">No shipped orders yet. Products appear here once an order is marked Shipped.</td></tr>`;
+      ? top.map(([name, v]) => `<tr><td>${esc(name)}</td><td>${v.orders.size}</td><td>${money(v.orderValue)}</td><td>${v.units}</td><td>${money(v.revenue)}</td></tr>`).join('')
+        + `<tr style="font-weight:600; border-top:2px solid var(--line);"><td>Total</td><td>${T.orders.size}</td><td>${money(T.orderValue)}</td><td>${T.units}</td><td>${money(T.revenue)}</td></tr>`
+      : `<tr><td colspan="5" style="color:var(--charcoal-soft);">No orders yet.</td></tr>`;
   }
 
   function renderFilterTabs(){
