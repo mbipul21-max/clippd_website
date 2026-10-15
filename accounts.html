@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#762B3B"><title>Accounts</title><link rel="icon" id="fav" href="data:,">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--s:#4a1a25;--s2:#5e2231;--b:#762B3B;--bd:#5f2230;--i:#2b1a1e;--m:#7a6a6d;--l:#eadfdd;--bg:#faf5f4;--g:#1b9c5a;--r:#d03a2f;--pk:#f0b6c0}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -46,11 +46,34 @@ label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--m)}label i
 dialog{border:0;border-radius:8px;padding:0;width:min(440px,94vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(20,24,33,.5)}
 dialog form{display:grid;gap:12px;padding:20px}
 @media(max-width:800px){.app{grid-template-columns:1fr}aside{position:static;height:auto;display:flex;overflow-x:auto}.brand,.grp{display:none}.item{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;width:auto}.item[aria-current=true]{border-bottom-color:var(--pk)}.top,.page{padding-left:14px;padding-right:14px}.org{display:block}}
+
+#loginGate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#faf5f4,#f1e5e5)}
+.login-card{width:min(420px,100%);background:#fff;border:1px solid var(--l);border-radius:12px;padding:30px;box-shadow:0 18px 60px rgba(74,26,37,.12)}
+.login-card .brandmark{font:400 30px Georgia,serif;color:var(--b);margin-bottom:8px}
+.login-card h1{font-size:23px;margin:8px 0}
+.login-card p{color:var(--m);margin:8px 0 20px}
+.login-card form{display:grid;gap:12px}
+#loginError{display:none;color:#a32626;background:#fff0f0;border:1px solid #f0caca;border-radius:6px;padding:10px;margin-top:14px}
+#loginInfo{font-size:12px;color:var(--m);white-space:nowrap}
 </style></head><body>
-<div class="app"><aside id="side"></aside><div>
-<div class="top"><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
+<div id="loginGate">
+  <div class="login-card">
+    <div class="brandmark">CLIPPD</div>
+    <h1>Accounts Software</h1>
+    <p>Sign in with your authorized admin email to access accounting records.</p>
+    <div id="loginFormWrap">
+      <form id="loginEmailForm" onsubmit="return sendLoginCode(event)">
+        <label>Email address<input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email" required></label>
+        <button class="btn" type="submit">Send sign-in code</button>
+      </form>
+    </div>
+    <div id="loginError"></div>
+  </div>
+</div>
+<div id="accountsApp" hidden><div class="app"><aside id="side"></aside><div>
+<div class="top"><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><span id="loginInfo"></span><button class="btn g" id="logoutBtn" type="button" onclick="accountsSignOut()">Sign out</button><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
 <div class="page" id="view"></div></div></div>
-<datalist id="items"></datalist><datalist id="parties"></datalist>
+</div><datalist id="items"></datalist><datalist id="parties"></datalist>
 <dialog id="tdlg"><form id="tf" method="dialog"><h2 id="tT"></h2>
 <label>Date<input type="date" name="tdate" required></label>
 <label>Account<select name="tacct"></select></label>
@@ -423,5 +446,52 @@ $('#view').addEventListener('click',e=>{const t=e.target.closest('[data-x]');if(
  render()});
 $('#view').addEventListener('input',e=>{const t=e.target;if(!J||view!=='jform')return;if(t.dataset.j)J[t.dataset.j]=t.value;else if(t.dataset.f){J.lines[+t.dataset.i][t.dataset.f]=t.value;const d=jdif();$('#jdf').textContent=d?'Difference '+inr(Math.abs(d))+(d>0?' (debit higher)':' (credit higher)'):'Balanced'}});
 $('#view').addEventListener('change',e=>{const t=e.target;if(t.id==='logoFile'&&t.files[0]){const im=new Image,u=URL.createObjectURL(t.files[0]);im.onload=()=>{const k=Math.min(1,400/im.width,200/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.co.logo=c.toDataURL('image/png');S.co.lw=c.width;S.co.lh=c.height;save();msg='Logo saved.';render()};im.onerror=()=>alert('Could not read that image.');im.src=u;return}if(t.id==='pf'||t.id==='pt'){t.id==='pf'?pf=t.value:pt=t.value;render()}});
-load();recoverFileHandle().then(()=>{});render();loadItems().then(render);
+
+const AUTH_URL='https://tghmxutqpbxrtrlavmjx.supabase.co';
+const AUTH_KEY='sb_publishable_lr4xdh4MJQQLUA-ZTc4bfQ_I95yCHor';
+const authClient=window.supabase.createClient(AUTH_URL,AUTH_KEY);
+let loginEmail='';
+function loginError(t){const el=$('#loginError');el.textContent=t||'';el.style.display=t?'block':'none'}
+async function sendLoginCode(e){
+ e.preventDefault();loginError('');
+ loginEmail=$('#loginEmail').value.trim();
+ try{
+  const {error}=await authClient.auth.signInWithOtp({email:loginEmail,options:{shouldCreateUser:false}});
+  if(error)throw error;
+  $('#loginFormWrap').innerHTML=`<form id="loginOtpForm" onsubmit="return verifyLoginCode(event)"><label>Verification code<input id="loginOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code from email" required></label><button class="btn" type="submit">Verify & Sign in</button><button class="btn g" type="button" onclick="resetLoginForm()">Use another email</button></form>`;
+  loginError('A sign-in code was sent to '+loginEmail+'.');
+ }catch(err){loginError("Couldn't send a code. Use an existing authorized admin email and try again.");console.error(err)}
+ return false;
+}
+function resetLoginForm(){loginError('');$('#loginFormWrap').innerHTML='<form id="loginEmailForm" onsubmit="return sendLoginCode(event)"><label>Email address<input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email" required></label><button class="btn" type="submit">Send sign-in code</button></form>'}
+async function verifyLoginCode(e){
+ e.preventDefault();loginError('');
+ try{
+  const {error}=await authClient.auth.verifyOtp({email:loginEmail,token:$('#loginOtp').value.trim(),type:'email'});
+  if(error)throw error;
+  await checkAccountsAccess();
+ }catch(err){loginError("That code didn't work, or sign-in failed. Check the code and try again.");console.error(err)}
+ return false;
+}
+async function checkAccountsAccess(){
+ const {data:{session}}=await authClient.auth.getSession();
+ if(!session?.user)return;
+ const {data:profile,error}=await authClient.from('profiles').select('is_admin,email').eq('id',session.user.id).maybeSingle();
+ if(error||!profile?.is_admin){
+  loginError("This account isn't authorized to access the accounts software. Ask the administrator to enable is_admin for your profile.");
+  await authClient.auth.signOut();return;
+ }
+ $('#loginGate').style.display='none';$('#accountsApp').hidden=false;
+ $('#loginInfo').textContent=profile.email||session.user.email||'Signed in';
+ load();recoverFileHandle().then(()=>{});render();loadItems().then(render);
+}
+async function accountsSignOut(){
+ await authClient.auth.signOut();
+ $('#accountsApp').hidden=true;$('#loginGate').style.display='flex';resetLoginForm();
+}
+authClient.auth.onAuthStateChange((_event,session)=>{
+ if(session?.user && $('#accountsApp').hidden) setTimeout(()=>checkAccountsAccess(),0);
+});
+checkAccountsAccess();
+
 </script></body></html>
