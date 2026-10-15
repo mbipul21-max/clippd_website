@@ -397,16 +397,16 @@ const trs=(rows,c=2)=>rows.map(r=>`<tr>${r.map((x,i)=>`<td${i?' class="n"':''}>$
 function plv(){const B=tbal(pf,pt).filter(x=>'IX'.includes(GT[x.g])),nt=x=>GT[x.g]==='I'?x.cr-x.dr:x.dr-x.cr,
  sec=(gs,t)=>{const r=B.filter(x=>gs.includes(x.g)&&r2(nt(x))),s=sum(r,nt);return[`<tr><td colspan="2"><b>${t}</b></td></tr>`+trs(r.map(x=>['&nbsp;&nbsp;'+esc(x.l),inr(nt(x))]))+`<tr><td><i>Total ${t}</i></td><td class="n"><i>${inr(s)}</i></td></tr>`,s]},
  [a,sa]=sec(['Sales Accounts'],'Sales'),[b,sb]=sec(['Purchase Accounts','Direct Expenses'],'Cost of goods sold'),[c,sc]=sec(['Indirect Incomes'],'Other income'),[d,sd]=sec(['Indirect Expenses'],'Operating expenses'),gp=sa-sb,np=gp+sc-sd;
- return `<div class="ph"><h1>Profit and loss</h1></div>${bar(1)}<div class="tbl"><table><tbody>${a}${b}<tr><td><b>Gross profit</b></td><td class="n"><b>${inr(gp)}</b></td></tr>${c}${d}<tr><td><b>Net ${np<0?'loss':'profit'}</b></td><td class="n ${np<0?'loss':'gain'}"><b>${inr(np)}</b></td></tr></tbody></table></div><small>Purchases are expensed as bought. For closing stock, post a journal: debit Inventory, credit Purchases.</small>`}
+ return `<div class="ph"><h1>Profit and loss</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(1)}<div class="tbl"><table><tbody>${a}${b}<tr><td><b>Gross profit</b></td><td class="n"><b>${inr(gp)}</b></td></tr>${c}${d}<tr><td><b>Net ${np<0?'loss':'profit'}</b></td><td class="n ${np<0?'loss':'gain'}"><b>${inr(np)}</b></td></tr></tbody></table></div><small>Purchases are expensed as bought. For closing stock, post a journal: debit Inventory, credit Purchases.</small>`}
 function bsv(){const B=tbal('',pt),np=sum(B.filter(x=>GT[x.g]==='I'),x=>x.cr-x.dr)-sum(B.filter(x=>GT[x.g]==='X'),x=>x.dr-x.cr),
  side=(t,s)=>{const m={};B.filter(x=>GT[x.g]===t&&r2(x.dr-x.cr)).forEach(x=>{const k=/^Sundry/.test(x.g)?x.g:x.l;m[k]=(m[k]||0)+s*(x.dr-x.cr)});return Object.entries(m)},
  A=side('A',1),L=side('L',-1),E=[...side('E',-1),['Net profit to date',np]],ta=sum(A,x=>x[1]),tl=sum(L,x=>x[1])+sum(E,x=>x[1]),
  blk=(t,r,s)=>`<tr><td colspan="2"><b>${t}</b></td></tr>`+trs(r.map(x=>['&nbsp;&nbsp;'+esc(x[0]),inr(x[1])]))+`<tr><td><b>Total ${t}</b></td><td class="n"><b>${inr(s)}</b></td></tr>`;
- return `<div class="ph"><h1>Balance sheet</h1></div>${bar(0)}<div class="tbl"><table><tbody>${blk('Assets',A,ta)}${blk('Liabilities',L,sum(L,x=>x[1]))}${blk('Equity',E,sum(E,x=>x[1]))}<tr><td><b>Liabilities + equity</b></td><td class="n"><b>${inr(tl)}</b></td></tr></tbody></table></div>${r2(ta-tl)?`<div class="msg">Assets and liabilities differ by ${inr(ta-tl)}. Check your journals.</div>`:''}`}
+ return `<div class="ph"><h1>Balance sheet</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table><tbody>${blk('Assets',A,ta)}${blk('Liabilities',L,sum(L,x=>x[1]))}${blk('Equity',E,sum(E,x=>x[1]))}<tr><td><b>Liabilities + equity</b></td><td class="n"><b>${inr(tl)}</b></td></tr></tbody></table></div>${r2(ta-tl)?`<div class="msg">Assets and liabilities differ by ${inr(ta-tl)}. Check your journals.</div>`:''}`}
 function tb(){const B=tbal('',pt).filter(x=>r2(x.dr-x.cr)).sort((a,b)=>a.g.localeCompare(b.g)||a.l.localeCompare(b.l));let d=0,c=0;
  return `<div class="ph"><h1>Trial balance</h1></div>${bar(0)}<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Debit</th><th class="n">Credit</th></tr></thead><tbody>${B.map(x=>{const n=x.dr-x.cr;n>0?d+=n:c-=n;return `<tr><td>${esc(x.l)}</td><td>${esc(x.g)}</td><td class="n">${n>0?inr(n):''}</td><td class="n">${n<0?inr(-n):''}</td></tr>`}).join('')}</tbody><tfoot><tr><td colspan="2"><b>Total</b></td><td class="n"><b>${inr(d)}</b></td><td class="n"><b>${inr(c)}</b></td></tr></tfoot></table></div>`}
 function led(){const BB=tbal('',pt),B=[...BB,...Object.entries(masters()).filter(([n])=>!BB.some(x=>x.l===n)).map(([l,g])=>({l,g,dr:0,cr:0}))],k=LK==='c'?'Sundry Debtors':LK==='v'?'Sundry Creditors':0,chip=(x,t)=>`<button class="chip" data-x="lk" data-v="${x}" aria-pressed="${LK===x}">${t}</button>`;
- let h=`<div class="ph"><h1>Ledgers</h1><button class="btn g" data-x="lg">Add ledger</button></div><div class="chips">${chip('c','Customers')}${chip('v','Vendors')}${chip('a','All ledgers')}</div>`;
+ let h=`<div class="ph"><h1>Ledgers</h1><div class="tools"><button class="btn g" data-x="pdfReport">Download PDF</button><button class="btn g" data-x="lg">Add ledger</button></div></div><div class="chips">${chip('c','Customers')}${chip('v','Vendors')}${chip('a','All ledgers')}</div>`;
  if(LN){let b=0;const rows=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN&&v.date<=pt).map(l=>({v,l})));
   return h+`<div class="ph"><h2>${esc(LN)}</h2><button class="btn g" data-x="lb">Back</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="n">Debit</th><th class="n">Credit</th><th class="n">Balance</th></tr></thead><tbody>${rows.map(({v,l})=>{b+=l.dr-l.cr;return `<tr><td>${v.date}</td><td>${v.type}</td><td>${esc(v.no)}</td><td>${esc(v.narr)}</td><td class="n">${l.dr?inr(l.dr):''}</td><td class="n">${l.cr?inr(l.cr):''}</td><td class="n">${sgn(b)}</td></tr>`}).join('')||'<tr><td colspan="7">No entries.</td></tr>'}</tbody></table></div>`}
  return h+bar(0)+`<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Closing balance</th></tr></thead><tbody>${B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>`<tr><td><button class="lnk" data-x="ln" data-v="${esc(x.l)}">${esc(x.l)}</button></td><td>${esc(x.g)}</td><td class="n">${sgn(x.dr-x.cr)}</td></tr>`).join('')||'<tr><td colspan="3">Nothing here yet.</td></tr>'}</tbody></table></div>`}
@@ -437,7 +437,35 @@ function xport(k){const M=masters(),V=vouch(),d=today(),P=(g)=>/^Sundry/.test(g)
 function xp(){const b=(k,t,s)=>`<tr><td><b>${t}</b><br><small>${s}</small></td><td><button class="btn g" data-x="ex" data-v="${k}">Download</button></td></tr>`;
  return `<div class="ph"><h1>Export for Tally and Zoho Books</h1></div><div class="tbl"><table><tbody>${b('tm','Tally: ledger masters (XML)','Import first: Tally Prime, Import Data, Masters.')+b('tv','Tally: all vouchers (XML)','Import second. Sales, purchases, receipts, payments, contra and journals.')+b('zc','Zoho Books: chart of accounts (CSV)','Settings, Import, Chart of Accounts. Customers and vendors are in the contacts file.')+b('zp','Zoho Books: customers and vendors (CSV)','Import contacts before the journals.')+b('zj','Zoho Books: journals (CSV)','Every voucher as a manual journal, with the contact on receivable and payable lines.')+b('db','Day book (CSV)','Plain debit and credit lines. Opens in Excel and works with most software.')}</tbody></table></div><small>For a full copy of your data, use Settings, Download backup. Everything is saved in this browser only.</small>`}
 
+function downloadReportPDF(){
+ if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library did not load. Check your internet connection and try again.');return}
+ const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+ const title=({pl:'Profit and Loss',bs:'Balance Sheet',led:LN?('Ledger: '+LN):'Ledgers'})[view]||'Accounting Report';
+ const margin=14,pageW=182;let y=18;
+ doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text(String(S.co.name||'CLIPPD'),margin,y);y+=8;
+ doc.setFontSize(13);doc.text(title,margin,y);y+=7;
+ doc.setFont('helvetica','normal');doc.setFontSize(9);
+ const period=view==='pl'?`Period: ${pf||'Beginning'} to ${pt||today()}`:`As on: ${pt||today()}`;
+ doc.text(period,margin,y);doc.text('Generated: '+today(),pageW+margin,y,{align:'right'});y+=8;
+ const table=document.querySelector('#view .tbl table');
+ if(!table){doc.text('No report rows available.',margin,y)} else {
+  const rows=[...table.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>(c.innerText||'').replace(/\s+/g,' ').trim()).filter((v,i,a)=>true)).filter(r=>r.some(Boolean));
+  const usable=pageW, gap=4, widths=rows.reduce((max,r)=>Math.max(max,r.length),0);
+  rows.forEach((r,idx)=>{
+   const line=r.map(v=>v.replace(/\s+/g,' ')).join('   |   ');
+   const wrapped=doc.splitTextToSize(line,usable);
+   const height=wrapped.length*4.5+2;
+   if(y+height>280){doc.addPage();y=18;}
+   if(idx===0 && table.querySelector('thead'))doc.setFont('helvetica','bold');else doc.setFont('helvetica','normal');
+   doc.text(wrapped,margin,y);y+=height;
+   doc.setDrawColor(225,215,215);doc.line(margin,y-1,pageW+margin,y-1);
+  });
+ }
+ const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text(`CLIPPD Accounts Software  •  Page ${i} of ${pages}`,margin,290)}
+ const safe=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');doc.save(`${safe||'accounting-report'}-${today()}.pdf`)
+}
 $('#view').addEventListener('click',e=>{const t=e.target.closest('[data-x]');if(!t)return;const k=t.dataset.x,v=t.dataset.v;
+ if(k==='pdfReport'){downloadReportPDF();return;}
  if(k==='logoDel'){delete S.co.logo;delete S.co.lw;delete S.co.lh;save()}else if(k==='newExpenseAccount'){addExpenseAccount();return}else if(k==='lk'){LK=v;LN=null}else if(k==='ln')LN=v;else if(k==='lb')LN=null;else if(k==='lg'){addLg();return}
  else if(k==='jn')return openJ();else if(k==='je')return openJ(v);
  else if(k==='jd'){if(confirm('Delete this journal?')){S.jv=S.jv.filter(x=>x.id!==v);save()}}
