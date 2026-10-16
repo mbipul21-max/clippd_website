@@ -5,48 +5,56 @@
 <style>
 :root{--ivory:#F8F5EE;--ivory-deep:#EEE7D9;--card:#FFFDFC;--charcoal:#1D1A17;--charcoal-soft:#655D53;--burgundy:#762B3B;--brass:#A07C45;--sage:#5B7A5B;--brick:#8C4A3E;--line:#D8CCB7;--shadow:0 22px 55px -28px rgba(29,26,23,.30);--s:var(--charcoal);--s2:#302923;--b:var(--charcoal);--bd:var(--burgundy);--i:var(--charcoal);--m:var(--charcoal-soft);--l:var(--line);--bg:var(--ivory);--g:var(--sage);--r:var(--brick);--pk:var(--brass)}
 *{box-sizing:border-box}[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--i);font:14px/1.5 'Manrope',sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
-.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-aside{background:var(--s);color:#F8F5EE;position:sticky;top:0;height:100vh;overflow:auto}
-.brand{padding:20px 20px 16px;background:#1D1A17;border-bottom:3px solid #A07C45;color:#fff;font:700 27px/1 'Manrope',sans-serif;letter-spacing:.06em}.brand small{color:#A07C45;font:500 8px/1.2 'Manrope',sans-serif;letter-spacing:.32em;margin-top:8px}
-.grp{padding:14px 20px 4px;font-size:12px;color:#A07C45;font-weight:600}
-.item{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;color:inherit;padding:8px 20px 8px 30px;font:inherit;cursor:pointer}
-.item:hover,.item[aria-current=true]{background:var(--s2)}
-.item[aria-current=true]{color:#fff;border-left-color:var(--pk);font-weight:600}
-.top{height:54px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:4}
-.top input{width:min(300px,100%);padding:7px 12px;border:1px solid var(--l);border-radius:6px;background:var(--bg)}
-.sp{flex:1}.org{display:none;font:700 22px 'Manrope',sans-serif;letter-spacing:.03em;color:var(--b)}
-.page{padding:20px 24px 60px}
-.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-h1,h2,h3{font-family:'Fraunces',serif}h1{font-size:20px;margin:0;font-weight:600}h2{font-size:14px;margin:0 0 10px}
-button,input,select,textarea{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--b);outline-offset:2px}
-.btn{background:var(--b);color:#fff;border:0;border-radius:5px;padding:7px 14px;cursor:pointer;font-weight:600}.btn:hover{background:var(--bd)}
-.btn.g{background:#fff;color:var(--i);border:1px solid var(--l);font-weight:500}
-.lnk{background:none;border:0;color:var(--b);cursor:pointer;padding:0 8px 0 0;font-size:13px}.lnk:hover{text-decoration:underline}
-.panel{background:#fff;border:1px solid var(--l);border-radius:6px;padding:16px 18px;margin-bottom:16px}
-.row{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.row .panel{margin:0}.row{margin-bottom:16px}
-.big{font-size:24px;font-weight:600;margin-bottom:8px}
-.bar{height:8px;border-radius:4px;background:#EEE7D9;overflow:hidden;display:flex;margin-bottom:12px}.bar i{display:block}
+body{margin:0;background:var(--ivory);color:var(--charcoal);font:14px/1.5 'Manrope',sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2,h3{font-family:'Fraunces',serif}h1{font-size:26px;margin:0;font-weight:600;color:var(--charcoal)}h2{font-size:15px;margin:0 0 10px;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.app{display:flex;min-height:100vh}.app>div{flex:1;min-width:0}
+aside{width:230px;flex-shrink:0;background:var(--charcoal);color:var(--ivory);position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column;padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;padding:0 20px 20px;margin-bottom:8px;border-bottom:1px solid rgba(248,245,238,.12)}
+.brand img{height:34px;width:auto;max-width:90px;object-fit:contain}
+.brand span{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.06em;opacity:.85}
+.grp{padding:16px 20px 4px;font:700 10px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.item{display:block;width:calc(100% - 24px);margin:2px 12px;text-align:left;background:none;border:0;border-radius:8px;color:rgba(248,245,238,.75);padding:10px 12px;font-weight:600;font-size:14px;cursor:pointer}
+.item:hover{background:rgba(248,245,238,.08);color:var(--ivory)}
+.item[aria-current=true]{background:var(--burgundy);color:var(--ivory)}
+.top{position:sticky;top:0;z-index:10;background:var(--ivory);border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top input{width:min(300px,100%);padding:9px 14px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:13px}
+.sp{flex:1}
+.org{display:flex;align-items:center;gap:12px}.org img{height:36px;width:auto;max-width:110px;object-fit:contain}.org .sep{color:var(--line)}.org .sec{font-size:14px;color:var(--charcoal-soft)}
+.page{padding:24px 28px 80px;max-width:1280px;margin:0 auto}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--charcoal);color:var(--ivory);border:0;border-radius:8px;padding:10px 18px;cursor:pointer;font-weight:600;font-size:14px;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 26px -14px rgba(29,26,23,.55)}
+.btn.g{background:transparent;color:var(--charcoal);border:1px solid var(--line);box-shadow:none}.btn.g:hover{border-color:var(--charcoal);transform:none}
+.btn:disabled{opacity:.55;cursor:default;transform:none;box-shadow:none}
+.lnk{background:none;border:0;color:var(--burgundy);cursor:pointer;padding:0 10px 0 0;font-size:13px;font-weight:600}.lnk:hover{text-decoration:underline}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+.row{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:16px}.row .panel{margin:0}
+.big{font-family:'Fraunces',serif;font-size:28px;font-weight:600;margin-bottom:8px}
+.bar{height:8px;border-radius:999px;background:var(--ivory-deep);overflow:hidden;display:flex;margin-bottom:12px}.bar i{display:block}
 small{color:var(--m);display:block;font-size:12px}
 .gain{color:var(--g)}.loss{color:var(--r)}.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tbl{overflow-x:auto;background:#fff;border:1px solid var(--l);border-radius:6px;margin-bottom:12px}
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:14px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--l);white-space:nowrap}
-th{background:#EEE7D9;font-size:12px;font-weight:600;color:var(--m)}
-tr:last-child td{border-bottom:0}.n,th.n{text-align:right}
-.s-paid{color:var(--g);font-weight:600}.s-overdue{color:var(--r);font-weight:600}.s-cancelled{color:var(--m);font-weight:600;text-decoration:line-through}.s-due{color:var(--b);font-weight:600}
-.empty{padding:34px;text-align:center;color:var(--m);background:#fff;border:1px dashed var(--l);border-radius:6px}
-.msg{background:#EEE7D9;border:1px solid #D8CCB7;border-radius:6px;padding:10px 14px;margin-bottom:14px}
-input,select,textarea{padding:7px 10px;border:1px solid var(--l);border-radius:5px;background:#fff;max-width:100%}
-td input,td select{width:100%;min-width:60px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--charcoal-soft);background:var(--card)}
+tbody tr:hover{background:var(--ivory-deep)}tr:last-child td{border-bottom:0}tfoot td{font-weight:700;border-top:1px solid var(--line)}.n,th.n{text-align:right}
+.s-paid{color:var(--g);font-weight:600}.s-overdue{color:var(--r);font-weight:600}.s-cancelled{color:var(--m);font-weight:600;text-decoration:line-through}.s-due{color:var(--burgundy);font-weight:600}
+.empty{padding:60px 20px;text-align:center;color:var(--m);background:var(--card);border:1px dashed var(--line);border-radius:10px}
+.msg{display:flex;gap:8px;background:var(--ivory-deep);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:13px;color:var(--charcoal-soft)}
+input,select,textarea{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--ivory);max-width:100%}
+td input,td select{width:100%;min-width:60px;padding:7px 10px}
 label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--m)}label input,label select,label textarea{font-weight:400;font-size:14px;color:var(--i)}
 .fg{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:16px}
-.tot{margin-left:auto;width:min(320px,100%);display:grid;gap:6px;margin-bottom:14px}.tot div{display:flex;justify-content:space-between}.tot .t{font-size:16px;font-weight:700;border-top:1px solid var(--l);padding-top:6px}
+.tot{margin-left:auto;width:min(320px,100%);display:grid;gap:6px;margin-bottom:14px}.tot div{display:flex;justify-content:space-between}.tot .t{font-size:16px;font-weight:700;border-top:1px solid var(--line);padding-top:6px}
 .chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--i);font-weight:400}.chk input{width:auto}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.chip{background:#fff;border:1px solid var(--l);border-radius:6px;padding:8px 14px;cursor:pointer;text-align:left}.chip[aria-pressed=true]{border-color:var(--b);box-shadow:0 0 0 1px var(--b)}.top a{text-decoration:none;white-space:nowrap}
-dialog{border:0;border-radius:8px;padding:0;width:min(440px,94vw);box-shadow:0 10px 40px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(20,24,33,.5)}
-dialog form{display:grid;gap:12px;padding:20px}
-.export-wrap{position:relative;display:inline-flex}.export-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:10;min-width:170px;background:#fff;border:1px solid var(--l);border-radius:6px;box-shadow:0 8px 24px rgba(50,24,39,.16);padding:5px}.export-menu button{display:block;width:100%;text-align:left;background:#fff;border:0;padding:9px 12px;cursor:pointer;border-radius:4px}.export-menu button:hover{background:var(--bg);color:var(--b)}\n@media(max-width:800px){.app{grid-template-columns:1fr}aside{position:static;height:auto;display:flex;overflow-x:auto}.brand,.grp{display:none}.item{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;width:auto}.item[aria-current=true]{border-bottom-color:#A07C45}.top,.page{padding-left:14px;padding-right:14px}.org{display:block}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.chip{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer;text-align:left}.chip[aria-pressed=true]{border-color:var(--burgundy);box-shadow:0 0 0 1px var(--burgundy)}.top a{text-decoration:none;white-space:nowrap}
+.rbar{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin-bottom:18px}
+.rbar label{min-width:150px}.rbar small{align-self:center;max-width:320px}
+dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);background:var(--card);box-shadow:0 22px 55px -20px rgba(29,26,23,.45)}dialog::backdrop{background:rgba(29,26,23,.4)}
+dialog form{display:grid;gap:12px;padding:22px}
+.export-wrap{position:relative;display:inline-flex}.export-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:10;min-width:190px;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:5px}.export-menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:9px 12px;cursor:pointer;border-radius:6px}.export-menu button:hover{background:var(--ivory-deep)}
+@media(max-width:800px){.app{flex-direction:column}aside{width:100%;position:static;height:auto;flex-direction:row;align-items:center;padding:12px 14px;overflow-x:auto}.brand,.grp{display:none}.item{width:auto;white-space:nowrap;margin:0 2px}.top,.page{padding-left:16px;padding-right:16px}}
 
 #loginGate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ivory)}
 .login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px 32px;box-shadow:var(--shadow)}
@@ -99,7 +107,7 @@ let S=DEF(),view='dash',q='',fs='all',range='all',acct='bank',D=null,X=null,T=nu
 const $=s=>document.querySelector(s);
 const inr=n=>'₹'+(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const today=()=>new Date().toISOString().slice(0,10),ym=d=>d.slice(0,7),sum=(a,f)=>a.reduce((t,e)=>t+f(e),0);
+const ld=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),today=()=>ld(new Date()),ym=d=>d.slice(0,7),sum=(a,f)=>a.reduce((t,e)=>t+f(e),0);
 const lines=e=>e.lines||[{item:e.cat||e.desc||'Item',qty:1,rate:e.amt||0,gst:e.gst||0}];
 const lt=l=>l.incl?l.qty*l.rate/(1+l.gst/100):l.qty*l.rate,amt=e=>sum(lines(e),lt),tax=e=>sum(lines(e),l=>l.incl?l.qty*l.rate-lt(l):lt(l)*l.gst/100),tot=e=>amt(e)+tax(e)+(+e.ship||0)+(+e.cod||0);
 const st=e=>e.cancelled?'Cancelled':e.paid?'Paid':e.due<today()?'Overdue':'Due';
@@ -196,7 +204,7 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  let y=ty+7.6;
  L.forEach((l,i)=>{const u=unit(l);if(y>235){doc.addPage();y=20}if(i%2)fill([247,245,237],15.5,y,179,7);
   T(doc.splitTextToSize(cl(l.item),72)[0],19,y+4.8,'helvetica','normal',9.5,K);T(l.hsn||'-',96,y+4.8,'courier','normal',8,G);T(l.qty,128,y+4.8,'courier','normal',8,[120,120,120],{align:'right'});T(rs(u),160,y+4.8,'courier','normal',8,[120,120,120],{align:'right'});T(rs(u*l.qty),190.9,y+4.8,'courier','normal',8,K,{align:'right'});y+=7});
- y+=5;doc.setDrawColor(216,210,196);doc.setLineWidth(.2);doc.line(15.5,y,194.5,y);y+=8;
+ y+=5;if(y>205){doc.addPage();y=20}doc.setDrawColor(216,210,196);doc.setLineWidth(.2);doc.line(15.5,y,194.5,y);y+=8;
  const sh=+e.ship||0,cd=+e.cod||0,tx=tax(e),rt=[...new Set(L.map(l=>+l.gst))],one=rt.length===1?rt[0]:null,lb=(n,d)=>n+(one!=null?' @ '+(one/d)+'%':'');
  const R=(k,v)=>{T(k,158,y,'helvetica','normal',9.5,K,{align:'right'});T(v,190.9,y,'courier','normal',8.5,[110,110,110],{align:'right'});y+=5.6};
  R('Subtotal (incl. GST)',rs(sum(L,l=>unit(l)*l.qty)));R('Taxable value',rs(amt(e)));
@@ -213,7 +221,7 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  doc.line(15.5,y,194.5,y);const tt=sum(gs,g=>g.t);row(intra?['Total',rs(tt),'',rs(tx/2),'',rs(tx/2),rs(tx)]:['Total',rs(tt),'',rs(tx),rs(tx)],1,y+4.5);y+=14;
  if(y>225){doc.addPage();y=20}
  T('TERMS & CONDITIONS',15.5,y,'courier','normal',6.5,GD);doc.setDrawColor(...GD);doc.line(15.5,y+1.8,194.5,y+1.8);y+=7;
- String(c.terms||'').split('\n').filter(Boolean).forEach(t=>{doc.splitTextToSize(cl(t),168).forEach((x,j)=>{if(!j){doc.setFillColor(...GD);doc.circle(17,y-.9,.35,'F')}T(x,20,y,'helvetica','normal',7.5,G);y+=4.2});y+=.6});
+ String(c.terms||'').split('\n').filter(Boolean).forEach(t=>{doc.splitTextToSize(cl(t),168).forEach((x,j)=>{if(y>256){doc.addPage();y=20}if(!j){doc.setFillColor(...GD);doc.circle(17,y-.9,.35,'F')}T(x,20,y,'helvetica','normal',7.5,G);y+=4.2});y+=.6});
  for(let p=1;p<=doc.getNumberOfPages();p++){doc.setPage(p);doc.setDrawColor(...GD);doc.setLineWidth(.35);doc.line(15.5,263.5,194.5,263.5);
   T('Thank you for choosing '+c.name+'.',15.5,271,'times','italic',12.5,W);T('This is a computer-generated invoice and does not require a signature.',15.5,277,'helvetica','normal',8,G);T(c.web,194.5,277,'courier','normal',8,GD,{align:'right'})}
  doc.save(String(e.no).replace(/[\/\\]/g,'-')+'.pdf');return true}
@@ -225,8 +233,8 @@ function dash(){const mo=stats(recs().filter(e=>ym(e.date)===today().slice(0,7))
  <div class="row"><div class="panel"><h2>Cash and bank</h2>${S.banks.map(a=>`<div class="tools" style="justify-content:space-between"><span>${esc(a.name)}</span><b>${inr(bal(a))}</b></div>`).join('')}</div>
  <div class="panel"><h2>This month</h2><div class="tools" style="gap:30px"><div><small>Sales</small><b>${inr(mo.inc)}</b></div><div><small>Purchases + expenses</small><b>${inr(mo.exp)}</b></div><div><small>Margin</small><b class="${mo.inc>=mo.exp?'gain':'loss'}">${inr(mo.inc-mo.exp)}</b></div></div></div></div>`}
 
-function list(type){const sale=type==='sale',a=S.entries.filter(e=>e.type===type&&(!q||(e.party+e.no+(e.oid||'')+(e.phone||'')+(e.email||'')+lines(e).map(l=>l.item).join()).toLowerCase().includes(q.toLowerCase()))&&(fs==='all'||(fs==='paid'?e.paid:fs==='overdue'?st(e)==='Overdue':!e.paid&&!e.cancelled))).sort((x,y)=>y.date.localeCompare(x.date)||y.no.localeCompare(x.no));
- return `<div class="ph"><h1>${sale?'Invoices':'Purchase bills'}</h1><div class="tools"><select id="fs" aria-label="Filter"><option value="all">All</option><option value="unpaid">Unpaid</option><option value="overdue">Overdue</option><option value="paid">Paid</option></select><button class="btn" data-new="${type}">+ New</button></div></div>`+
+function list(type){const sale=type==='sale',a=S.entries.filter(e=>e.type===type&&inR(e.date)&&(!q||(e.party+e.no+(e.oid||'')+(e.phone||'')+(e.email||'')+lines(e).map(l=>l.item).join()).toLowerCase().includes(q.toLowerCase()))&&(fs==='all'||(fs==='paid'?e.paid:fs==='overdue'?st(e)==='Overdue':!e.paid&&!e.cancelled))).sort((x,y)=>y.date.localeCompare(x.date)||y.no.localeCompare(x.no));
+ return `<div class="ph"><h1>${sale?'Invoices':'Purchase bills'}</h1><div class="tools"><select id="fs" aria-label="Filter"><option value="all">All</option><option value="unpaid">Unpaid</option><option value="overdue">Overdue</option><option value="paid">Paid</option></select><button class="btn g" data-x="pdfReport">PDF</button><button class="btn" data-new="${type}">+ New</button></div></div>${rbar()}`+
  (a.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>${sale?'Invoice':'Bill'} no.</th><th>${sale?'Customer':'Vendor'}</th><th>Items</th><th>Due</th><th>Status</th><th class="n">Amount</th><th class="n">Balance due</th><th></th></tr></thead><tbody>${a.map(e=>{const L=lines(e);return `<tr><td>${e.date}</td><td><button class="lnk" data-edit="${e.id}">${esc(e.no)}</button></td><td>${esc(e.party)}${e.oid?`<small>${esc(e.oid)}${e.phone?' · '+esc(e.phone):''}</small>`:''}</td><td>${esc(L[0].item)}${L.length>1?` +${L.length-1} more`:''}</td><td>${e.due}</td><td class="s-${st(e).toLowerCase()}">${st(e)}</td><td class="n">${inr(tot(e))}</td><td class="n">${inr(e.paid||e.cancelled?0:tot(e))}</td><td>${e.cancelled?`<button class="lnk" data-restore="${e.id}">Restore</button>`:e.paid?`<button class="lnk" data-unpay="${e.id}">Mark unpaid</button>`:`<button class="lnk" data-pay="${e.id}">Record payment</button>`}${SBon()&&e.site&&!e.synced?`<button class="lnk" data-sync="${e.id}">Sync to website</button>`:''}${sale&&!e.cancelled?`<button class="lnk" data-cancel="${e.id}">Cancel</button>`:''}${sale?`<button class="lnk" data-pdf="${e.id}">PDF</button>`:''}<button class="lnk" data-del="${e.id}">Delete</button></td></tr>`}).join('')}</tbody></table></div>`:`<div class="empty">No ${sale?'invoices':'purchase bills'} yet. Choose + New to create one.</div>`)}
 
 const blank=()=>({item:'',sku:'',qty:1,rate:'',gst:0,sell:''});
@@ -257,18 +265,19 @@ async function saveD(){const d=D,ls=d.lines.filter(l=>l.item.trim()&&+l.qty>0).m
 function items(){return `<div class="ph"><h1>Items (from your website)</h1><button class="btn g" id="refItems">Refresh</button></div>`+(!SBon()?'<div class="empty">Connect your website database in Settings to see your products here.</div>':ITEMS.length?`<div class="tbl"><table><thead><tr><th>Name</th><th>SKU</th><th class="n">Price</th><th class="n">Stock</th></tr></thead><tbody>${ITEMS.map(r=>`<tr><td>${esc(r[S.sb.name])}</td><td>${esc(r[S.sb.sku]??'')}</td><td class="n">${inr(r[S.sb.price])}</td><td class="n">${r[S.sb.stock]??''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">No products found. Check the table and column names in Settings.</div>')}
 
 function bank(){const A=S.banks,a=A.find(x=>x.id===acct)||A[0];acct=a.id;let b=+a.open||0,ri=0,ro=0;
- const rows=[
-  ...S.txns.filter(t=>t.acct===a.id).map(t=>({date:t.date,ref:t.ref||'',head:t.head||'',note:t.note||'',type:t.type,amt:+t.amt||0,source:'txn',id:t.id,entry:t.entry})),
+ const allRows=[...S.txns.filter(t=>t.acct===a.id).map(t=>({date:t.date,ref:t.ref||'',head:t.head||'',note:t.note||'',type:t.type,amt:+t.amt||0,source:'txn',id:t.id,entry:t.entry})),
   ...(S.jv||[]).flatMap(j=>j.lines.filter(l=>l.acct===a.name&&((+l.dr||0)!==0||(+l.cr||0)!==0)).map(l=>({date:j.date,ref:j.no||'Journal',head:'Journal',note:j.narr||'',type:(+l.dr||0)>0?'in':'out',amt:Math.abs((+l.dr||0)-(+l.cr||0)),source:'journal',id:j.id,dr:+l.dr||0,cr:+l.cr||0})))
  ].sort((x,y)=>x.date.localeCompare(y.date));
- return `<div class="ph"><h1>${a.cash?'Cash book':'Bank book'}: ${esc(a.name)}</h1><div class="tools"><button class="btn g" id="addAcct">Add account</button><button class="btn" id="addTx">+ Add transaction</button></div></div>
- <div class="chips">${A.map(x=>`<button class="chip" data-acct="${x.id}" aria-pressed="${x.id===a.id}">${esc(x.name)}<br><b>${inr(bal(x))}</b></button>`).join('')}</div>
- <div class="tbl"><table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Receipts / Dr</th><th class="n">Payments / Cr</th><th class="n">Balance</th><th></th></tr></thead><tbody><tr><td></td><td>Opening balance <button class="lnk" data-open="${a.id}">Change</button></td><td></td><td></td><td class="n">${inr(b)}</td><td></td></tr>
+ if(pf)b+=sum(allRows.filter(t=>t.date<pf),t=>t.type==='in'?t.amt:-t.amt);
+ const rows=allRows.filter(t=>inR(t.date));
+ return `<div class="ph"><h1>${a.cash?'Cash book':'Bank book'}: ${esc(a.name)}</h1><div class="tools"><button class="btn g" data-x="pdfReport">PDF</button><button class="btn g" id="addAcct">Add account</button><button class="btn" id="addTx">+ Add transaction</button></div></div>
+ ${rbar()}<div class="chips">${A.map(x=>`<button class="chip" data-acct="${x.id}" aria-pressed="${x.id===a.id}">${esc(x.name)}<br><b>${inr(bal(x))}</b></button>`).join('')}</div>
+ <div class="tbl"><table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Receipts / Dr</th><th class="n">Payments / Cr</th><th class="n">Balance</th><th></th></tr></thead><tbody><tr><td></td><td>${pf?'Brought forward':'Opening balance'} <button class="lnk" data-open="${a.id}">Change</button></td><td></td><td></td><td class="n">${inr(b)}</td><td></td></tr>
  ${rows.map(t=>{const i=t.type==='in';b+=i?t.amt:-t.amt;i?ri+=t.amt:ro+=t.amt;return `<tr><td>${t.date}</td><td>${esc(t.ref)}${t.head?' · '+esc(t.head):''}${t.note?' · '+esc(t.note):''}</td><td class="n gain">${i?inr(t.amt):''}</td><td class="n loss">${i?'':inr(t.amt)}</td><td class="n">${inr(b)}</td><td>${t.source==='txn'&&!t.entry?`<button class="lnk" data-deltx="${t.id}">Delete</button>`:t.source==='journal'?`<button class="lnk" data-x="je" data-v="${t.id}">Open journal</button>`:''}</td></tr>`}).join('')}</tbody><tfoot><tr><td></td><td><b>Totals</b></td><td class="n"><b>${inr(ri)}</b></td><td class="n"><b>${inr(ro)}</b></td><td class="n"><b>${inr(b)}</b></td><td></td></tr></tfoot></table></div>
  <small>Journal debits and credits posted to this account appear here as well as in Ledgers and Trial balance.</small>`}
-function rep(){const l=recs().filter(e=>range==='all'||(range==='month'?ym(e.date)===today().slice(0,7):(()=>{const n=new Date(),s=n.getMonth()>=3?n.getFullYear():n.getFullYear()-1;return e.date>=s+'-04-01'&&e.date<=(s+1)+'-03-31'})())),a=stats(l),mm={};
+function rep(){const l=recs().filter(e=>inR(e.date)),a=stats(l),mm={};
  l.forEach(e=>(mm[ym(e.date)]=mm[ym(e.date)]||[]).push(e));
- return `<div class="ph"><h1>Reports</h1><select id="range" aria-label="Period"><option value="all">All time</option><option value="month">This month</option><option value="fy">This financial year (Apr–Mar)</option></select></div>
+ return `<div class="ph"><h1>Reports</h1><button class="btn g" data-x="pdfReport">PDF</button></div>${rbar()}
  <div class="row"><div class="panel"><small>Sales</small><div class="big">${inr(a.inc)}</div></div><div class="panel"><small>Purchases and expenses</small><div class="big">${inr(a.exp)}</div></div><div class="panel"><small>Net GST ${a.og>=a.ig?'payable':'refundable'}</small><div class="big">${inr(Math.abs(a.og-a.ig))}</div></div></div>
  <h2>Sales vs purchases by month</h2><div class="tbl"><table><thead><tr><th>Month</th><th class="n">Sales</th><th class="n">Purchases and expenses</th><th class="n">Difference</th></tr></thead><tbody>${Object.keys(mm).sort().reverse().map(m=>{const s=stats(mm[m]);return `<tr><td>${m}</td><td class="n">${inr(s.inc)}</td><td class="n">${inr(s.exp)}</td><td class="n ${s.inc>=s.exp?'gain':'loss'}">${inr(s.inc-s.exp)}</td></tr>`}).join('')||'<tr><td colspan="4">Nothing to report for this period.</td></tr>'}</tbody></table></div>`}
 
@@ -281,8 +290,8 @@ function set(){const c=S.sb,f=(id,l,v,t)=>`<label>${l}<input id="s_${id}" value=
  <h2>Sign in (recommended)</h2><small>Lets you keep write access limited to signed-in users instead of the public key.</small><div class="fg">${f('email','Email','','email')}${f('pw','Password','','password')}</div><button class="btn g" id="signin">Sign in</button></div>
  <div class="panel" style="max-width:560px"><h2>Data file / Backup</h2><small>Choose a JSON file in your File Manager/Downloads. On supported browsers, every saved transaction will update that file automatically. Browser storage remains enabled too.</small><br><div class="tools"><button class="btn" id="chooseFile">Choose data file</button><button class="btn g" id="bk">Download backup</button><button class="btn g" id="rs">Restore</button><input type="file" id="file" accept="application/json" hidden><button class="btn g" id="wipe">Delete all data</button></div></div>`}
 
-function exps(){const a=S.exps.filter(x=>!q||(x.cat+x.party+x.desc+x.ref).toLowerCase().includes(q.toLowerCase())).sort((x,y)=>y.date.localeCompare(x.date));
- return `<div class="ph"><h1>Expenses</h1><div class="tools"><button class="btn g" data-x="newExpenseAccount">+ Add expense account</button><button class="btn" data-xnew="1">+ New expense</button></div></div>`+(a.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>Expense account</th><th>Vendor</th><th>Paid through</th><th class="n">Amount</th><th class="n">GST</th><th class="n">Total</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${x.date}</td><td><button class="lnk" data-xedit="${x.id}">${esc(x.cat)}</button></td><td>${esc(x.party)}</td><td>${esc(bname(x.acct))}</td><td class="n">${inr(x.amt)}</td><td class="n">${inr(x.amt*x.gst/100)}</td><td class="n">${inr(x.amt*(1+x.gst/100))}</td><td><button class="lnk" data-xdel="${x.id}">Delete</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">No expenses yet. Choose + New to record rent, courier, ads or any other cost.</div>`)}
+function exps(){const a=S.exps.filter(x=>inR(x.date)&&(!q||(x.cat+x.party+x.desc+x.ref).toLowerCase().includes(q.toLowerCase()))).sort((x,y)=>y.date.localeCompare(x.date));
+ return `<div class="ph"><h1>Expenses</h1><div class="tools"><button class="btn g" data-x="newExpenseAccount">+ Add expense account</button><button class="btn g" data-x="pdfReport">PDF</button><button class="btn" data-xnew="1">+ New expense</button></div></div>${rbar()}`+(a.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>Expense account</th><th>Vendor</th><th>Paid through</th><th class="n">Amount</th><th class="n">GST</th><th class="n">Total</th><th></th></tr></thead><tbody>${a.map(x=>`<tr><td>${x.date}</td><td><button class="lnk" data-xedit="${x.id}">${esc(x.cat)}</button></td><td>${esc(x.party)}</td><td>${esc(bname(x.acct))}</td><td class="n">${inr(x.amt)}</td><td class="n">${inr(x.amt*x.gst/100)}</td><td class="n">${inr(x.amt*(1+x.gst/100))}</td><td><button class="lnk" data-xdel="${x.id}">Delete</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">No expenses yet. Choose + New to record rent, courier, ads or any other cost.</div>`)}
 function openX(id){const e=S.exps.find(x=>x.id===id);X=e?{...e,isNew:false}:{id:uid(),date:today(),cat:'',party:'',ref:'',amt:'',gst:0,acct:(S.banks.find(b=>b.id===acct)||S.banks[0]).id,desc:'',isNew:true};view='xform';render()}
 function xform(){const c=[...new Set(['Rent','Courier and shipping','Packaging','Advertising','Salaries','Utilities','Bank charges','Travel','Office supplies','Repairs','Other expenses',...S.exps.map(x=>x.cat),...Object.entries(masters()).filter(([n,g])=>['Direct Expenses','Indirect Expenses'].includes(g)).map(([n])=>n)])];
  return `<div class="ph"><h1>${X.isNew?'New':'Edit'} expense</h1></div><div class="panel"><div class="fg">
@@ -302,9 +311,9 @@ function saveX(){const x=X,a=+x.amt;if(!x.cat.trim()||!(a>0)){alert('Enter an ex
  S.txns=S.txns.filter(t=>t.entry!==e.id);S.txns.push({id:uid(),date:e.date,acct:e.acct,type:'out',amt:a*(1+e.gst/100),ref:e.cat,note:e.party||e.desc,entry:e.id});
  save();X=null;view='exps';render()}
 const NAV=[['dash','Dashboard'],'Sales',['sale','Invoices'],['wo','Website orders'],'Purchases',['expense','Purchase bills'],['exps','Expenses'],'Inventory',['items','Items (website)'],'Banking',['cash','Cash book'],['bank','Bank accounts'],'Accounting',['jv','Journal'],['led','Ledgers'],['tb','Trial balance'],['pl','Profit and loss'],['bs','Balance sheet'],['xp','Export (Tally, Zoho)'],'Insights',['rep','Reports'],['set','Settings']];
-function render(){const m=msg;msg='';$('#org').innerHTML=(S.co.logo?`<img src="${S.co.logo}" alt="" style="height:22px;vertical-align:middle;margin-right:8px">`:'')+esc(S.co.name);document.title=S.biz+' · Accounts';applyIcon();
+function render(){const m=msg;msg='';document.title=S.biz+' · Accounts';applyIcon();
  const cur=view==='jform'?'jv':view==='xform'?'exps':view==='form'?D.type:view==='bank'?(S.banks.find(x=>x.id===acct)||{}).cash?'cash':'bank':view;
- $('#side').innerHTML=`<div class="brand">${S.co.logo?`<img src="${S.co.logo}" alt="${esc(S.co.name)}" style="display:block;background:#fff;border-radius:6px;padding:6px 8px;max-width:100%;max-height:52px">`:esc(S.co.name)}<small>${esc(S.co.tag)}</small></div>`+NAV.map(n=>typeof n==='string'?`<div class="grp">${n}</div>`:`<button class="item" data-v="${n[0]}" aria-current="${n[0]===cur}">${n[1]}</button>`).join('')+`<div class="grp" style="padding-top:22px">Website</div><div style="padding:2px 20px 20px;font-size:13px">${SBon()?(conn?`● Connected · ${ITEMS.length} products`:'● Connection failed. Check Settings.'):'○ Not connected. Add your details in Settings.'}</div>`;
+ $('#org').innerHTML=`${LG()?`<img src="${LG()}" alt="">`:''}<span class="sep">/</span><span class="sec">${esc((NAV.find(n=>n[0]===cur)||[0,'Accounts'])[1])}</span>`;$('#side').innerHTML=`<div class="brand">${LG()?`<img src="${LG()}" alt="${esc(S.co.name)}">`:''}<span>${esc(S.co.name)} Accounts</span></div>`+NAV.map(n=>typeof n==='string'?`<div class="grp">${n}</div>`:`<button class="item" data-v="${n[0]}" aria-current="${n[0]===cur}">${n[1]}</button>`).join('')+`<div class="grp" style="padding-top:22px">Website</div><div style="padding:2px 20px 20px;font-size:13px">${SBon()?(conn?`● Connected · ${ITEMS.length} products`:'● Connection failed. Check Settings.'):'○ Not connected. Add your details in Settings.'}</div>`;
  $('#parties').innerHTML=[...new Set(S.entries.map(e=>e.party))].map(p=>`<option value="${esc(p)}">`).join('');
  $('#view').innerHTML=(m?`<div class="msg">${esc(m)}</div>`:'')+({dash,sale:()=>list('sale'),expense:()=>list('expense'),exps,xform,form,items,wo,bank,rep,set,jv,jform,led,tb,pl:plv,bs:bsv,xp}[view])();
  if(view==='form')updTot();if($('#fs'))$('#fs').value=fs;if($('#range'))$('#range').value=range}
@@ -375,7 +384,7 @@ let _fk='';function applyIcon(){const k=S.co.logo?S.co.logo.length+'L':'D';if(k=
  if(S.co.logo){const im=new Image;im.onload=()=>{x.fillStyle='#fff';x.fillRect(0,0,64,64);const k=Math.min(60/im.width,60/im.height);x.drawImage(im,(64-im.width*k)/2,(64-im.height*k)/2,im.width*k,im.height*k);done()};im.src=S.co.logo}
  else{x.fillStyle='#1D1A17';x.fillRect(0,0,64,64);x.fillStyle='#A07C45';x.font='bold 44px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText((S.co.name||'C')[0].toUpperCase(),32,36);done()}}
 const fyS=()=>{const n=new Date(),y=n.getMonth()>=3?n.getFullYear():n.getFullYear()-1;return y+'-04-01'};
-let LK='a',LN=null,J=null,pf=fyS(),pt=today();
+let LK='a',LN=null,J=null,pf='',pt='',rp='all';
 const r2=n=>Math.round((+n||0)*100)/100,sgn=(n)=>inr(Math.abs(n))+(n<0?' Cr':' Dr');
 const GT={'Cash-in-hand':'A','Bank Accounts':'A','Sundry Debtors':'A','Current Assets':'A','Fixed Assets':'A','Sundry Creditors':'L','Duties & Taxes':'L','Current Liabilities':'L','Loans (Liability)':'L','Capital Account':'E','Sales Accounts':'I','Indirect Incomes':'I','Purchase Accounts':'X','Direct Expenses':'X','Indirect Expenses':'X'};
 const ZT={'Cash-in-hand':'Cash','Bank Accounts':'Bank','Sundry Debtors':'Accounts Receivable','Current Assets':'Other Current Asset','Fixed Assets':'Fixed Asset','Sundry Creditors':'Accounts Payable','Duties & Taxes':'Other Current Liability','Current Liabilities':'Other Current Liability','Loans (Liability)':'Long Term Liability','Capital Account':'Equity','Sales Accounts':'Income','Indirect Incomes':'Other Income','Purchase Accounts':'Cost Of Goods Sold','Direct Expenses':'Cost Of Goods Sold','Indirect Expenses':'Expense'};
@@ -400,7 +409,7 @@ function vouch(){const V=[],M=masters(),bk=id=>bname(id)||'Bank',sk=new Set(),
  (S.jv||[]).forEach(j=>add(j.date,'Journal',j.no,j.narr,j.lines.map(l=>[l.acct,+l.dr||0,+l.cr||0])));
  return V.sort((a,b)=>a.date.localeCompare(b.date))}
 function tbal(from,to){const B={};vouch().forEach(v=>{if(to&&v.date>to)return;v.ls.forEach(l=>{const o=B[l.l]=B[l.l]||{l:l.l,g:l.g,dr:0,cr:0};if(from&&v.date<from)return;o.dr+=l.dr;o.cr+=l.cr})});return Object.values(B)}
-const bar=(f)=>`<div class="tools" style="margin-bottom:14px">${f?`<label>From<input type="date" id="pf" value="${pf}"></label>`:''}<label>${f?'To':'As on'}<input type="date" id="pt" value="${pt}"></label></div>`;
+const bar=f=>rbar(f?'':'Closing balances are as on the To date.');
 const trs=(rows,c=2)=>rows.map(r=>`<tr>${r.map((x,i)=>`<td${i?' class="n"':''}>${x}</td>`).join('')}</tr>`).join('');
 function plv(){const B=tbal(pf,pt).filter(x=>'IX'.includes(GT[x.g])),nt=x=>GT[x.g]==='I'?x.cr-x.dr:x.dr-x.cr,
  sec=(gs,t)=>{const r=B.filter(x=>gs.includes(x.g)&&r2(nt(x))),s=sum(r,nt);return[`<tr><td colspan="2"><b>${t}</b></td></tr>`+trs(r.map(x=>['&nbsp;&nbsp;'+esc(x.l),inr(nt(x))]))+`<tr><td><i>Total ${t}</i></td><td class="n"><i>${inr(s)}</i></td></tr>`,s]},
@@ -412,14 +421,15 @@ function bsv(){const B=tbal('',pt),np=sum(B.filter(x=>GT[x.g]==='I'),x=>x.cr-x.d
  blk=(t,r,s)=>`<tr><td colspan="2"><b>${t}</b></td></tr>`+trs(r.map(x=>['&nbsp;&nbsp;'+esc(x[0]),inr(x[1])]))+`<tr><td><b>Total ${t}</b></td><td class="n"><b>${inr(s)}</b></td></tr>`;
  return `<div class="ph"><h1>Balance sheet</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table><tbody>${blk('Assets',A,ta)}${blk('Liabilities',L,sum(L,x=>x[1]))}${blk('Equity',E,sum(E,x=>x[1]))}<tr><td><b>Liabilities + equity</b></td><td class="n"><b>${inr(tl)}</b></td></tr></tbody></table></div>${r2(ta-tl)?`<div class="msg">Assets and liabilities differ by ${inr(ta-tl)}. Check your journals.</div>`:''}`}
 function tb(){const B=tbal('',pt).filter(x=>r2(x.dr-x.cr)).sort((a,b)=>a.g.localeCompare(b.g)||a.l.localeCompare(b.l));let d=0,c=0;
- return `<div class="ph"><h1>Trial balance</h1></div>${bar(0)}<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Debit</th><th class="n">Credit</th></tr></thead><tbody>${B.map(x=>{const n=x.dr-x.cr;n>0?d+=n:c-=n;return `<tr><td>${esc(x.l)}</td><td>${esc(x.g)}</td><td class="n">${n>0?inr(n):''}</td><td class="n">${n<0?inr(-n):''}</td></tr>`}).join('')}</tbody><tfoot><tr><td colspan="2"><b>Total</b></td><td class="n"><b>${inr(d)}</b></td><td class="n"><b>${inr(c)}</b></td></tr></tfoot></table></div>`}
+ return `<div class="ph"><h1>Trial balance</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Debit</th><th class="n">Credit</th></tr></thead><tbody>${B.map(x=>{const n=x.dr-x.cr;n>0?d+=n:c-=n;return `<tr><td>${esc(x.l)}</td><td>${esc(x.g)}</td><td class="n">${n>0?inr(n):''}</td><td class="n">${n<0?inr(-n):''}</td></tr>`}).join('')}</tbody><tfoot><tr><td colspan="2"><b>Total</b></td><td class="n"><b>${inr(d)}</b></td><td class="n"><b>${inr(c)}</b></td></tr></tfoot></table></div>`}
+function lgr(){const all=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN).map(l=>({v,l})));let ob=0;const rows=[];all.forEach(x=>{if(pt&&x.v.date>pt)return;if(pf&&x.v.date<pf)ob+=x.l.dr-x.l.cr;else rows.push(x)});return{ob,rows}}
 function led(){const BB=tbal('',pt),B=[...BB,...Object.entries(masters()).filter(([n])=>!BB.some(x=>x.l===n)).map(([l,g])=>({l,g,dr:0,cr:0}))],k=LK==='c'?'Sundry Debtors':LK==='v'?'Sundry Creditors':0,chip=(x,t)=>`<button class="chip" data-x="lk" data-v="${x}" aria-pressed="${LK===x}">${t}</button>`;
  let h=`<div class="ph"><h1>Ledgers</h1><div class="tools"><div class="export-wrap"><button class="btn g" id="ledgerExportBtn" type="button">Export ▾</button><div class="export-menu" id="ledgerExportMenu" hidden><button type="button" data-ledger-export="pdf">Download PDF (A4)</button><button type="button" data-ledger-export="xlsx">Download Excel (.xlsx)</button></div></div><button class="btn g" data-x="lg">Add ledger</button></div></div><div class="chips">${chip('c','Customers')}${chip('v','Vendors')}${chip('a','All ledgers')}</div>`;
- if(LN){let b=0;const rows=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN&&v.date<=pt).map(l=>({v,l})));
-  return h+`<div class="ph"><h2>${esc(LN)}</h2><button class="btn g" data-x="lb">Back</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="n">Debit</th><th class="n">Credit</th><th class="n">Balance</th></tr></thead><tbody>${rows.map(({v,l})=>{b+=l.dr-l.cr;return `<tr><td>${v.date}</td><td>${v.type}</td><td>${esc(v.no)}</td><td>${esc(v.narr)}</td><td class="n">${l.dr?inr(l.dr):''}</td><td class="n">${l.cr?inr(l.cr):''}</td><td class="n">${sgn(b)}</td></tr>`}).join('')||'<tr><td colspan="7">No entries.</td></tr>'}</tbody></table></div>`}
+ if(LN){const LR=lgr();let b=LR.ob;const rows=LR.rows;
+  return h+bar(1)+`<div class="ph"><h2>${esc(LN)}</h2><button class="btn g" data-x="lb">Back</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="n">Debit</th><th class="n">Credit</th><th class="n">Balance</th></tr></thead><tbody>${pf?`<tr><td>${pf}</td><td></td><td></td><td>Opening balance</td><td></td><td></td><td class="n">${sgn(b)}</td></tr>`:''}${rows.map(({v,l})=>{b+=l.dr-l.cr;return `<tr><td>${v.date}</td><td>${v.type}</td><td>${esc(v.no)}</td><td>${esc(v.narr)}</td><td class="n">${l.dr?inr(l.dr):''}</td><td class="n">${l.cr?inr(l.cr):''}</td><td class="n">${sgn(b)}</td></tr>`}).join('')||'<tr><td colspan="7">No entries.</td></tr>'}</tbody></table></div>`}
  return h+bar(0)+`<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Closing balance</th></tr></thead><tbody>${B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>`<tr><td><button class="lnk" data-x="ln" data-v="${esc(x.l)}">${esc(x.l)}</button></td><td>${esc(x.g)}</td><td class="n">${sgn(x.dr-x.cr)}</td></tr>`).join('')||'<tr><td colspan="3">Nothing here yet.</td></tr>'}</tbody></table></div>`}
-function jv(){const a=(S.jv||[]).slice().sort((x,y)=>y.date.localeCompare(x.date));
- return `<div class="ph"><h1>Journal (adjustments)</h1><button class="btn" data-x="jn">+ New journal</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>No</th><th>Narration</th><th>Entries</th><th class="n">Amount</th><th></th></tr></thead><tbody>${a.map(j=>`<tr><td>${j.date}</td><td>${esc(j.no)}</td><td>${esc(j.narr)}</td><td>${j.lines.map(l=>(+l.dr?'Dr ':'Cr ')+esc(l.acct)).join(', ')}</td><td class="n">${inr(sum(j.lines,l=>+l.dr||0))}</td><td><button class="lnk" data-x="je" data-v="${j.id}">Edit</button> <button class="lnk" data-x="jd" data-v="${j.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="6">No journals yet. Use them for closing stock, depreciation, accruals and corrections.</td></tr>'}</tbody></table></div>`}
+function jv(){const a=(S.jv||[]).filter(j=>inR(j.date)).slice().sort((x,y)=>y.date.localeCompare(x.date));
+ return `<div class="ph"><h1>Journal (adjustments)</h1><button class="btn" data-x="jn">+ New journal</button></div>${rbar()}<div class="tbl"><table><thead><tr><th>Date</th><th>No</th><th>Narration</th><th>Entries</th><th class="n">Amount</th><th></th></tr></thead><tbody>${a.map(j=>`<tr><td>${j.date}</td><td>${esc(j.no)}</td><td>${esc(j.narr)}</td><td>${j.lines.map(l=>(+l.dr?'Dr ':'Cr ')+esc(l.acct)).join(', ')}</td><td class="n">${inr(sum(j.lines,l=>+l.dr||0))}</td><td><button class="lnk" data-x="je" data-v="${j.id}">Edit</button> <button class="lnk" data-x="jd" data-v="${j.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="6">No journals yet. Use them for closing stock, depreciation, accruals and corrections.</td></tr>'}</tbody></table></div>`}
 const jdif=()=>r2(sum(J.lines,l=>+l.dr||0)-sum(J.lines,l=>+l.cr||0));
 function jform(){const M=masters(),n=Object.keys(M).sort();
  return `<div class="ph"><h1>${J.isNew?'New':'Edit'} journal</h1><button class="btn g" data-x="lg">Add ledger</button></div><datalist id="lgr">${n.map(x=>`<option value="${esc(x)}">`).join('')}</datalist><div class="fg"><label>Date<input type="date" data-j="date" value="${J.date}"></label><label>Journal no<input data-j="no" value="${esc(J.no)}"></label><label>Narration<input data-j="narr" value="${esc(J.narr)}"></label></div>
@@ -435,7 +445,7 @@ function addExpenseAccount(){const n=(prompt('New expense account name (e.g. Ins
 const dl=(n,t,m)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m||'text/csv'}));a.download=n;a.click()};
 const csv=rows=>'\ufeff'+rows.map(r=>r.map(c=>{c=String(c??'');return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n');
 const tx=(rn,b)=>`<?xml version="1.0" encoding="UTF-8"?><ENVELOPE><HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER><BODY><IMPORTDATA><REQUESTDESC><REPORTNAME>${rn}</REPORTNAME></REQUESTDESC><REQUESTDATA>${b}</REQUESTDATA></IMPORTDATA></BODY></ENVELOPE>`;
-function xport(k){const M=masters(),V=vouch(),d=today(),P=(g)=>/^Sundry/.test(g),zl=l=>[l.g==='Sundry Debtors'?'Accounts Receivable':l.g==='Sundry Creditors'?'Accounts Payable':l.l,P(l.g)?l.l:''];
+function xport(k){const M=masters(),V=vouch().filter(v=>inR(v.date)),d=today(),P=(g)=>/^Sundry/.test(g),zl=l=>[l.g==='Sundry Debtors'?'Accounts Receivable':l.g==='Sundry Creditors'?'Accounts Payable':l.l,P(l.g)?l.l:''];
  if(k==='tm')dl('tally-masters-'+d+'.xml',tx('All Masters',Object.entries(M).map(([n,g])=>`<TALLYMESSAGE xmlns:UDF="TallyUDF"><LEDGER NAME="${esc(n)}" ACTION="Create"><NAME>${esc(n)}</NAME><PARENT>${esc(g)}</PARENT></LEDGER></TALLYMESSAGE>`).join('')),'application/xml');
  if(k==='tv')dl('tally-vouchers-'+d+'.xml',tx('Vouchers',V.map((v,i)=>`<TALLYMESSAGE xmlns:UDF="TallyUDF"><VOUCHER VCHTYPE="${v.type}" ACTION="Create"><DATE>${v.date.replace(/-/g,'')}</DATE><VOUCHERTYPENAME>${v.type}</VOUCHERTYPENAME><VOUCHERNUMBER>${esc(v.no||i+1)}</VOUCHERNUMBER><NARRATION>${esc(v.narr)}</NARRATION>${v.ls.map(l=>`<ALLLEDGERENTRIES.LIST><LEDGERNAME>${esc(l.l)}</LEDGERNAME><ISDEEMEDPOSITIVE>${l.dr?'Yes':'No'}</ISDEEMEDPOSITIVE><AMOUNT>${l.dr?-l.dr:l.cr}</AMOUNT></ALLLEDGERENTRIES.LIST>`).join('')}</VOUCHER></TALLYMESSAGE>`).join('')),'application/xml');
  if(k==='zc')dl('zoho-chart-of-accounts-'+d+'.csv',csv([['Account Name','Account Code','Account Type','Description'],...Object.entries(M).filter(([n,g])=>!P(g)).map(([n,g])=>[n,'',ZT[g],''])]));
@@ -443,61 +453,81 @@ function xport(k){const M=masters(),V=vouch(),d=today(),P=(g)=>/^Sundry/.test(g)
  if(k==='zj')dl('zoho-journals-'+d+'.csv',csv([['Journal Date','Journal Number','Reference Number','Notes','Journal Type','Currency Code','Exchange Rate','Account','Description','Contact Name','Debit','Credit'],...V.flatMap((v,i)=>v.ls.map(l=>{const z=zl(l);return[v.date,v.type.slice(0,3).toUpperCase()+'-'+String(i+1).padStart(6,'0'),v.no,v.narr,'both','INR',1,z[0],v.narr,z[1],l.dr||'',l.cr||'']}))]));
  if(k==='db')dl('daybook-'+d+'.csv',csv([['Date','Voucher Type','Voucher No','Ledger','Group','Debit','Credit','Narration'],...V.flatMap(v=>v.ls.map(l=>[v.date,v.type,v.no,l.l,l.g,l.dr||'',l.cr||'',v.narr]))]))}
 function xp(){const b=(k,t,s)=>`<tr><td><b>${t}</b><br><small>${s}</small></td><td><button class="btn g" data-x="ex" data-v="${k}">Download</button></td></tr>`;
- return `<div class="ph"><h1>Export for Tally and Zoho Books</h1></div><div class="tbl"><table><tbody>${b('tm','Tally: ledger masters (XML)','Import first: Tally Prime, Import Data, Masters.')+b('tv','Tally: all vouchers (XML)','Import second. Sales, purchases, receipts, payments, contra and journals.')+b('zc','Zoho Books: chart of accounts (CSV)','Settings, Import, Chart of Accounts. Customers and vendors are in the contacts file.')+b('zp','Zoho Books: customers and vendors (CSV)','Import contacts before the journals.')+b('zj','Zoho Books: journals (CSV)','Every voucher as a manual journal, with the contact on receivable and payable lines.')+b('db','Day book (CSV)','Plain debit and credit lines. Opens in Excel and works with most software.')}</tbody></table></div><small>For a full copy of your data, use Settings, Download backup. Everything is saved in this browser only.</small>`}
+ return `<div class="ph"><h1>Export for Tally and Zoho Books</h1></div>${rbar("Vouchers, journals and the day book are limited to this period.")}<div class="tbl"><table><tbody>${b('tm','Tally: ledger masters (XML)','Import first: Tally Prime, Import Data, Masters.')+b('tv','Tally: all vouchers (XML)','Import second. Sales, purchases, receipts, payments, contra and journals.')+b('zc','Zoho Books: chart of accounts (CSV)','Settings, Import, Chart of Accounts. Customers and vendors are in the contacts file.')+b('zp','Zoho Books: customers and vendors (CSV)','Import contacts before the journals.')+b('zj','Zoho Books: journals (CSV)','Every voucher as a manual journal, with the contact on receivable and payable lines.')+b('db','Day book (CSV)','Plain debit and credit lines. Opens in Excel and works with most software.')}</tbody></table></div><small>For a full copy of your data, use Settings, Download backup. Everything is saved in this browser only.</small>`}
+
+const LG=()=>S.co.logo||(document.querySelector('.gate-logo')||{}).src||'';
+const fd=s=>s?s.split('-').reverse().join('-'):'';
+const inR=d=>(!pf||d>=pf)&&(!pt||d<=pt);
+const RP=[['all','All time'],['today','Today'],['month','This month'],['lastmonth','Last month'],['quarter','This quarter'],['fy','This financial year'],['lastfy','Last financial year'],['custom','Custom range']];
+function presetRange(k){const n=new Date(),y=n.getFullYear(),m=n.getMonth(),fy=m>=3?y:y-1;
+ if(k==='today')return[today(),today()];
+ if(k==='month')return[ld(new Date(y,m,1)),ld(new Date(y,m+1,0))];
+ if(k==='lastmonth')return[ld(new Date(y,m-1,1)),ld(new Date(y,m,0))];
+ if(k==='quarter'){const q=Math.floor(m/3)*3;return[ld(new Date(y,q,1)),ld(new Date(y,q+3,0))]}
+ if(k==='fy')return[fy+'-04-01',(fy+1)+'-03-31'];
+ if(k==='lastfy')return[(fy-1)+'-04-01',fy+'-03-31'];
+ return['',''];}
+const rbar=note=>`<div class="rbar"><label>Period<select id="rp">${RP.map(([k,t])=>`<option value="${k}"${k===rp?' selected':''}>${t}</option>`).join('')}</select></label><label>From<input type="date" id="pf" value="${pf}"></label><label>To<input type="date" id="pt" value="${pt}"></label>${note?`<small>${note}</small>`:''}</div>`;
+const rangeText=asof=>asof?'As on: '+fd(pt||today()):(!pf&&!pt?'All dates':'Period: '+(pf?fd(pf):'Beginning')+' to '+fd(pt||today()));
+
+function tableData(t){
+ const hs=[...t.querySelectorAll('thead th')].map(c=>c.innerText.trim()),al=[],rows=[];
+ [...t.querySelectorAll('thead th')].forEach((th,i)=>{if(th.classList.contains('n'))al[i]='r'});
+ t.querySelectorAll('tr').forEach(tr=>{if(tr.parentElement.tagName==='THEAD')return;const cells=[...tr.children];if(!cells.length)return;
+  if(cells.length===1&&cells[0].colSpan>1){rows.push({sec:1,c:[cells[0].innerText]});return}
+  const c=[];cells.forEach(td=>{const i=c.length;let x=td.innerText;if(td.querySelector('[data-open]'))x=x.replace(/\s*Change\s*$/,'');c.push(x);if(td.classList.contains('n'))al[i]='r';for(let k=1;k<td.colSpan;k++)c.push('')});
+  rows.push({c,b:tr.parentElement.tagName==='TFOOT'||!!tr.querySelector('b')})});
+ let ncol=Math.max(hs.length,...rows.filter(r=>!r.sec).map(r=>r.c.length),1);
+ if(hs.length&&!hs[hs.length-1]){hs.pop();rows.forEach(r=>{if(!r.sec)r.c.pop()});ncol--}
+ return{headers:hs,rows,al,ncol}}
+
+function pdfTable(o){
+ const J=window.jspdf;if(!J||!J.jsPDF){alert('PDF library did not load. Check your internet connection and try again.');return}
+ const nc=o.ncol,land=nc>7,PW=land?297:210,PH=land?210:297,M=12,U=PW-M*2,FS=land?7.5:8;
+ const doc=new J.jsPDF({unit:'mm',format:'a4',orientation:land?'landscape':'portrait'});
+ const cl=v=>String(v==null?'':v).replace(/\u20B9/g,'Rs. ').replace(/[\u2013\u2014]/g,'-').replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();
+ const BK=[29,26,23],BR=[160,124,69],MU=[101,93,83],HD=[238,231,217],PL=[248,245,238];
+ const wt=[];for(let i=0;i<nc;i++){let m=cl(o.headers[i]).length;o.rows.forEach(r=>{if(!r.sec)m=Math.max(m,cl(r.c[i]).length)});wt.push(Math.min(Math.max(m,7),34))}
+ const tw=wt.reduce((a,b)=>a+b,0),W=wt.map(w=>w/tw*U);
+ const band=()=>{doc.setFillColor(...BK);doc.rect(0,0,PW,24,'F');doc.setFillColor(...BR);doc.rect(0,24,PW,.8,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(cl(o.company),M,11);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(cl(o.title),M,18.5);doc.setFontSize(8);doc.setTextColor(215,204,183);doc.text(cl(o.period),PW-M,11,{align:'right'});doc.text('Generated: '+fd(today()),PW-M,18.5,{align:'right'})};
+ let y=30;
+ const head=()=>{if(!o.headers.some(h=>cl(h)))return;doc.setFillColor(...HD);doc.rect(M,y,U,7,'F');doc.setFont('helvetica','bold');doc.setFontSize(FS-.5);doc.setTextColor(...MU);let x=M;for(let i=0;i<nc;i++){const t=cl(o.headers[i]).toUpperCase();if(o.al[i]==='r')doc.text(t,x+W[i]-1.5,y+4.6,{align:'right'});else doc.text(t,x+1.5,y+4.6);x+=W[i]}y+=7};
+ band();head();let k=0;
+ o.rows.forEach(r=>{
+  doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS);
+  const cells=r.sec?[doc.splitTextToSize(cl(r.c[0]),U-3)]:r.c.slice(0,nc).map((t,i)=>doc.splitTextToSize(cl(t),W[i]-3));
+  const h=Math.max(1,...cells.map(a=>a.length))*FS*.42+3;
+  if(y+h>PH-16){doc.addPage();band();y=30;head();doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS)}
+  if(r.sec||(k++%2)){doc.setFillColor(...PL);doc.rect(M,y,U,h,'F')}
+  doc.setTextColor(30,26,23);let x=M;
+  cells.forEach((ln,i)=>{if(r.sec)doc.text(ln,x+1.5,y+4);else if(o.al[i]==='r')doc.text(ln,x+W[i]-1.5,y+4,{align:'right'});else doc.text(ln,x+1.5,y+4);x+=W[i]});
+  doc.setDrawColor(216,204,183);doc.setLineWidth(.15);doc.line(M,y+h,M+U,y+h);y+=h});
+ const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setDrawColor(...BR);doc.setLineWidth(.3);doc.line(M,PH-12,PW-M,PH-12);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MU);doc.text(cl(o.company)+' Accounts',M,PH-7);doc.text('Page '+p+' of '+np,PW-M,PH-7,{align:'right'})}
+ doc.save(cl(o.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today()+'.pdf')}
 
 function downloadReportPDF(){
- if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library did not load. Check your internet connection and try again.');return}
- const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
- const title=({pl:'Profit and Loss',bs:'Balance Sheet',led:LN?('Ledger: '+LN):'Ledgers'})[view]||'Accounting Report';
- const margin=14,pageW=182;let y=18;
- doc.setFont('courier','bold');doc.setFontSize(16);doc.text(String(S.co.name||'CLIPPD'),margin,y);y+=8;
- doc.setFontSize(13);doc.text(title,margin,y);y+=7;
- doc.setFont('courier','normal');doc.setFontSize(9);
- const period=view==='pl'?`Period: ${pf||'Beginning'} to ${pt||today()}`:`As on: ${pt||today()}`;
- doc.text(period,margin,y);doc.text('Generated: '+today(),pageW+margin,y,{align:'right'});y+=8;
- const table=document.querySelector('#view .tbl table');
- if(!table){doc.text('No report rows available.',margin,y)} else {
-  const rows=[...table.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>(c.innerText||'').replace(/\s+/g,' ').trim()).filter((v,i,a)=>true)).filter(r=>r.some(Boolean));
-  const usable=pageW, gap=4, widths=rows.reduce((max,r)=>Math.max(max,r.length),0);
-  rows.forEach((r,idx)=>{
-   const line=r.map(v=>v.replace(/\s+/g,' ')).join('   |   ');
-   const wrapped=doc.splitTextToSize(line,usable);
-   const height=wrapped.length*4.5+2;
-   if(y+height>280){doc.addPage();y=18;}
-   if(idx===0 && table.querySelector('thead'))doc.setFont('courier','bold');else doc.setFont('courier','normal');
-   doc.text(wrapped,margin,y);y+=height;
-   doc.setDrawColor(225,215,215);doc.line(margin,y-1,pageW+margin,y-1);
-  });
- }
- const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('courier','normal');doc.text(`CLIPPD Accounts Software  •  Page ${i} of ${pages}`,margin,290)}
- const safe=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');doc.save(`${safe||'accounting-report'}-${today()}.pdf`)
-}
+ const t=document.querySelector('#view .tbl table');if(!t){alert('Nothing to export in this view.');return}
+ const ba=S.banks.find(x=>x.id===acct)||{name:''};
+ const names={sale:'Invoices',expense:'Purchase Bills',exps:'Expenses',bank:(ba.cash?'Cash Book: ':'Bank Book: ')+ba.name,rep:'Sales vs Purchases',pl:'Profit and Loss',bs:'Balance Sheet',tb:'Trial Balance',led:LN?'Ledger: '+LN:'Ledgers',jv:'Journal',xp:'Export'};
+ const asof=['bs','tb'].includes(view)||(view==='led'&&!LN);
+ pdfTable({company:S.co.name||'CLIPPD',title:names[view]||'Report',period:rangeText(asof),...tableData(t)})}
 
 function ledgerExportRows(){
  const title=LN?('Ledger: '+LN):'Ledgers';
- if(LN){let b=0;const rows=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN&&v.date<=pt).map(l=>({date:v.date,type:v.type,no:v.no||'',narration:v.narr||'',debit:r2(l.dr),credit:r2(l.cr)}))).sort((a,b)=>a.date.localeCompare(b.date));
- return {title,headers:['Date','Type','No','Narration','Debit','Credit','Balance'],rows:rows.map(r=>{b+=r.debit-r.credit;return [r.date,r.type,r.no,r.narration,r.debit||'',r.credit||'',Math.abs(b).toFixed(2)+(b<0?' Cr':' Dr')]}),period:'As on: '+pt};}
+ if(LN){const L=lgr();let b=L.ob;const rows=L.rows.map(({v,l})=>{b+=l.dr-l.cr;return[v.date,v.type,v.no||'',v.narr||'',l.dr||'',l.cr||'',Math.abs(b).toFixed(2)+(b<0?' Cr':' Dr')]});
+  if(pf)rows.unshift(['','','','Opening balance','','',Math.abs(L.ob).toFixed(2)+(L.ob<0?' Cr':' Dr')]);
+  return {title,headers:['Date','Type','No','Narration','Debit','Credit','Balance'],rows,period:rangeText(0)};}
  const BB=tbal('',pt),B=[...BB,...Object.entries(masters()).filter(([n])=>!BB.some(x=>x.l===n)).map(([l,g])=>({l,g,dr:0,cr:0}))],k=LK==='c'?'Sundry Debtors':LK==='v'?'Sundry Creditors':0;
- return {title,headers:['Ledger','Group','Closing balance'],rows:B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>[x.l,x.g,sgn(x.dr-x.cr)]),period:'As on: '+pt};
+ return {title,headers:['Ledger','Group','Closing balance'],rows:B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>[x.l,x.g,sgn(x.dr-x.cr)]),period:rangeText(1)};
 }
 function exportLedger(fmt){
+ if(fmt==='pdf'){downloadReportPDF();return}
+ if(!window.XLSX){alert('Excel export library did not load. Check your internet connection.');return}
  const data=ledgerExportRows(),safe=data.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today();
  const matrix=[[S.co.name||'CLIPPD'],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows];
- if(fmt==='xlsx'){if(!window.XLSX){alert('Excel export library did not load. Check your internet connection.');return}
  const ws=XLSX.utils.aoa_to_sheet(matrix);ws['!cols']=data.headers.map((h,i)=>({wch:Math.max(h.length,...data.rows.map(r=>String(r[i]??'').length))+3}));
- Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'171717'}},alignment:{vertical:'center'}}}else if(row===5){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'B58A4B'}},alignment:{vertical:'center'}}}else if(row>5&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}});
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ledger');XLSX.writeFile(wb,safe+'.xlsx');return;}
- if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF library did not load. Check your internet connection.');return}
- const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'}),pw=210,ml=12,mr=12,usable=pw-ml-mr;
- const maroon=[23,23,23],gold=[181,138,75],pale=[247,245,240],ink=[32,32,32],muted=[107,104,98];
- const cols=data.headers.length===7?[16,20,25,49,25,25,26]:[65,45,64];
- const drawHeader=()=>{doc.setFillColor(...maroon);doc.rect(0,0,pw,27,'F');doc.setTextColor(255,255,255);doc.setFont('courier','bold');doc.setFontSize(17);doc.text(String(S.co.name||'CLIPPD'),ml,11);doc.setFontSize(12);doc.text(data.title,ml,19);doc.setDrawColor(...gold);doc.setLineWidth(1);doc.line(ml,28,pw-mr,28);doc.setTextColor(...muted);doc.setFont('courier','normal');doc.setFontSize(8);doc.text(data.period,ml,34);doc.text('Generated: '+today(),pw-mr,34,{align:'right'});};
- drawHeader();let y=41,rowH=8;
- const header=()=>{doc.setFillColor(238,233,223);doc.rect(ml,y,usable,rowH,'F');doc.setFont('courier','bold');doc.setFontSize(7.5);doc.setTextColor(32,32,32);let x=ml;data.headers.forEach((h,i)=>{doc.text(h,x+2,y+5.2);x+=cols[i]});y+=rowH;};header();
- data.rows.forEach((r,ri)=>{const wrapped=r.map((v,i)=>doc.splitTextToSize(String(v??''),cols[i]-4)),height=Math.max(rowH,...wrapped.map(a=>a.length*3.5+3));if(y+height>278){doc.addPage();drawHeader();y=41;header();}
- if(ri%2===1){doc.setFillColor(...pale);doc.rect(ml,y,usable,height,'F')}doc.setFont('courier','normal');doc.setFontSize(7.5);doc.setTextColor(...ink);let x=ml;
- wrapped.forEach((a,i)=>{doc.text(a,x+2,y+4.8);x+=cols[i]});doc.setDrawColor(230,224,214);doc.setLineWidth(.2);doc.line(ml,y+height,pw-mr,y+height);y+=height;});
- const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setDrawColor(...gold);doc.line(ml,284,pw-mr,284);doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(...muted);doc.text('CLIPPD Accounts Software',ml,289);doc.text('Page '+i+' of '+pages,pw-mr,289,{align:'right'});}doc.save(safe+'.pdf');
+ Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===5){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>5&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}});
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ledger');XLSX.writeFile(wb,safe+'.xlsx');
 }
 $('#view').addEventListener('click',e=>{const eb=e.target.closest('#ledgerExportBtn');if(eb){const menu=$('#ledgerExportMenu');if(menu)menu.hidden=!menu.hidden;return}
  const ex=e.target.closest('[data-ledger-export]');if(ex){const menu=$('#ledgerExportMenu');if(menu)menu.hidden=true;exportLedger(ex.dataset.ledgerExport);return}});
@@ -510,7 +540,7 @@ $('#view').addEventListener('click',e=>{const t=e.target.closest('[data-x]');if(
  else if(k==='jc'){J=null;view='jv'}else if(k==='js')return saveJ();else if(k==='ex'){xport(v);return}
  render()});
 $('#view').addEventListener('input',e=>{const t=e.target;if(!J||view!=='jform')return;if(t.dataset.j)J[t.dataset.j]=t.value;else if(t.dataset.f){J.lines[+t.dataset.i][t.dataset.f]=t.value;const d=jdif();$('#jdf').textContent=d?'Difference '+inr(Math.abs(d))+(d>0?' (debit higher)':' (credit higher)'):'Balanced'}});
-$('#view').addEventListener('change',e=>{const t=e.target;if(t.id==='logoFile'&&t.files[0]){const im=new Image,u=URL.createObjectURL(t.files[0]);im.onload=()=>{const k=Math.min(1,400/im.width,200/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.co.logo=c.toDataURL('image/png');S.co.lw=c.width;S.co.lh=c.height;save();msg='Logo saved.';render()};im.onerror=()=>alert('Could not read that image.');im.src=u;return}if(t.id==='pf'||t.id==='pt'){t.id==='pf'?pf=t.value:pt=t.value;render()}});
+$('#view').addEventListener('change',e=>{const t=e.target;if(t.id==='logoFile'&&t.files[0]){const im=new Image,u=URL.createObjectURL(t.files[0]);im.onload=()=>{const k=Math.min(1,400/im.width,200/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.co.logo=c.toDataURL('image/png');S.co.lw=c.width;S.co.lh=c.height;save();msg='Logo saved.';render()};im.onerror=()=>alert('Could not read that image.');im.src=u;return}if(t.id==='rp'){rp=t.value;if(rp!=='custom'){[pf,pt]=presetRange(rp)}render()}if(t.id==='pf'||t.id==='pt'){t.id==='pf'?pf=t.value:pt=t.value;rp='custom';render()}});
 
 const AUTH_URL='https://tghmxutqpbxrtrlavmjx.supabase.co';
 const AUTH_KEY='sb_publishable_lr4xdh4MJQQLUA-ZTc4bfQ_I95yCHor';
