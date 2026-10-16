@@ -54,7 +54,13 @@ label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--m)}label i
 dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);background:var(--card);box-shadow:0 22px 55px -20px rgba(29,26,23,.45)}dialog::backdrop{background:rgba(29,26,23,.4)}
 dialog form{display:grid;gap:12px;padding:22px}
 .export-wrap{position:relative;display:inline-flex}.export-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:10;min-width:190px;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:5px}.export-menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:9px 12px;cursor:pointer;border-radius:6px}.export-menu button:hover{background:var(--ivory-deep)}
-@media(max-width:800px){.app{flex-direction:column}aside{width:100%;position:static;height:auto;flex-direction:row;align-items:center;padding:12px 14px;overflow-x:auto}.brand,.grp{display:none}.item{width:auto;white-space:nowrap;margin:0 2px}.top,.page{padding-left:16px;padding-right:16px}}
+#menuBtn{display:none;font-size:20px;line-height:1;padding:6px 12px}#navScrim{display:none}
+@media(max-width:800px){.app{display:block}
+aside{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:82vw;height:auto;z-index:40;transform:translateX(-100%);transition:transform .22s ease;padding:22px 0}
+body.navopen aside{transform:none;box-shadow:4px 0 24px rgba(0,0,0,.35)}
+#navScrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:35}body.navopen #navScrim{display:block}
+#menuBtn{display:inline-flex;align-items:center}#cloudStat,#loginInfo{display:none}
+.top,.page{padding-left:16px;padding-right:16px}}
 
 #loginGate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ivory)}
 .login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:36px 32px;box-shadow:var(--shadow)}
@@ -86,8 +92,8 @@ dialog form{display:grid;gap:12px;padding:22px}
     <div id="loginError"></div>
   </div>
 </div>
-<div id="accountsApp" hidden><div class="app"><aside id="side"></aside><div>
-<div class="top"><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><span id="cloudStat" style="font-size:12px;color:var(--charcoal-soft)"></span><span id="loginInfo"></span><button class="btn g" id="logoutBtn" type="button" onclick="accountsSignOut()">Sign out</button><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
+<div id="accountsApp" hidden><div id="navScrim"></div><div class="app"><aside id="side"></aside><div>
+<div class="top"><button class="btn g" id="menuBtn" type="button" aria-label="Open menu">☰</button><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><span id="cloudStat" style="font-size:12px;color:var(--charcoal-soft)"></span><span id="loginInfo"></span><button class="btn g" id="logoutBtn" type="button" onclick="accountsSignOut()">Sign out</button><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
 <div class="page" id="view"></div></div></div>
 </div><datalist id="items"></datalist><datalist id="parties"></datalist>
 <dialog id="tdlg"><form id="tf" method="dialog"><h2 id="tT"></h2>
@@ -641,6 +647,10 @@ async function accountsSignOut(){
 authClient.auth.onAuthStateChange((_event,session)=>{
  if(session?.user && $('#accountsApp').hidden) setTimeout(()=>checkAccountsAccess(),0);
 });
+$('#menuBtn').onclick=()=>document.body.classList.toggle('navopen');
+$('#navScrim').onclick=()=>document.body.classList.remove('navopen');
+$('#side').addEventListener('click',e=>{if(e.target.closest('[data-v]'))document.body.classList.remove('navopen')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('navopen')});
 window.addEventListener('focus',()=>{if(!$('#accountsApp').hidden&&!['form','xform','jform'].includes(view)&&!cloudMeta().dirty)cloudPull()});
 checkAccountsAccess();
 
