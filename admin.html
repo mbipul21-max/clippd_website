@@ -682,16 +682,17 @@
   function renderOverview(){
     const kpiGrid = document.getElementById('kpiGrid');
     if(!kpiGrid) return;
-    const totalRevenue = orders.reduce((s, o) => s + Number(o.total || 0), 0);
+    const saleOrders = orders.filter(countsAsSale);   // cancelled and unpaid orders are not revenue
+    const totalRevenue = saleOrders.reduce((s, o) => s + Number(o.total || 0), 0);
     const totalOrders = orders.length;
-    const avgOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
+    const avgOrderValue = saleOrders.length ? totalRevenue / saleOrders.length : 0;
     const needsAttention = orders.filter(o => o.status === 'pending_payment' || o.status === 'return_requested').length;
 
     kpiGrid.innerHTML = `
       <div class="kpi-card">
         <div class="kpi-label">Total Revenue</div>
         <div class="kpi-value">₹${totalRevenue.toLocaleString('en-IN')}</div>
-        <div class="kpi-sub">All-time, ${totalOrders} orders</div>
+        <div class="kpi-sub">All-time, ${saleOrders.length} paid orders (cancelled not counted)</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Total Orders</div>
@@ -701,7 +702,7 @@
       <div class="kpi-card">
         <div class="kpi-label">Avg. Order Value</div>
         <div class="kpi-value">₹${avgOrderValue.toFixed(0)}</div>
-        <div class="kpi-sub">Per order</div>
+        <div class="kpi-sub">Per paid order</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Needs Attention</div>
@@ -710,7 +711,7 @@
       </div>
     `;
 
-    renderRevenueBarChart('revenueBars', 14);
+    renderRevenueBarChart('revenueBars', 14, countsAsSale);
     renderStatusBars();
   }
 
