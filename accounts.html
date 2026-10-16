@@ -484,8 +484,9 @@ function lgr(){const all=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN).map(l=>({v,
 function led(){const BB=tbal('',pt),B=[...BB,...Object.entries(masters()).filter(([n])=>!BB.some(x=>x.l===n)).map(([l,g])=>({l,g,dr:0,cr:0}))],k=LK==='c'?'Sundry Debtors':LK==='v'?'Sundry Creditors':0,chip=(x,t)=>`<button class="chip" data-x="lk" data-v="${x}" aria-pressed="${LK===x}">${t}</button>`;
  let h=`<div class="ph"><h1>Ledgers</h1><div class="tools"><div class="export-wrap"><button class="btn g" id="ledgerExportBtn" type="button">Export ▾</button><div class="export-menu" id="ledgerExportMenu" hidden><button type="button" data-ledger-export="pdf">Download PDF (A4)</button><button type="button" data-ledger-export="xlsx">Download Excel (.xlsx)</button></div></div><button class="btn g" data-x="lg">Add ledger</button></div></div><div class="chips">${chip('c','Customers')}${chip('v','Vendors')}${chip('a','All ledgers')}</div>`;
  if(LN){const LR=lgr();let b=LR.ob;const rows=LR.rows;
-  return h+bar(1)+`<div class="ph"><h2>${esc(LN)}</h2><button class="btn g" data-x="lb">Back</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="n">Debit</th><th class="n">Credit</th><th class="n">Balance</th></tr></thead><tbody>${pf?`<tr><td>${pf}</td><td></td><td></td><td>Opening balance</td><td></td><td></td><td class="n">${sgn(b)}</td></tr>`:''}${rows.map(({v,l})=>{b+=l.dr-l.cr;return `<tr><td>${v.date}</td><td>${v.type}</td><td>${esc(v.no)}</td><td>${esc(v.narr)}</td><td class="n">${l.dr?inr(l.dr):''}</td><td class="n">${l.cr?inr(l.cr):''}</td><td class="n">${sgn(b)}</td></tr>`}).join('')||'<tr><td colspan="7">No entries.</td></tr>'}</tbody></table></div>`}
- return h+bar(0)+`<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Closing balance</th></tr></thead><tbody>${B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>`<tr><td><button class="lnk" data-x="ln" data-v="${esc(x.l)}">${esc(x.l)}</button></td><td>${esc(x.g)}</td><td class="n">${sgn(x.dr-x.cr)}</td></tr>`).join('')||'<tr><td colspan="3">Nothing here yet.</td></tr>'}</tbody></table></div>`}
+  return h+bar(1)+`<div class="ph"><h2>${esc(LN)}</h2><button class="btn g" data-x="lb">Back</button></div><div class="tbl"><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="n">Debit</th><th class="n">Credit</th><th class="n">Balance</th></tr></thead><tbody>${pf?`<tr><td>${pf}</td><td></td><td></td><td>Opening balance</td><td></td><td></td><td class="n">${sgn(b)}</td></tr>`:''}${rows.map(({v,l})=>{b+=l.dr-l.cr;return `<tr><td>${v.date}</td><td>${v.type}</td><td>${esc(v.no)}</td><td>${esc(v.narr)}</td><td class="n">${l.dr?inr(l.dr):''}</td><td class="n">${l.cr?inr(l.cr):''}</td><td class="n">${sgn(b)}</td></tr>`}).join('')||'<tr><td colspan="7">No entries.</td></tr>'}</tbody><tfoot><tr><td colspan="4"><b>Total</b></td><td class="n"><b>${inr(sum(rows,x=>x.l.dr))}</b></td><td class="n"><b>${inr(sum(rows,x=>x.l.cr))}</b></td><td class="n"><b>${sgn(b)}</b></td></tr></tfoot></table></div>`}
+ const F=B.filter(x=>k?x.g===k:1),TD=r2(sum(F,x=>Math.max(x.dr-x.cr,0))),TC=r2(sum(F,x=>Math.max(x.cr-x.dr,0)));
+ return h+bar(0)+`<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Closing balance</th></tr></thead><tbody>${B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>`<tr><td><button class="lnk" data-x="ln" data-v="${esc(x.l)}">${esc(x.l)}</button></td><td>${esc(x.g)}</td><td class="n">${sgn(x.dr-x.cr)}</td></tr>`).join('')||'<tr><td colspan="3">Nothing here yet.</td></tr>'}</tbody><tfoot><tr><td colspan="2"><b>Total debit balances</b></td><td class="n"><b>${inr(TD)} Dr</b></td></tr><tr><td colspan="2"><b>Total credit balances</b></td><td class="n"><b>${inr(TC)} Cr</b></td></tr></tfoot></table></div>`}
 function jv(){const a=(S.jv||[]).filter(j=>inR(j.date)).slice().sort((x,y)=>y.date.localeCompare(x.date));
  return `<div class="ph"><h1>Journal (adjustments)</h1><button class="btn" data-x="jn">+ New journal</button></div>${rbar()}<div class="tbl"><table><thead><tr><th>Date</th><th>No</th><th>Narration</th><th>Entries</th><th class="n">Amount</th><th></th></tr></thead><tbody>${a.map(j=>`<tr><td>${j.date}</td><td>${esc(j.no)}</td><td>${esc(j.narr)}</td><td>${j.lines.map(l=>(+l.dr?'Dr ':'Cr ')+esc(l.acct)).join(', ')}</td><td class="n">${inr(sum(j.lines,l=>+l.dr||0))}</td><td><button class="lnk" data-x="je" data-v="${j.id}">Edit</button> <button class="lnk" data-x="jd" data-v="${j.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="6">No journals yet. Use them for closing stock, depreciation, accruals and corrections.</td></tr>'}</tbody></table></div>`}
 const jdif=()=>r2(sum(J.lines,l=>+l.dr||0)-sum(J.lines,l=>+l.cr||0));
@@ -541,27 +542,61 @@ function tableData(t){
 
 function pdfTable(o){
  const J=window.jspdf;if(!J||!J.jsPDF){alert('PDF library did not load. Check your internet connection and try again.');return}
- const nc=o.ncol,land=nc>7,PW=land?297:210,PH=land?210:297,M=12,U=PW-M*2,FS=land?7.5:8;
+ const nc=o.ncol,land=nc>7,PW=land?297:210,PH=land?210:297,M=15,U=PW-M*2,FS=land?7.5:8.5,c=S.co;
  const doc=new J.jsPDF({unit:'mm',format:'a4',orientation:land?'landscape':'portrait'});
  const cl=v=>String(v==null?'':v).replace(/\u20B9/g,'Rs. ').replace(/[\u2013\u2014]/g,'-').replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();
- const BK=[29,26,23],BR=[160,124,69],MU=[101,93,83],HD=[238,231,217],PL=[248,245,238];
+ const BUR=[117,43,59],GD=[161,125,69],MUT=[101,93,83],CRM=[215,204,183],BEI=[238,231,217],ZEB=[247,245,237],INK=[30,30,30],GRY=[85,85,85],LNC=[216,210,196],WH=[255,255,255];
+ const fill=(col,x,y,w,h,rd)=>{doc.setFillColor(...col);rd?doc.roundedRect(x,y,w,h,rd,rd,'F'):doc.rect(x,y,w,h,'F')};
+ const TX=(s,x,y,f,st,sz,col,op)=>{doc.setFont(f,st);doc.setFontSize(sz);doc.setTextColor(...col);doc.text(s,x,y,op)};
+ const T=(s,x,y,f,st,sz,col,op)=>TX(cl(s),x,y,f,st,sz,col,op);
+ /* column widths */
  const wt=[];for(let i=0;i<nc;i++){let m=cl(o.headers[i]).length;o.rows.forEach(r=>{if(!r.sec)m=Math.max(m,cl(r.c[i]).length)});wt.push(Math.min(Math.max(m,7),34))}
  const tw=wt.reduce((a,b)=>a+b,0),W=wt.map(w=>w/tw*U);
- doc.setFont('helvetica','normal');doc.setFontSize(8);const sub=[...doc.splitTextToSize(cl(o.address),U),...doc.splitTextToSize(cl(o.contact),U)].filter(Boolean),BH=sub.length?22+sub.length*4.2:24;
- const band=()=>{doc.setFillColor(...BK);doc.rect(0,0,PW,BH,'F');doc.setFillColor(...BR);doc.rect(0,BH,PW,.8,'F');doc.setFontSize(8);doc.setTextColor(215,204,183);sub.forEach((t,i)=>doc.text(t,M,23.5+i*4.2));doc.setTextColor(255,255,255);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(cl(o.company),M,11);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(cl(o.title),M,18.5);doc.setFontSize(8);doc.setTextColor(215,204,183);doc.text(cl(o.period),PW-M,11,{align:'right'});doc.text('Generated: '+fd(today()),PW-M,18.5,{align:'right'})};
- let y=BH+6;
- const head=()=>{if(!o.headers.some(h=>cl(h)))return;doc.setFillColor(...HD);doc.rect(M,y,U,7,'F');doc.setFont('helvetica','bold');doc.setFontSize(FS-.5);doc.setTextColor(...MU);let x=M;for(let i=0;i<nc;i++){const t=cl(o.headers[i]).toUpperCase();if(o.al[i]==='r')doc.text(t,x+W[i]-1.5,y+4.6,{align:'right'});else doc.text(t,x+1.5,y+4.6);x+=W[i]}y+=7};
- band();head();let k=0;
+ /* header band (first page) */
+ doc.setFont('helvetica','normal');doc.setFontSize(8);
+ const sub=[...doc.splitTextToSize(cl(o.address),U*.55),...doc.splitTextToSize(cl(o.contact),U*.55)].filter(Boolean);
+ const hasLogo=!!c.logo,tagY=hasLogo?31.5:23.5,BH=Math.max(36.5,tagY+6+Math.max(sub.length-1,0)*4+5);
+ let ts=22;doc.setFont('times','normal');doc.setFontSize(ts);while(ts>11&&doc.getTextWidth(cl(o.title))>U*.4){ts--;doc.setFontSize(ts)}
+ const pm=String(o.period||'').match(/^([^:]+):\s*(.*)$/),mk=pm?pm[1].toUpperCase():'PERIOD',mv=pm?pm[2]:(o.period||''),meta=[[mk,mv],['GENERATED',fd(today())]];
+ doc.setFont('courier','normal');doc.setFontSize(7.5);const mw=Math.max(...meta.map(x=>doc.getTextWidth(cl(x[1]))));
+ const band=first=>{
+  if(first){
+   fill(BUR,0,0,PW,BH);fill(GD,0,BH,PW,1);
+   if(hasLogo){const lh=17,lw=Math.min(60,lh*((c.lw/c.lh)||1));fill(WH,M,5.5,lw+6,lh+4,2);try{doc.addImage(c.logo,'PNG',M+3,7.5,lw,lh)}catch(_){T(o.company,M,17,'times','normal',30,WH)}}
+   else T(o.company,M,17,'times','normal',30,WH);
+   if(c.tag)T(c.tag,M+.5,tagY,'courier','normal',7,CRM,{charSpace:2.8});
+   sub.forEach((t,i)=>T(t,M+.5,tagY+6+i*4,'helvetica','normal',8,CRM));
+   T(o.title,PW-M,15.5,'times','normal',ts,WH,{align:'right'});
+   meta.forEach(([k,v],i)=>{T(k,PW-M-mw-4,21.5+i*4.7,'courier','normal',7,CRM,{align:'right'});T(v,PW-M,21.5+i*4.7,'courier','normal',7.5,WH,{align:'right'})});
+  }else{
+   fill(BUR,0,0,PW,12);fill(GD,0,12,PW,.8);
+   T(o.company,M,8,'times','normal',12,WH);T(o.title,PW-M,8,'times','normal',11,WH,{align:'right'});
+  }};
+ let y=BH+9;
+ const head=()=>{if(!o.headers.some(h=>cl(h)))return;fill(BEI,M,y,U,7.6);let x=M;for(let i=0;i<nc;i++){const t=cl(o.headers[i]).toUpperCase();if(o.al[i]==='r')T(t,x+W[i]-2,y+5,'courier','normal',7,MUT,{align:'right'});else T(t,x+2,y+5,'courier','normal',7,MUT);x+=W[i]}y+=7.6};
+ band(1);head();let k=0;
  o.rows.forEach(r=>{
-  doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS);
-  const cells=r.sec?[doc.splitTextToSize(cl(r.c[0]),U-3)]:r.c.slice(0,nc).map((t,i)=>doc.splitTextToSize(cl(t),W[i]-3));
-  const h=Math.max(1,...cells.map(a=>a.length))*FS*.42+3;
-  if(y+h>PH-16){doc.addPage();band();y=BH+6;head();doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS)}
-  if(r.sec||(k++%2)){doc.setFillColor(...PL);doc.rect(M,y,U,h,'F')}
-  doc.setTextColor(30,26,23);let x=M;
-  cells.forEach((ln,i)=>{if(r.sec)doc.text(ln,x+1.5,y+4);else if(o.al[i]==='r')doc.text(ln,x+W[i]-1.5,y+4,{align:'right'});else doc.text(ln,x+1.5,y+4);x+=W[i]});
-  doc.setDrawColor(216,204,183);doc.setLineWidth(.15);doc.line(M,y+h,M+U,y+h);y+=h});
- const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setDrawColor(...BR);doc.setLineWidth(.3);doc.line(M,PH-12,PW-M,PH-12);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MU);doc.text(cl(o.company)+' Accounts',M,PH-7);doc.text('Page '+p+' of '+np,PW-M,PH-7,{align:'right'})}
+  const st=r.b?'bold':'normal';
+  let cells;
+  if(r.sec){doc.setFont('courier','bold');doc.setFontSize(FS-.5);cells=[doc.splitTextToSize(cl(r.c[0]).toUpperCase(),U-4)]}
+  else cells=r.c.slice(0,nc).map((t,i)=>{doc.setFont(o.al[i]==='r'?'courier':'helvetica',st);doc.setFontSize(o.al[i]==='r'?FS-.5:FS);return doc.splitTextToSize(cl(t),W[i]-4)});
+  const h=Math.max(1,...cells.map(a=>a.length))*FS*.42+3.4;
+  if(y+h>PH-22){doc.addPage();band(0);y=19;head()}
+  if(r.sec)fill(ZEB,M,y,U,h);else if(r.b)fill(BEI,M,y,U,h);else if(k++%2)fill(ZEB,M,y,U,h);
+  let x=M;
+  cells.forEach((ln,i)=>{
+   if(r.sec)TX(ln,x+2,y+4.6,'courier','bold',FS-.5,BUR);
+   else if(o.al[i]==='r')TX(ln,x+W[i]-2,y+4.6,'courier',st,FS-.5,INK,{align:'right'});
+   else TX(ln,x+2,y+4.6,'helvetica',st,FS,INK);
+   x+=W[i]});
+  doc.setDrawColor(...LNC);doc.setLineWidth(.15);doc.line(M,y+h,M+U,y+h);y+=h});
+ /* footer on every page */
+ const np=doc.getNumberOfPages();
+ for(let p=1;p<=np;p++){doc.setPage(p);fill(GD,M,PH-17,U,.7);
+  T('Thank you for choosing '+o.company+'.',M,PH-10.5,'times','italic',10.5,BUR);
+  T('This is a computer-generated report and does not require a signature.',M,PH-6,'helvetica','normal',7,GRY);
+  T('Page '+p+' of '+np,PW-M,PH-10.5,'courier','normal',7,GD,{align:'right'});
+  if(c.web)T(c.web,PW-M,PH-6,'courier','normal',7,GD,{align:'right'})}
  doc.save(cl(o.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today()+'.pdf')}
 
 const coInfo=()=>{const c=S.co,address=String(c.addr||'').split('\n').map(x=>x.trim()).filter(Boolean).join(', '),contact=[c.phone&&'Phone: '+c.phone,c.email&&'Email: '+c.email,c.web&&'Web: '+c.web,c.gstin&&'GSTIN: '+c.gstin].filter(Boolean).join('  |  ');return{address,contact}};
@@ -576,9 +611,11 @@ function ledgerExportRows(){
  const title=LN?('Ledger: '+LN):'Ledgers';
  if(LN){const L=lgr();let b=L.ob;const rows=L.rows.map(({v,l})=>{b+=l.dr-l.cr;return[v.date,v.type,v.no||'',v.narr||'',l.dr||'',l.cr||'',Math.abs(b).toFixed(2)+(b<0?' Cr':' Dr')]});
   if(pf)rows.unshift(['','','','Opening balance','','',Math.abs(L.ob).toFixed(2)+(L.ob<0?' Cr':' Dr')]);
-  return {title,headers:['Date','Type','No','Narration','Debit','Credit','Balance'],rows,period:rangeText(0)};}
+  rows.push(['','','','Total',r2(sum(L.rows,x=>x.l.dr)).toFixed(2),r2(sum(L.rows,x=>x.l.cr)).toFixed(2),Math.abs(b).toFixed(2)+(b<0?' Cr':' Dr')]);
+  return {title,headers:['Date','Type','No','Narration','Debit','Credit','Balance'],rows,period:rangeText(0),nt:1};}
  const BB=tbal('',pt),B=[...BB,...Object.entries(masters()).filter(([n])=>!BB.some(x=>x.l===n)).map(([l,g])=>({l,g,dr:0,cr:0}))],k=LK==='c'?'Sundry Debtors':LK==='v'?'Sundry Creditors':0;
- return {title,headers:['Ledger','Group','Closing balance'],rows:B.filter(x=>k?x.g===k:1).sort((a,b)=>a.l.localeCompare(b.l)).map(x=>[x.l,x.g,sgn(x.dr-x.cr)]),period:rangeText(1)};
+ const F=B.filter(x=>k?x.g===k:1),TD=r2(sum(F,x=>Math.max(x.dr-x.cr,0))),TC=r2(sum(F,x=>Math.max(x.cr-x.dr,0)));
+ return {title,headers:['Ledger','Group','Closing balance'],rows:[...F.sort((a,b)=>a.l.localeCompare(b.l)).map(x=>[x.l,x.g,sgn(x.dr-x.cr)]),['Total debit balances','',TD.toFixed(2)+' Dr'],['Total credit balances','',TC.toFixed(2)+' Cr']],period:rangeText(1),nt:2};
 }
 function exportLedger(fmt){
  if(fmt==='pdf'){downloadReportPDF();return}
@@ -586,7 +623,7 @@ function exportLedger(fmt){
  const data=ledgerExportRows(),safe=data.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today();
  const ci=coInfo(),HR=7,matrix=[[S.co.name||'CLIPPD'],[ci.address],[ci.contact],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows];
  const ws=XLSX.utils.aoa_to_sheet(matrix);ws['!cols']=data.headers.map((h,i)=>({wch:Math.max(h.length,...data.rows.map(r=>String(r[i]??'').length))+3}));
- Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===HR){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>HR&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}});
+ Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===HR){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>HR&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}if(data.nt&&row>HR+data.rows.length-data.nt){cell.s.font={...cell.s.font,bold:true}}});
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ledger');XLSX.writeFile(wb,safe+'.xlsx');
 }
 $('#view').addEventListener('click',e=>{const eb=e.target.closest('#ledgerExportBtn');if(eb){const menu=$('#ledgerExportMenu');if(menu)menu.hidden=!menu.hidden;return}
