@@ -87,7 +87,7 @@ dialog form{display:grid;gap:12px;padding:22px}
   </div>
 </div>
 <div id="accountsApp" hidden><div class="app"><aside id="side"></aside><div>
-<div class="top"><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><span id="loginInfo"></span><button class="btn g" id="logoutBtn" type="button" onclick="accountsSignOut()">Sign out</button><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
+<div class="top"><span class="org" id="org"></span><input type="search" id="gq" placeholder="Search invoices, bills, items" aria-label="Search"><span class="sp"></span><span id="cloudStat" style="font-size:12px;color:var(--charcoal-soft)"></span><span id="loginInfo"></span><button class="btn g" id="logoutBtn" type="button" onclick="accountsSignOut()">Sign out</button><a class="lnk" href="https://clippd.in" target="_blank" rel="noopener">Open store ↗</a><button class="btn" id="newBtn">+ New</button></div>
 <div class="page" id="view"></div></div></div>
 </div><datalist id="items"></datalist><datalist id="parties"></datalist>
 <dialog id="tdlg"><form id="tf" method="dialog"><h2 id="tT"></h2>
@@ -125,14 +125,50 @@ function openHandleDB(){return new Promise((resolve,reject)=>{const r=indexedDB.
 async function rememberFileHandle(h){const db=await openHandleDB();return new Promise((resolve,reject)=>{const tx=db.transaction('handles','readwrite');tx.objectStore('handles').put(h,'dataFile');tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
 async function recoverFileHandle(){try{const db=await openHandleDB();const h=await new Promise((resolve,reject)=>{const r=db.transaction('handles','readonly').objectStore('handles').get('dataFile');r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error)});db.close();if(h)dataFileHandle=h}catch(e){}}
 async function writeDataFile(){if(!dataFileHandle)return;if(fileWriteBusy){fileWritePending=true;return}fileWriteBusy=true;try{let p=await dataFileHandle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dataFileHandle.requestPermission({mode:'readwrite'});if(p==='granted'){const w=await dataFileHandle.createWritable();await w.write(safeData());await w.close()}}catch(e){console.warn('File backup update failed:',e)}finally{fileWriteBusy=false;if(fileWritePending){fileWritePending=false;writeDataFile()}}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));if(dataFileHandle)writeDataFile()}catch(e){alert('Could not save in this browser. Download a backup from Settings.')}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));if(dataFileHandle)writeDataFile();cloudMark()}catch(e){alert('Could not save in this browser. Download a backup from Settings.')}}
+/* ---- cloud storage: whole accounts file kept in Supabase table accounts_data ---- */
+const CK=KEY+':cloud';let cloudBusy=false,cloudAgain=false,cloudTimer=null,cloudStamp=0,cloudMsg='Cloud: not synced yet';
+const cloudMeta=()=>{try{return JSON.parse(localStorage.getItem(CK))||{}}catch(e){return{}}},setCloudMeta=m=>localStorage.setItem(CK,JSON.stringify({...cloudMeta(),...m}));
+function cloudStatus(t){cloudMsg=t;const a=document.getElementById('cloudStat');if(a)a.textContent=t;const b=document.getElementById('cloudPanelStat');if(b)b.textContent=t}
+const hasLocalData=()=>S.entries.length||S.txns.length||S.exps.length||(S.jv||[]).length;
+function cloudErr(e){const m=(e&&e.message)||String(e);cloudStatus(/accounts_data|relation|schema cache/i.test(m)?'Cloud: setup needed (run cloud-setup.sql in Supabase)':'Cloud: sync failed - '+m)}
+function cloudMark(){cloudStamp++;setCloudMeta({dirty:true});cloudStatus('Cloud: saving...');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudPush(),1200)}
+function applyCloud(row){const d=DEF(),r=row.data||{};S={...d,...r,sb:{...d.sb,...r.sb},co:{...d.co,...r.co}};if(!S.banks||!S.banks.length)S.banks=d.banks;fix();localStorage.setItem(KEY,JSON.stringify(S));if(dataFileHandle)writeDataFile();setCloudMeta({at:row.updated_at,dirty:false});cloudStatus('Cloud: synced '+new Date().toLocaleTimeString());render()}
+async function cloudPush(force){
+ if(cloudBusy){cloudAgain=true;return}
+ cloudBusy=true;let retry=false;
+ try{
+  const {data:{session}}=await authClient.auth.getSession();if(!session)return;
+  const st=cloudStamp,m=cloudMeta(),payload=JSON.parse(JSON.stringify(S));let res;
+  if(!force&&m.at){res=await authClient.from('accounts_data').update({data:payload}).eq('id','main').eq('updated_at',m.at).select('updated_at');if(res.error)throw res.error;if(!res.data.length){retry=true;return}}
+  else{res=await authClient.from('accounts_data').upsert({id:'main',data:payload}).select('updated_at');if(res.error)throw res.error}
+  setCloudMeta({at:res.data[0].updated_at,dirty:cloudStamp!==st});cloudStatus('Cloud: saved '+new Date().toLocaleTimeString());
+ }catch(e){cloudErr(e)}
+ finally{cloudBusy=false;if(retry)cloudPull();else if(cloudAgain){cloudAgain=false;cloudPush()}}
+}
+async function cloudPull(){
+ try{
+  const {data:{session}}=await authClient.auth.getSession();if(!session)return;
+  const {data:row,error}=await authClient.from('accounts_data').select('data,updated_at').eq('id','main').maybeSingle();
+  if(error)throw error;
+  const m=cloudMeta();
+  if(!row){await cloudPush(true);return}
+  if(m.at&&row.updated_at===m.at){if(m.dirty)await cloudPush();else cloudStatus('Cloud: up to date');return}
+  if(hasLocalData()){
+   if(m.at&&m.dirty){if(!confirm("This computer and the cloud both have new changes.\n\nOK = use the cloud copy (this computer's unsynced changes are lost)\nCancel = keep this computer's data and overwrite the cloud copy")){await cloudPush(true);return}}
+   else if(!m.at){if(!confirm("The cloud already has accounts data, and this computer has its own data.\n\nOK = load the cloud data here (replaces this computer's data)\nCancel = keep this computer's data and overwrite the cloud copy")){await cloudPush(true);return}}
+  }
+  applyCloud(row);
+ }catch(e){cloudErr(e)}
+}
+
 async function chooseDataFile(){try{if(!window.showSaveFilePicker){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([safeData()],{type:'application/json'}));a.download='clippd-accounts-data.json';a.click();alert('Your data file was downloaded. This browser cannot automatically update a file in File Manager; use Download backup after changes.');return}const h=await window.showSaveFilePicker({suggestedName:'clippd-accounts-data.json',types:[{description:'Accounts data backup',accept:{'application/json':['.json']}}]});dataFileHandle=h;await rememberFileHandle(h);await writeDataFile();alert('Data file connected. New changes will be saved to this file when browser permission is available. Keep this file in your File Manager/Downloads.')}catch(e){if(e.name!=='AbortError')alert('Could not connect the data file. Use Download backup instead.')}}
 function setPaid(e,p,aid,date){S.txns=S.txns.filter(t=>t.entry!==e.id);e.paid=p;if(p)S.txns.push({id:uid(),date:date||today(),acct:aid,type:e.type==='sale'?'in':'out',amt:tot(e),ref:e.no,note:e.party,entry:e.id})}
 function stats(l){const s=l.filter(e=>e.type==='sale'&&!e.cancelled),x=l.filter(e=>e.type==='expense'&&!e.cancelled);return{inc:sum(s,amt),exp:sum(x,amt),og:sum(s,tax),ig:sum(x,tax)}}
 
 const recs=()=>[...S.entries,...S.exps.map(x=>({type:'expense',date:x.date,lines:[{item:x.cat,qty:1,rate:x.amt,gst:x.gst}]}))];
 /* ---- website (Supabase) ---- */
-async function sbf(path,o={}){const c=S.sb,t=sessionStorage.getItem('sbt')||c.key;
+async function sbf(path,o={}){const c=S.sb,t=((await authClient.auth.getSession()).data.session||{}).access_token||sessionStorage.getItem('sbt')||c.key;
  const r=await fetch(c.url.replace(/\/$/,'')+'/rest/v1/'+path,{...o,headers:{apikey:c.key,Authorization:'Bearer '+t,'Content-Type':'application/json',Prefer:'return=representation'}});
  const x=await r.text();if(!r.ok)throw new Error(x||r.status);return x?JSON.parse(x):[]}
 async function loadItems(){if(!SBon())return;try{ITEMS=await sbf(S.sb.table+'?select=*&limit=1000');conn=true}catch(e){conn=false;msg='Could not read website products: '+e.message}
@@ -293,6 +329,7 @@ function set(){const c=S.sb,f=(id,l,v,t)=>`<label>${l}<input id="s_${id}" value=
  <label>Extra columns for new products (JSON, optional)<textarea id="s_extra" rows="2" placeholder='{"category":"Pendants","active":true}'>${esc(c.extra)}</textarea></label><br>
  <div class="tools"><button class="btn" id="saveSb">Save and load products</button></div><br>
  <h2>Sign in (recommended)</h2><small>Lets you keep write access limited to signed-in users instead of the public key.</small><div class="fg">${f('email','Email','','email')}${f('pw','Password','','password')}</div><button class="btn g" id="signin">Sign in</button></div>
+ <div class="panel" style="max-width:560px"><h2>Cloud storage</h2><small>Your accounts data is saved to your Supabase database after every change, so you can open it from any computer by signing in with your admin email.</small><br><b id="cloudPanelStat">${esc(cloudMsg)}</b><div class="tools" style="margin-top:12px"><button class="btn g" id="cloudSync">Sync now</button></div></div>
  <div class="panel" style="max-width:560px"><h2>Data file / Backup</h2><small>Choose a JSON file in your File Manager/Downloads. On supported browsers, every saved transaction will update that file automatically. Browser storage remains enabled too.</small><br><div class="tools"><button class="btn" id="chooseFile">Choose data file</button><button class="btn g" id="bk">Download backup</button><button class="btn g" id="rs">Restore</button><input type="file" id="file" accept="application/json" hidden><button class="btn g" id="wipe">Delete all data</button></div></div>`}
 
 function exps(){const a=S.exps.filter(x=>inR(x.date)&&(!q||(x.cat+x.party+x.desc+x.ref).toLowerCase().includes(q.toLowerCase()))).sort((x,y)=>y.date.localeCompare(x.date));
@@ -379,6 +416,7 @@ $('#view').addEventListener('click',async e=>{const t=e.target.closest('button,[
  if(t.id==='saveBiz'){S.biz=$('#s_biz').value.trim()||'My business';save();render()}
  if(t.id==='saveSb'){['url','key','table','name','sku','price','stock','cost','extra'].forEach(k=>S.sb[k]=$('#s_'+k).value.trim());save();await loadItems();msg=msg||`Connected. Found ${ITEMS.length} products.`;render()}
  if(t.id==='signin'){try{const r=await fetch(S.sb.url.replace(/\/$/,'')+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:S.sb.key,'Content-Type':'application/json'},body:JSON.stringify({email:$('#s_email').value,password:$('#s_pw').value})}),j=await r.json();if(!j.access_token)throw new Error(j.error_description||j.msg||'Sign in failed');sessionStorage.setItem('sbt',j.access_token);msg='Signed in. Website changes now use your login.'}catch(er){msg=er.message}render()}
+ if(t.id==='cloudSync'){cloudStatus('Cloud: syncing...');cloudPull();return}
  if(t.id==='chooseFile'){chooseDataFile();return}
  if(t.id==='bk'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({...S,sb:{...S.sb,key:''}})],{type:'application/json'}));a.download='accounts-backup-'+today()+'.json';a.click()}
  if(t.id==='rs')$('#file').click();
@@ -503,15 +541,16 @@ function pdfTable(o){
  const BK=[29,26,23],BR=[160,124,69],MU=[101,93,83],HD=[238,231,217],PL=[248,245,238];
  const wt=[];for(let i=0;i<nc;i++){let m=cl(o.headers[i]).length;o.rows.forEach(r=>{if(!r.sec)m=Math.max(m,cl(r.c[i]).length)});wt.push(Math.min(Math.max(m,7),34))}
  const tw=wt.reduce((a,b)=>a+b,0),W=wt.map(w=>w/tw*U);
- const band=()=>{doc.setFillColor(...BK);doc.rect(0,0,PW,24,'F');doc.setFillColor(...BR);doc.rect(0,24,PW,.8,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(cl(o.company),M,11);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(cl(o.title),M,18.5);doc.setFontSize(8);doc.setTextColor(215,204,183);doc.text(cl(o.period),PW-M,11,{align:'right'});doc.text('Generated: '+fd(today()),PW-M,18.5,{align:'right'})};
- let y=30;
+ doc.setFont('helvetica','normal');doc.setFontSize(8);const sub=[...doc.splitTextToSize(cl(o.address),U),...doc.splitTextToSize(cl(o.contact),U)].filter(Boolean),BH=sub.length?22+sub.length*4.2:24;
+ const band=()=>{doc.setFillColor(...BK);doc.rect(0,0,PW,BH,'F');doc.setFillColor(...BR);doc.rect(0,BH,PW,.8,'F');doc.setFontSize(8);doc.setTextColor(215,204,183);sub.forEach((t,i)=>doc.text(t,M,23.5+i*4.2));doc.setTextColor(255,255,255);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(cl(o.company),M,11);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(cl(o.title),M,18.5);doc.setFontSize(8);doc.setTextColor(215,204,183);doc.text(cl(o.period),PW-M,11,{align:'right'});doc.text('Generated: '+fd(today()),PW-M,18.5,{align:'right'})};
+ let y=BH+6;
  const head=()=>{if(!o.headers.some(h=>cl(h)))return;doc.setFillColor(...HD);doc.rect(M,y,U,7,'F');doc.setFont('helvetica','bold');doc.setFontSize(FS-.5);doc.setTextColor(...MU);let x=M;for(let i=0;i<nc;i++){const t=cl(o.headers[i]).toUpperCase();if(o.al[i]==='r')doc.text(t,x+W[i]-1.5,y+4.6,{align:'right'});else doc.text(t,x+1.5,y+4.6);x+=W[i]}y+=7};
  band();head();let k=0;
  o.rows.forEach(r=>{
   doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS);
   const cells=r.sec?[doc.splitTextToSize(cl(r.c[0]),U-3)]:r.c.slice(0,nc).map((t,i)=>doc.splitTextToSize(cl(t),W[i]-3));
   const h=Math.max(1,...cells.map(a=>a.length))*FS*.42+3;
-  if(y+h>PH-16){doc.addPage();band();y=30;head();doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS)}
+  if(y+h>PH-16){doc.addPage();band();y=BH+6;head();doc.setFont('helvetica',r.b||r.sec?'bold':'normal');doc.setFontSize(FS)}
   if(r.sec||(k++%2)){doc.setFillColor(...PL);doc.rect(M,y,U,h,'F')}
   doc.setTextColor(30,26,23);let x=M;
   cells.forEach((ln,i)=>{if(r.sec)doc.text(ln,x+1.5,y+4);else if(o.al[i]==='r')doc.text(ln,x+W[i]-1.5,y+4,{align:'right'});else doc.text(ln,x+1.5,y+4);x+=W[i]});
@@ -519,12 +558,13 @@ function pdfTable(o){
  const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setDrawColor(...BR);doc.setLineWidth(.3);doc.line(M,PH-12,PW-M,PH-12);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MU);doc.text(cl(o.company)+' Accounts',M,PH-7);doc.text('Page '+p+' of '+np,PW-M,PH-7,{align:'right'})}
  doc.save(cl(o.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today()+'.pdf')}
 
+const coInfo=()=>{const c=S.co,address=String(c.addr||'').split('\n').map(x=>x.trim()).filter(Boolean).join(', '),contact=[c.phone&&'Phone: '+c.phone,c.email&&'Email: '+c.email,c.web&&'Web: '+c.web,c.gstin&&'GSTIN: '+c.gstin].filter(Boolean).join('  |  ');return{address,contact}};
 function downloadReportPDF(){
  const t=document.querySelector('#view .tbl table');if(!t){alert('Nothing to export in this view.');return}
  const ba=S.banks.find(x=>x.id===acct)||{name:''};
  const names={sale:'Invoices',expense:'Purchase Bills',exps:'Expenses',bank:(ba.cash?'Cash Book: ':'Bank Book: ')+ba.name,rep:'Sales vs Purchases',pl:'Profit and Loss',bs:'Balance Sheet',tb:'Trial Balance',led:LN?'Ledger: '+LN:'Ledgers',jv:'Journal',xp:'Export'};
  const asof=['bs','tb'].includes(view)||(view==='led'&&!LN);
- pdfTable({company:S.co.name||'CLIPPD',title:names[view]||'Report',period:rangeText(asof),...tableData(t)})}
+ pdfTable({company:S.co.name||'CLIPPD',...coInfo(),title:names[view]||'Report',period:rangeText(asof),...tableData(t)})}
 
 function ledgerExportRows(){
  const title=LN?('Ledger: '+LN):'Ledgers';
@@ -538,9 +578,9 @@ function exportLedger(fmt){
  if(fmt==='pdf'){downloadReportPDF();return}
  if(!window.XLSX){alert('Excel export library did not load. Check your internet connection.');return}
  const data=ledgerExportRows(),safe=data.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today();
- const matrix=[[S.co.name||'CLIPPD'],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows];
+ const ci=coInfo(),HR=7,matrix=[[S.co.name||'CLIPPD'],[ci.address],[ci.contact],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows];
  const ws=XLSX.utils.aoa_to_sheet(matrix);ws['!cols']=data.headers.map((h,i)=>({wch:Math.max(h.length,...data.rows.map(r=>String(r[i]??'').length))+3}));
- Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===5){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>5&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}});
+ Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===HR){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>HR&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}});
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ledger');XLSX.writeFile(wb,safe+'.xlsx');
 }
 $('#view').addEventListener('click',e=>{const eb=e.target.closest('#ledgerExportBtn');if(eb){const menu=$('#ledgerExportMenu');if(menu)menu.hidden=!menu.hidden;return}
@@ -592,7 +632,7 @@ async function checkAccountsAccess(){
  }
  $('#loginGate').style.display='none';$('#accountsApp').hidden=false;
  $('#loginInfo').textContent=profile.email||session.user.email||'Signed in';
- load();recoverFileHandle().then(()=>{});render();loadItems().then(render);
+ load();recoverFileHandle().then(()=>{});render();loadItems().then(render);cloudPull();
 }
 async function accountsSignOut(){
  await authClient.auth.signOut();
@@ -601,6 +641,7 @@ async function accountsSignOut(){
 authClient.auth.onAuthStateChange((_event,session)=>{
  if(session?.user && $('#accountsApp').hidden) setTimeout(()=>checkAccountsAccess(),0);
 });
+window.addEventListener('focus',()=>{if(!$('#accountsApp').hidden&&!['form','xform','jform'].includes(view)&&!cloudMeta().dirty)cloudPull()});
 checkAccountsAccess();
 
 </script></body></html>
