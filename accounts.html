@@ -108,7 +108,7 @@ body.navopen aside{transform:none;box-shadow:4px 0 24px rgba(0,0,0,.35)}
 
 <script>
 const KEY='accounts.v1',uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const DEF=()=>({biz:'CLIPPD',entries:[],txns:[],exps:[],jv:[],coa:[],co:{name:'CLIPPD',tag:'YOUR EVERYDAY SLAY',addr:'H No 06, Deotari Alukhunda Road\nNear Deotari Kali Mandir, Deotari Alukhunda\nBongaigaon, Assam - 783391',email:'hello@clippd.in',gstin:'18CVTPM2138R1ZK',web:'clippd.in',terms:'Returns or exchanges may be requested within 72 hours of delivery, provided the item is unused and in its original packaging.\nApproved refunds are issued to the original payment method within 5-7 business days of us receiving the returned item.\nAll prices shown are inclusive of 3% GST. Free shipping applies on qualifying orders over Rs. 999.\nCOD orders carry an additional, non-refundable Rs. 39 delivery fee. Delivery timelines are estimates, not guarantees.\nFull terms, returns and privacy policies are available at clippd.in.'},banks:[{id:'cash',name:'Cash',cash:1,open:0},{id:'bank',name:'Bank account',open:0}],sb:{url:'',key:'',table:'products',name:'name',sku:'sku',price:'price',stock:'stock',cost:'',extra:''}});
+const DEF=()=>({biz:'CLIPPD',entries:[],txns:[],exps:[],jv:[],coa:[],stk:{close:''},co:{name:'CLIPPD',tag:'YOUR EVERYDAY SLAY',addr:'H No 06, Deotari Alukhunda Road\nNear Deotari Kali Mandir, Deotari Alukhunda\nBongaigaon, Assam - 783391',email:'hello@clippd.in',gstin:'18CVTPM2138R1ZK',web:'clippd.in',terms:'Returns or exchanges may be requested within 72 hours of delivery, provided the item is unused and in its original packaging.\nApproved refunds are issued to the original payment method within 5-7 business days of us receiving the returned item.\nAll prices shown are inclusive of 3% GST. Free shipping applies on qualifying orders over Rs. 999.\nCOD orders carry an additional, non-refundable Rs. 39 delivery fee. Delivery timelines are estimates, not guarantees.\nFull terms, returns and privacy policies are available at clippd.in.'},banks:[{id:'cash',name:'Cash',cash:1,open:0},{id:'bank',name:'Bank account',open:0}],sb:{url:'',key:'',table:'products',name:'name',sku:'sku',price:'price',stock:'stock',cost:'',extra:''}});
 let S=DEF(),view='dash',q='',fs='all',range='all',acct='bank',D=null,X=null,T=null,conn=false,ITEMS=[],msg='';
 const $=s=>document.querySelector(s);
 const inr=n=>'₹'+(+n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -123,7 +123,7 @@ const SBon=()=>S.sb.url&&S.sb.key;
 const STATES=[['01','Jammu & Kashmir'],['02','Himachal Pradesh'],['03','Punjab'],['04','Chandigarh'],['05','Uttarakhand'],['06','Haryana'],['07','Delhi'],['08','Rajasthan'],['09','Uttar Pradesh'],['10','Bihar'],['11','Sikkim'],['12','Arunachal Pradesh'],['13','Nagaland'],['14','Manipur'],['15','Mizoram'],['16','Tripura'],['17','Meghalaya'],['18','Assam'],['19','West Bengal'],['20','Jharkhand'],['21','Odisha'],['22','Chhattisgarh'],['23','Madhya Pradesh'],['24','Gujarat'],['26','Dadra & Nagar Haveli and Daman & Diu'],['27','Maharashtra'],['29','Karnataka'],['30','Goa'],['31','Lakshadweep'],['32','Kerala'],['33','Tamil Nadu'],['34','Puducherry'],['35','Andaman & Nicobar Islands'],['36','Telangana'],['37','Andhra Pradesh'],['38','Ladakh']];
 const SC=()=>(S.co.gstin||'').slice(0,2)||'18';
 const nextNo=t=>{const m=S.entries.filter(e=>e.type===t&&e.no).map(e=>parseInt(e.no.replace(/\D/g,''))||0);return(t==='sale'?'INV-':'BILL-')+String(Math.max(0,...m)+1).padStart(6,'0')};
-function fix(){S.entries.forEach(e=>{if(!e.due)e.due=e.date});['sale','expense'].forEach(t=>S.entries.filter(e=>e.type===t&&!e.no).forEach(e=>e.no=nextNo(t)))}
+function fix(){S.sb=S.sb||{};if(!S.sb.url)S.sb.url=AUTH_URL;if(!S.sb.key)S.sb.key=AUTH_KEY;S.entries.forEach(e=>{if(!e.due)e.due=e.date});['sale','expense'].forEach(t=>S.entries.filter(e=>e.type===t&&!e.no).forEach(e=>e.no=nextNo(t)))}
 function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r){const d=DEF();S={...d,...r,sb:{...d.sb,...r.sb},co:{...d.co,...r.co}};if(!S.banks.length)S.banks=d.banks}}catch(e){}if(S.biz==='My business')S.biz='CLIPPD';fix()}
 let dataFileHandle=null, fileWriteBusy=false, fileWritePending=false;
 function safeData(){return JSON.stringify({...S,sb:{...S.sb,key:''}},null,2)}
@@ -306,10 +306,40 @@ async function saveD(){const d=D,ls=d.lines.filter(l=>l.item.trim()&&+l.qty>0).m
  msg=pm+msg;view=e.type;D=null;render()}
 
 const LOWSTOCK=5;
-function stockSum(){const c=S.sb,q=r=>+r[c.stock]||0,n=ITEMS.length,u=sum(ITEMS,q),vs=sum(ITEMS,r=>q(r)*(+r[c.price]||0)),vc=c.cost?sum(ITEMS,r=>q(r)*(+r[c.cost]||0)):null,out=ITEMS.filter(r=>q(r)<=0).length,low=ITEMS.filter(r=>q(r)>0&&q(r)<=LOWSTOCK).length;return{n,u,vs,vc,out,low}}
-function stockPanels(){const t=stockSum(),p=(l,v,cls)=>`<div class="panel"><small>${l}</small><div class="big ${cls||''}">${v}</div></div>`;
- return `<div class="row">${p('Products',t.n)}${p('Units in stock',t.u)}${p('Stock value (selling price)',inr(t.vs))}${t.vc===null?'':p('Stock value (cost)',inr(t.vc))}${p('Out of stock',t.out,t.out?'loss':'')}${p('Low stock (up to '+LOWSTOCK+' units)',t.low,t.low?'loss':'')}</div>`}
-function stockDash(){if(!SBon()||!ITEMS.length)return '';return `<h2 style="margin:6px 0 12px">Stock summary</h2>${stockPanels()}`}
+const nz=t=>String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,''),nzb=t=>nz(String(t||'').replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g,' ').replace(/\s+-\s+.*$/,''));
+/* Stock register built from purchase bills (in) and sales invoices (out), valued at the actual purchase rates, oldest stock sold first */
+function stockReg(upto){
+ const ok=e=>!e.cancelled&&(!upto||(e.date||'')<=upto),G=[];
+ const exact=(sk,n,b)=>G.find(g=>sk&&g.sku===sk)||G.find(g=>g.names.has(n)||(b&&g.names.has(b)));
+ const loose=(sk,n,b)=>exact(sk,n,b)||G.find(g=>[...g.names].some(x=>x&&n&&Math.min(x.length,n.length)>=4&&(x.includes(n)||n.includes(x))));
+ S.entries.filter(e=>e.type!=='sale'&&ok(e)).sort((x,y)=>(x.date||'').localeCompare(y.date||'')).forEach(e=>lines(e).forEach(l=>{
+  const q=+l.qty||0;if(!q||!String(l.item||'').trim())return;
+  const sk=String(l.sku||'').trim().toLowerCase(),n=nz(l.item),b=nzb(l.item);let g=exact(sk,n,b);
+  if(!g){g={item:String(l.item).trim(),sku:sk,names:new Set(),lots:[],pq:0,pv:0,sold:0};G.push(g)}
+  if(sk&&!g.sku)g.sku=sk;g.names.add(n);if(b)g.names.add(b);
+  g.lots.push({q,c:lt(l)});g.pq+=q;g.pv+=lt(l)}));
+ const none=new Set();
+ S.entries.filter(e=>e.type==='sale'&&ok(e)).forEach(e=>lines(e).forEach(l=>{
+  const q=+l.qty||0;if(!q)return;const sk=String(l.sku||'').trim().toLowerCase(),g=loose(sk,nz(l.item),nzb(l.item));
+  if(g)g.sold+=q;else none.add(String(l.item||'').trim())}));
+ G.forEach(g=>{let rem=g.sold;const left={};
+  g.lots.forEach(x=>{const take=Math.min(x.q,rem);rem-=take;const q=x.q-take;if(q>1e-9){const rate=r2(x.c/x.q);left[rate]=(left[rate]||0)+q}});
+  g.stock=r2(g.pq-g.sold);g.parts=Object.entries(left).map(([rt,q])=>({rate:+rt,q}));
+  g.val=r2(sum(g.parts,x=>x.q*x.rate))});
+ G.sort((x,y)=>x.item.localeCompare(y.item));
+ return{groups:G,unmatched:[...none],total:r2(sum(G,g=>g.val)),units:r2(sum(G,g=>Math.max(g.stock,0))),sold:r2(sum(G,g=>g.sold)),bought:r2(sum(G,g=>g.pq))}}
+function stockSum(){const c=S.sb,q=r=>+r[c.stock]||0,n=ITEMS.length,u=sum(ITEMS,q),vs=sum(ITEMS,r=>q(r)*(+r[c.price]||0)),out=ITEMS.filter(r=>q(r)<=0).length,low=ITEMS.filter(r=>q(r)>0&&q(r)<=LOWSTOCK).length;return{n,u,vs,out,low}}
+const cardP=(l,v,cls)=>`<div class="panel"><small>${l}</small><div class="big ${cls||''}">${v}</div></div>`;
+function stockPanels(){const t=stockSum();
+ return `<div class="row">${cardP('Products',t.n)}${cardP('Units in stock',t.u)}${cardP('Stock value (selling price)',inr(t.vs))}${cardP('Out of stock',t.out,t.out?'loss':'')}${cardP('Low stock (up to '+LOWSTOCK+' units)',t.low,t.low?'loss':'')}</div>`}
+function stockDash(){const R=stockReg('');if(!R.groups.length)return '';return `<h2 style="margin:6px 0 12px">Stock summary (from purchase bills)</h2><div class="row">${cardP('Items purchased',R.groups.length)}${cardP('Units in stock',R.units)}${cardP('Stock value (purchase cost)',inr(R.total))}</div>`}
+const brk=g=>g.stock>0&&g.parts.length?g.parts.map(x=>r2(x.q)+' x '+inr(x.rate)).join(' + '):'-';
+function stkv(){const R=stockReg(pt);
+ return `<div class="ph"><h1>Stock (from purchase bills)</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="row">${cardP('Items purchased',R.groups.length)}${cardP('Units in stock',R.units)}${cardP('Stock value (purchase cost)',inr(R.total))}</div>`+
+ (R.groups.length?`<div class="tbl"><table><thead><tr><th>Item</th><th>SKU</th><th class="n">Purchased</th><th class="n">Sold</th><th class="n">In stock</th><th>Cost of stock in hand</th><th class="n">Stock value</th></tr></thead><tbody>${R.groups.map(g=>`<tr><td>${esc(g.item)}</td><td>${esc(g.sku)}</td><td class="n">${r2(g.pq)}</td><td class="n">${r2(g.sold)}</td><td class="n">${g.stock<0?'<span class="loss">'+g.stock+'</span>':g.stock}</td><td>${esc(brk(g))}</td><td class="n">${inr(g.val)}</td></tr>`).join('')}</tbody><tfoot><tr><td><b>Total</b></td><td></td><td class="n"><b>${R.bought}</b></td><td class="n"><b>${R.sold}</b></td><td class="n"><b>${R.units}</b></td><td></td><td class="n"><b>${inr(R.total)}</b></td></tr></tfoot></table></div>`:'<div class="empty">No purchase bills yet. Enter purchase bills with item name, quantity and rate and your stock will appear here.</div>')+
+ `<small>Stock = quantity on purchase bills minus quantity on sales invoices, valued at the actual rate on each purchase bill (before GST). Oldest stock is treated as sold first, so what is left is valued at your most recent purchase rates. Sales items are matched to purchase items by SKU, then name.</small>`+
+ (R.unmatched.length?`<div class="msg">Sold but not found on any purchase bill: ${esc(R.unmatched.slice(0,8).join(', '))}${R.unmatched.length>8?' and '+(R.unmatched.length-8)+' more':''}. Enter purchase bills for them.</div>`:'')+
+ (R.groups.some(g=>g.stock<0)?`<div class="msg">Some items show negative stock: more was sold than purchased. Check the purchase bills.</div>`:'')}
 function items(){const c=S.sb,q=r=>+r[c.stock]||0;return `<div class="ph"><h1>Items (from your website)</h1><button class="btn g" id="refItems">Refresh</button></div>`+(!SBon()?'<div class="empty">Connect your website database in Settings to see your products here.</div>':ITEMS.length?`<h2 style="margin:6px 0 12px">Stock summary</h2>${stockPanels()}<div class="tbl"><table><thead><tr><th>Name</th><th>SKU</th><th class="n">Price</th><th class="n">Stock</th><th class="n">Stock value</th><th>Status</th></tr></thead><tbody>${ITEMS.map(r=>`<tr><td>${esc(r[c.name])}</td><td>${esc(r[c.sku]??'')}</td><td class="n">${inr(r[c.price])}</td><td class="n">${r[c.stock]??''}</td><td class="n">${inr(q(r)*(+r[c.price]||0))}</td><td>${q(r)<=0?'<span class="loss">Out of stock</span>':q(r)<=LOWSTOCK?'<span class="loss">Low</span>':'In stock'}</td></tr>`).join('')}</tbody><tfoot><tr><td><b>Total</b></td><td></td><td></td><td class="n"><b>${stockSum().u}</b></td><td class="n"><b>${inr(stockSum().vs)}</b></td><td></td></tr></tfoot></table></div>`:'<div class="empty">No products found. Check the table and column names in Settings.</div>')}
 
 function bank(){const A=S.banks,a=A.find(x=>x.id===acct)||A[0];acct=a.id;let b=+a.open||0,ri=0,ro=0;
@@ -331,11 +361,12 @@ function rep(){const l=recs().filter(e=>inR(e.date)),a=stats(l),mm={};
 
 function set(){const c=S.sb,f=(id,l,v,t)=>`<label>${l}<input id="s_${id}" value="${esc(v)}"${t?` type="${t}"`:''}></label>`;
  return `<div class="ph"><h1>Settings</h1></div><div class="panel" style="max-width:560px"><h2>Organisation</h2>${f('biz','Name',S.biz)}<br><button class="btn" id="saveBiz">Save</button></div>
- <div class="panel" style="max-width:560px"><h2>Invoice details (shown on the PDF)</h2><div class="fg">${f('c_name','Business name',S.co.name)}${f('c_tag','Tagline',S.co.tag)}${f('c_email','Email',S.co.email)}${f('c_gstin','GSTIN',S.co.gstin)}${f('c_web','Website',S.co.web)}</div><label>Address (one line per row)<textarea id="s_c_addr" rows="3">${esc(S.co.addr)}</textarea></label><br><div class="fg"><label>Logo (PNG or JPG, used on invoices, in the app and as the tab icon)<input type="file" id="logoFile" accept="image/*"></label>${S.co.logo?`<div><img src="${S.co.logo}" alt="Logo" style="max-height:48px;background:#eee;padding:4px;border-radius:4px"><br><button class="btn g" data-x="logoDel">Remove logo</button></div>`:''}</div><label>Terms and conditions (one point per line)<textarea id="s_c_terms" rows="6">${esc(S.co.terms)}</textarea></label><br><button class="btn" id="saveCo">Save invoice details</button></div>
+ <div class="panel" style="max-width:560px"><h2>Invoice details (shown on the PDF)</h2><div class="fg">${f('c_name','Business name',S.co.name)}${f('c_tag','Tagline',S.co.tag)}${f('c_email','Email',S.co.email)}${f('c_gstin','GSTIN',S.co.gstin)}${f('c_web','Website',S.co.web)}${f('c_phone','Phone',S.co.phone||'')}</div><label>Address (one line per row)<textarea id="s_c_addr" rows="3">${esc(S.co.addr)}</textarea></label><br><div class="fg"><label>Logo (PNG or JPG, used on invoices, in the app and as the tab icon)<input type="file" id="logoFile" accept="image/*"></label>${S.co.logo?`<div><img src="${S.co.logo}" alt="Logo" style="max-height:48px;background:#eee;padding:4px;border-radius:4px"><br><button class="btn g" data-x="logoDel">Remove logo</button></div>`:''}</div><label>Terms and conditions (one point per line)<textarea id="s_c_terms" rows="6">${esc(S.co.terms)}</textarea></label><br><button class="btn" id="saveCo">Save invoice details</button></div>
  <div class="panel" style="max-width:560px"><h2>Website database (Supabase)</h2><div class="fg">${f('url','Project URL',c.url)}${f('key','Anon public key',c.key)}${f('table','Products table',c.table)}${f('name','Name column',c.name)}${f('sku','SKU column',c.sku)}${f('price','Price column',c.price)}${f('stock','Stock column',c.stock)}${f('cost','Cost column (optional)',c.cost)}</div>
  <label>Extra columns for new products (JSON, optional)<textarea id="s_extra" rows="2" placeholder='{"category":"Pendants","active":true}'>${esc(c.extra)}</textarea></label><br>
  <div class="tools"><button class="btn" id="saveSb">Save and load products</button></div><br>
  <h2>Sign in (recommended)</h2><small>Lets you keep write access limited to signed-in users instead of the public key.</small><div class="fg">${f('email','Email','','email')}${f('pw','Password','','password')}</div><button class="btn g" id="signin">Sign in</button></div>
+ <div class="panel" style="max-width:560px"><h2>Closing stock (for P&L and Balance Sheet)</h2><small>Taken automatically from your purchase bills less your sales (see the Stock page), valued at the actual rate on each purchase bill, before GST. To use your own stock-count value instead, enter it here. Leave empty for automatic.</small><div class="fg">${f('stk_close','Closing stock value (optional)',(S.stk||{}).close??'','number')}</div><small>Current value used: <b>${inr(stockVal().v)}</b> (${esc(stockVal().basis||'no stock found')})</small><br><div class="tools" style="margin-top:12px"><button class="btn" id="saveStk">Save</button></div></div>
  <div class="panel" style="max-width:560px"><h2>Cloud storage</h2><small>Your accounts data is saved to your Supabase database after every change, so you can open it from any computer by signing in with your admin email.</small><br><b id="cloudPanelStat">${esc(cloudMsg)}</b><div class="tools" style="margin-top:12px"><button class="btn g" id="cloudSync">Sync now</button></div></div>
  <div class="panel" style="max-width:560px"><h2>Data file / Backup</h2><small>Choose a JSON file in your File Manager/Downloads. On supported browsers, every saved transaction will update that file automatically. Browser storage remains enabled too.</small><br><div class="tools"><button class="btn" id="chooseFile">Choose data file</button><button class="btn g" id="bk">Download backup</button><button class="btn g" id="rs">Restore</button><input type="file" id="file" accept="application/json" hidden><button class="btn g" id="wipe">Delete all data</button></div></div>`}
 
@@ -359,12 +390,12 @@ function saveX(){const x=X,a=+x.amt;if(!x.cat.trim()||!(a>0)){alert('Enter an ex
  const e={id:x.id,date:x.date,cat:x.cat.trim(),party:(x.party||'').trim(),ref:(x.ref||'').trim(),amt:a,gst:+x.gst||0,acct:x.acct,desc:x.desc||''},i=S.exps.findIndex(y=>y.id===e.id);i>=0?S.exps[i]=e:S.exps.push(e);
  S.txns=S.txns.filter(t=>t.entry!==e.id);S.txns.push({id:uid(),date:e.date,acct:e.acct,type:'out',amt:a*(1+e.gst/100),ref:e.cat,note:e.party||e.desc,entry:e.id});
  save();X=null;view='exps';render()}
-const NAV=[['dash','Dashboard'],'Sales',['sale','Invoices'],['wo','Website orders'],'Purchases',['expense','Purchase bills'],['exps','Expenses'],'Inventory',['items','Items (website)'],'Banking',['cash','Cash book'],['bank','Bank accounts'],'Accounting',['jv','Journal'],['led','Ledgers'],['tb','Trial balance'],['pl','Profit and loss'],['bs','Balance sheet'],['xp','Export (Tally, Zoho)'],'Insights',['rep','Reports'],['set','Settings']];
+const NAV=[['dash','Dashboard'],'Sales',['sale','Invoices'],['wo','Website orders'],'Purchases',['expense','Purchase bills'],['exps','Expenses'],'Inventory',['stk','Stock'],['items','Items (website)'],'Banking',['cash','Cash book'],['bank','Bank accounts'],'Accounting',['jv','Journal'],['led','Ledgers'],['tb','Trial balance'],['pl','Profit and loss'],['bs','Balance sheet'],['xp','Export (Tally, Zoho)'],'Insights',['rep','Reports'],['set','Settings']];
 function render(){const m=msg;msg='';document.title=S.biz+' · Accounts';applyIcon();
  const cur=view==='jform'?'jv':view==='xform'?'exps':view==='form'?D.type:view==='bank'?(S.banks.find(x=>x.id===acct)||{}).cash?'cash':'bank':view;
  $('#org').innerHTML=`${LG()?`<img src="${LG()}" alt="">`:''}<span class="sep">/</span><span class="sec">${esc((NAV.find(n=>n[0]===cur)||[0,'Accounts'])[1])}</span>`;$('#side').innerHTML=`<div class="brand">${LG()?`<img src="${LG()}" alt="${esc(S.co.name)}">`:''}<span>${esc(S.co.name)} Accounts</span></div>`+NAV.map(n=>typeof n==='string'?`<div class="grp">${n}</div>`:`<button class="item" data-v="${n[0]}" aria-current="${n[0]===cur}">${n[1]}</button>`).join('')+`<div class="grp" style="padding-top:22px">Website</div><div style="padding:2px 20px 20px;font-size:13px">${SBon()?(conn?`● Connected · ${ITEMS.length} products`:'● Connection failed. Check Settings.'):'○ Not connected. Add your details in Settings.'}</div>`;
  $('#parties').innerHTML=[...new Set(S.entries.map(e=>e.party))].map(p=>`<option value="${esc(p)}">`).join('');
- $('#view').innerHTML=(m?`<div class="msg">${esc(m)}</div>`:'')+({dash,sale:()=>list('sale'),expense:()=>list('expense'),exps,xform,form,items,wo,bank,rep,set,jv,jform,led,tb,pl:plv,bs:bsv,xp}[view])();
+ $('#view').innerHTML=(m?`<div class="msg">${esc(m)}</div>`:'')+({dash,sale:()=>list('sale'),expense:()=>list('expense'),exps,xform,form,items,stk:stkv,wo,bank,rep,set,jv,jform,led,tb,pl:plv,bs:bsv,xp}[view])();
  if(view==='form')updTot();if($('#fs'))$('#fs').value=fs;if($('#range'))$('#range').value=range}
 
 /* ---- transaction dialog ---- */
@@ -419,7 +450,8 @@ $('#view').addEventListener('click',async e=>{const t=e.target.closest('button,[
  if(d.xdel&&confirm('Delete this expense and its payment record?')){S.exps=S.exps.filter(x=>x.id!==d.xdel);S.txns=S.txns.filter(x=>x.entry!==d.xdel);save();render()}
  if(t.id==='saveX')saveX();if(t.id==='cancelX'){X=null;view='exps';render()}
  if(t.id==='saveD')saveD();if(t.id==='cancelD'){view=D.type;D=null;render()}
- if(t.id==='saveCo'){['name','tag','email','gstin','web','addr','terms'].forEach(k=>S.co[k]=$('#s_c_'+k).value.trim());save();msg='Invoice details saved.';render()}
+ if(t.id==='saveCo'){['name','tag','email','gstin','web','phone','addr','terms'].forEach(k=>S.co[k]=$('#s_c_'+k).value.trim());save();msg='Invoice details saved.';render()}
+ if(t.id==='saveStk'){S.stk={close:$('#s_stk_close').value.trim()};save();msg='Closing stock saved.';render();return}
  if(t.id==='saveBiz'){S.biz=$('#s_biz').value.trim()||'My business';save();render()}
  if(t.id==='saveSb'){['url','key','table','name','sku','price','stock','cost','extra'].forEach(k=>S.sb[k]=$('#s_'+k).value.trim());save();await loadItems();msg=msg||`Connected. Found ${ITEMS.length} products.`;render()}
  if(t.id==='signin'){try{const r=await fetch(S.sb.url.replace(/\/$/,'')+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:S.sb.key,'Content-Type':'application/json'},body:JSON.stringify({email:$('#s_email').value,password:$('#s_pw').value})}),j=await r.json();if(!j.access_token)throw new Error(j.error_description||j.msg||'Sign in failed');sessionStorage.setItem('sbt',j.access_token);msg='Signed in. Website changes now use your login.'}catch(er){msg=er.message}render()}
@@ -465,20 +497,26 @@ function tside(L,R){const n=Math.max(L.length,R.length),cell=(x,bd)=>{if(!x)retu
 const ttot=(l,r)=>`<tr><td><b>Total</b></td><td class="n"><b>${inr(l)}</b></td><td style="border-left:1px solid var(--line)"><b>Total</b></td><td class="n"><b>${inr(r)}</b></td></tr>`;
 const thead=(l,r)=>`<thead><tr><th>${l}</th><th class="n">Amount</th><th style="border-left:1px solid var(--line)">${r}</th><th class="n">Amount</th></tr></thead>`;
 const tsec=t=>`<tr><td colspan="4" style="background:var(--ivory-deep)"><b>${t}</b></td></tr>`;
+const dayBefore=d=>{const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()-1);return t.toISOString().slice(0,10)};
+function stockVal(noOpen){const st=S.stk||{},ent=st.close!==''&&st.close!=null&&!isNaN(+st.close),inv=r2(sum(tbal('',pt).filter(x=>x.l==='Inventory'),x=>x.dr-x.cr));
+ let v,basis;if(ent){v=+st.close;basis='the value you entered in Settings'}else{v=stockReg(pt).total;basis='your purchase bills less sales, at the actual purchase rates (before GST)'}
+ const o=(pf&&!noOpen)?stockReg(dayBefore(pf)).total:0;
+ return {v:r2(v),o:r2(o),basis,inv,use:inv?0:r2(v),useOpen:inv?0:r2(o)}}
+const stockNote=z=>z.inv?'Stock is taken from the Inventory ledger (your journal entry).':(z.use||z.useOpen)?'Closing stock: '+z.basis+'. See the Stock page for details.':'No stock found. Enter purchase bills with quantities, or a closing stock value in Settings.';
 function plv(){const B=tbal(pf,pt).filter(x=>'IX'.includes(GT[x.g])),nt=x=>GT[x.g]==='I'?x.cr-x.dr:x.dr-x.cr,
  lst=gs=>B.filter(x=>gs.includes(x.g)&&r2(nt(x))).map(x=>[x.l,nt(x)]),
  sa=lst(['Sales Accounts']),cg=lst(['Purchase Accounts','Direct Expenses']),ii=lst(['Indirect Incomes']),ie=lst(['Indirect Expenses']),
- ts=sum(sa,x=>x[1]),tc=sum(cg,x=>x[1]),ti=sum(ii,x=>x[1]),te=sum(ie,x=>x[1]),gp=r2(ts-tc),np=r2(gp+ti-te),
- L1=[...cg],R1=[...sa];if(gp>=0)L1.push(['Gross profit c/d',gp]);else R1.push(['Gross loss c/d',-gp]);
+ ts=sum(sa,x=>x[1]),tc=sum(cg,x=>x[1]),ti=sum(ii,x=>x[1]),te=sum(ie,x=>x[1]),Z=stockVal(),cs=Z.use,os=Z.useOpen,gp=r2(ts+cs-tc-os),np=r2(gp+ti-te),
+ L1=[...(os?[['Opening stock',os]]:[]),...cg],R1=[...sa];if(cs)R1.push(['Closing stock',cs]);if(gp>=0)L1.push(['Gross profit c/d',gp]);else R1.push(['Gross loss c/d',-gp]);
  const L2=[],R2=[];if(gp<0)L2.push(['Gross loss b/d',-gp]);L2.push(...ie);if(np>=0)L2.push(['Net profit c/d',np]);
  if(gp>0)R2.push(['Gross profit b/d',gp]);R2.push(...ii);if(np<0)R2.push(['Net loss c/d',-np]);
- const t1=Math.max(ts,tc+Math.max(gp,0)),t1l=tc+Math.max(gp,0),t1r=ts+Math.max(-gp,0),t2l=Math.max(-gp,0)+te+Math.max(np,0),t2r=Math.max(gp,0)+ti+Math.max(-np,0);
- return `<div class="ph"><h1>Profit and loss</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(1)}<div class="tbl"><table>${thead('Expenses','Income')}<tbody>${tsec('Trading account')}${tside(L1,R1)}${ttot(t1l,t1r)}${tsec('Profit and loss account')}${tside(L2,R2)}${ttot(t2l,t2r)}</tbody></table></div><small>Purchases are expensed as bought. For closing stock, post a journal: debit Inventory, credit Purchases.</small>`}
-function bsv(){const B=tbal('',pt),np=sum(B.filter(x=>GT[x.g]==='I'),x=>x.cr-x.dr)-sum(B.filter(x=>GT[x.g]==='X'),x=>x.dr-x.cr),
+ const t1=Math.max(ts,tc+Math.max(gp,0)),t1l=os+tc+Math.max(gp,0),t1r=ts+cs+Math.max(-gp,0),t2l=Math.max(-gp,0)+te+Math.max(np,0),t2r=Math.max(gp,0)+ti+Math.max(-np,0);
+ return `<div class="ph"><h1>Profit and loss</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(1)}<div class="tbl"><table>${thead('Expenses','Income')}<tbody>${tsec('Trading account')}${tside(L1,R1)}${ttot(t1l,t1r)}${tsec('Profit and loss account')}${tside(L2,R2)}${ttot(t2l,t2r)}</tbody></table></div><small>Purchases are expensed as bought. ${stockNote(Z)}</small>`}
+function bsv(){const B=tbal('',pt),Z=stockVal(1),cs=Z.use,np=sum(B.filter(x=>GT[x.g]==='I'),x=>x.cr-x.dr)-sum(B.filter(x=>GT[x.g]==='X'),x=>x.dr-x.cr)+cs,
  side=(t,s)=>{const m={};B.filter(x=>GT[x.g]===t&&r2(x.dr-x.cr)).forEach(x=>{const k=/^Sundry/.test(x.g)?x.g:x.l;m[k]=(m[k]||0)+s*(x.dr-x.cr)});return Object.entries(m)},
- A=side('A',1),Li=side('L',-1),E=[...side('E',-1),[np<0?'Net loss to date':'Net profit to date',np]],ta=sum(A,x=>x[1]),te=sum(E,x=>x[1]),tl=sum(Li,x=>x[1])+te,
+ A=[...side('A',1),...(cs?[['Closing stock',cs]]:[])],Li=side('L',-1),E=[...side('E',-1),[np<0?'Net loss to date':'Net profit to date',np]],ta=sum(A,x=>x[1]),te=sum(E,x=>x[1]),tl=sum(Li,x=>x[1])+te,
  Lf=[['Capital and equity','', 'h'],...E,['Liabilities','','h'],...Li],Rt=[['Assets','','h'],...A];
- return `<div class="ph"><h1>Balance sheet</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table>${thead('Liabilities','Assets')}<tbody>${tside(Lf,Rt)}${ttot(tl,ta)}</tbody></table></div>${r2(ta-tl)?`<div class="msg">Assets and liabilities differ by ${inr(ta-tl)}. Check your journals.</div>`:''}`}
+ return `<div class="ph"><h1>Balance sheet</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table>${thead('Liabilities','Assets')}<tbody>${tside(Lf,Rt)}${ttot(tl,ta)}</tbody></table></div>${r2(ta-tl)?`<div class="msg">Assets and liabilities differ by ${inr(ta-tl)}. Check your journals.</div>`:''}<small>${stockNote(Z)}</small>`}
 function tb(){const B=tbal('',pt).filter(x=>r2(x.dr-x.cr)).sort((a,b)=>a.g.localeCompare(b.g)||a.l.localeCompare(b.l));let d=0,c=0;
  return `<div class="ph"><h1>Trial balance</h1><button class="btn g" data-x="pdfReport">Download PDF</button></div>${bar(0)}<div class="tbl"><table><thead><tr><th>Ledger</th><th>Group</th><th class="n">Debit</th><th class="n">Credit</th></tr></thead><tbody>${B.map(x=>{const n=x.dr-x.cr;n>0?d+=n:c-=n;return `<tr><td>${esc(x.l)}</td><td>${esc(x.g)}</td><td class="n">${n>0?inr(n):''}</td><td class="n">${n<0?inr(-n):''}</td></tr>`}).join('')}</tbody><tfoot><tr><td colspan="2"><b>Total</b></td><td class="n"><b>${inr(d)}</b></td><td class="n"><b>${inr(c)}</b></td></tr></tfoot></table></div>`}
 function lgr(){const all=vouch().flatMap(v=>v.ls.filter(l=>l.l===LN).map(l=>({v,l})));let ob=0;const rows=[];all.forEach(x=>{if(pt&&x.v.date>pt)return;if(pf&&x.v.date<pf)ob+=x.l.dr-x.l.cr;else rows.push(x)});return{ob,rows}}
@@ -620,8 +658,8 @@ const coInfo=()=>{const c=S.co,address=String(c.addr||'').split('\n').map(x=>x.t
 function downloadReportPDF(){
  const t=document.querySelector('#view .tbl table');if(!t){alert('Nothing to export in this view.');return}
  const ba=S.banks.find(x=>x.id===acct)||{name:''};
- const names={sale:'Invoices',expense:'Purchase Bills',exps:'Expenses',bank:(ba.cash?'Cash Book: ':'Bank Book: ')+ba.name,rep:'Sales vs Purchases',pl:'Profit and Loss',bs:'Balance Sheet',tb:'Trial Balance',led:LN?'Ledger: '+LN:'Ledgers',jv:'Journal',xp:'Export'};
- const asof=['bs','tb'].includes(view)||(view==='led'&&!LN);
+ const names={sale:'Invoices',expense:'Purchase Bills',exps:'Expenses',bank:(ba.cash?'Cash Book: ':'Bank Book: ')+ba.name,rep:'Sales vs Purchases',pl:'Profit and Loss',bs:'Balance Sheet',tb:'Trial Balance',led:LN?'Ledger: '+LN:'Ledgers',jv:'Journal',xp:'Export',stk:'Stock'};
+ const asof=['bs','tb','stk'].includes(view)||(view==='led'&&!LN);
  pdfTable({company:S.co.name||'CLIPPD',...coInfo(),title:names[view]||'Report',period:rangeText(asof),...tableData(t)})}
 
 function ledgerExportRows(){
