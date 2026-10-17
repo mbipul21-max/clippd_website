@@ -245,8 +245,8 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  const ty=py+10.8;fill([238,231,217],15.5,ty,179,7.6);
  T('ITEM',19,ty+5,CF,'normal',7,[101,93,83]);T('HSN',96,ty+5,CF,'normal',7,[101,93,83]);[['QTY',128],['PRICE',160],['AMOUNT',190.9]].forEach(([k,x])=>T(k,x,ty+5,CF,'normal',7,[101,93,83],{align:'right'}));
  let y=ty+7.6;
- L.forEach((l,i)=>{const u=unit(l);if(y>235){doc.addPage();y=20}if(i%2)fill([247,245,237],15.5,y,179,7);
-  T(doc.splitTextToSize(cl(l.item),72)[0],19,y+4.8,'helvetica','normal',9.5,K);T(l.hsn||'-',96,y+4.8,CF,'normal',8,G);T(l.qty,128,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u),160,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u*l.qty),190.9,y+4.8,CF,'normal',8,K,{align:'right'});y+=7});
+ L.forEach((l,i)=>{const u=unit(l);doc.setFont(CF,'normal');doc.setFontSize(8.5);const il=doc.splitTextToSize(cl(l.item),72),rh=7+(il.length-1)*4;if(y+rh>235){doc.addPage();y=20}if(i%2)fill([247,245,237],15.5,y,179,rh);
+  il.forEach((t,k)=>T(t,19,y+4.8+k*4,CF,'normal',8.5,K));T(l.hsn||'-',96,y+4.8,CF,'normal',8,G);T(l.qty,128,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u),160,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u*l.qty),190.9,y+4.8,CF,'normal',8,K,{align:'right'});y+=rh});
  y+=5;if(y>205){doc.addPage();y=20}doc.setDrawColor(216,210,196);doc.setLineWidth(.2);doc.line(15.5,y,194.5,y);y+=8;
  const sh=+e.ship||0,cd=+e.cod||0,tx=tax(e),rt=[...new Set(L.map(l=>+l.gst))],one=rt.length===1?rt[0]:null,lb=(n,d)=>n+(one!=null?' @ '+(one/d)+'%':'');
  const R=(k,v)=>{T(k,158,y,'helvetica','normal',9.5,K,{align:'right'});T(v,190.9,y,CF,'normal',8.5,[110,110,110],{align:'right'});y+=5.6};
@@ -266,7 +266,7 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  T('TERMS & CONDITIONS',15.5,y,CF,'normal',6.5,GD);doc.setDrawColor(...GD);doc.line(15.5,y+1.8,194.5,y+1.8);y+=7;
  String(c.terms||'').split('\n').filter(Boolean).forEach(t=>{doc.splitTextToSize(cl(t),168).forEach((x,j)=>{if(y>256){doc.addPage();y=20}if(!j){doc.setFillColor(...GD);doc.circle(17,y-.9,.35,'F')}T(x,20,y,'helvetica','normal',7.5,G);y+=4.2});y+=.6});
  for(let p=1;p<=doc.getNumberOfPages();p++){doc.setPage(p);doc.setDrawColor(...GD);doc.setLineWidth(.35);doc.line(15.5,263.5,194.5,263.5);
-  T('Thank you for choosing '+c.name+'.',15.5,271,'times','italic',12.5,W);T('This is a computer-generated invoice and does not require a signature.',15.5,277,'helvetica','normal',8,G);T(c.web,194.5,277,CF,'normal',8,GD,{align:'right'})}
+  T('Thank you for choosing '+c.name+'.',15.5,271,'times','italic',12.5,W);T('This is a computer-generated invoice and does not require a signature.',15.5,277,'helvetica','normal',8,G);T('CLIPPD Accounts Software',194.5,271,CF,'normal',8,GD,{align:'right'});T(c.web,194.5,277,CF,'normal',8,GD,{align:'right'})}
  doc.save(String(e.no).replace(/[\/\\]/g,'-')+'.pdf');return true}
 /* ---- views ---- */
 function panel(type,title,sub){const u=S.entries.filter(e=>e.type===type&&!e.paid&&!e.cancelled),all=sum(u,tot),od=sum(u.filter(e=>e.due<today()),tot),cur=all-od;
@@ -584,7 +584,7 @@ function pdfTable(o){
   const st=r.b?'bold':'normal';
   let cells;
   if(r.sec){doc.setFont(MONO,'bold');doc.setFontSize(FS-.5);cells=[doc.splitTextToSize(cl(r.c[0]).toUpperCase(),U-4)]}
-  else cells=r.c.slice(0,nc).map((t,i)=>{const tx=cl(t),m=o.al[i]==='r'||tx.includes('\u20B9');doc.setFont(m?MONO:'helvetica',st);doc.setFontSize(m?FS-.5:FS);const ln=doc.splitTextToSize(tx,W[i]-4);ln.mono=m;return ln});
+  else cells=r.c.slice(0,nc).map((t,i)=>{const tx=cl(t),m=true;doc.setFont(m?MONO:'helvetica',st);doc.setFontSize(m?FS-.5:FS);const ln=doc.splitTextToSize(tx,W[i]-4);ln.mono=m;return ln});
   const h=Math.max(1,...cells.map(a=>a.length))*FS*.42+3.4;
   if(y+h>PH-22){doc.addPage();band(0);y=19;head()}
   if(r.sec)fill(ZEB,M,y,U,h);else if(r.b)fill(BEI,M,y,U,h);else if(k++%2)fill(ZEB,M,y,U,h);
@@ -601,8 +601,9 @@ function pdfTable(o){
  for(let p=1;p<=np;p++){doc.setPage(p);fill(GD,M,PH-17,U,.7);
   T('Thank you for choosing '+o.company+'.',M,PH-10.5,'times','italic',10.5,BUR);
   T('This is a computer-generated report and does not require a signature.',M,PH-6,'helvetica','normal',7,GRY);
-  T('Page '+p+' of '+np,PW-M,PH-10.5,MONO,'normal',7,GD,{align:'right'});
-  if(c.web)T(c.web,PW-M,PH-6,MONO,'normal',7,GD,{align:'right'})}
+  T('Page '+p+' of '+np,PW-M,PH-12,MONO,'normal',7,GD,{align:'right'});
+  T('CLIPPD Accounts Software',PW-M,PH-8.5,MONO,'normal',7,GD,{align:'right'});
+  if(c.web)T(c.web,PW-M,PH-5,MONO,'normal',7,GD,{align:'right'})}
  doc.save(cl(o.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today()+'.pdf')}
 
 const coInfo=()=>{const c=S.co,address=String(c.addr||'').split('\n').map(x=>x.trim()).filter(Boolean).join(', '),contact=[c.phone&&'Phone: '+c.phone,c.email&&'Email: '+c.email,c.web&&'Web: '+c.web,c.gstin&&'GSTIN: '+c.gstin].filter(Boolean).join('  |  ');return{address,contact}};
@@ -627,9 +628,9 @@ function exportLedger(fmt){
  if(fmt==='pdf'){downloadReportPDF();return}
  if(!window.XLSX){alert('Excel export library did not load. Check your internet connection.');return}
  const data=ledgerExportRows(),safe=data.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+today();
- const ci=coInfo(),HR=7,matrix=[[S.co.name||'CLIPPD'],[ci.address],[ci.contact],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows];
+ const ci=coInfo(),HR=7,matrix=[[S.co.name||'CLIPPD'],[ci.address],[ci.contact],[data.title],[data.period,'Generated: '+today()],[],data.headers,...data.rows,[],['Generated by CLIPPD Accounts Software'+(S.co.web?' | '+S.co.web:'')]];
  const ws=XLSX.utils.aoa_to_sheet(matrix);ws['!cols']=data.headers.map((h,i)=>({wch:Math.max(h.length,...data.rows.map(r=>String(r[i]??'').length))+3}));
- Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===HR){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>HR&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}if(data.nt&&row>HR+data.rows.length-data.nt){cell.s.font={...cell.s.font,bold:true}}});
+ Object.keys(ws).filter(k=>!k.startsWith('!')).forEach(k=>{const cell=ws[k];const row=Number(k.match(/\d+/)?.[0]||1);cell.s={font:{name:'Courier New',sz:10,color:{rgb:'202020'}},alignment:{vertical:'center'}};if(row===1){cell.s={font:{name:'Courier New',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1D1A17'}},alignment:{vertical:'center'}}}else if(row===HR){cell.s={font:{name:'Courier New',sz:10,bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'A07C45'}},alignment:{vertical:'center'}}}else if(row>HR&&row%2===0){cell.s.fill={fgColor:{rgb:'F0EDE6'}}}if(data.nt&&row<=HR+data.rows.length&&row>HR+data.rows.length-data.nt){cell.s.font={...cell.s.font,bold:true}}if(row>HR+data.rows.length){cell.s={font:{name:'Courier New',sz:9,italic:true,color:{rgb:'775555'}}}}});
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ledger');XLSX.writeFile(wb,safe+'.xlsx');
 }
 $('#view').addEventListener('click',e=>{const eb=e.target.closest('#ledgerExportBtn');if(eb){const menu=$('#ledgerExportMenu');if(menu)menu.hidden=!menu.hidden;return}
