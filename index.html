@@ -5,14 +5,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CLIPPD – Anklets, Bracelets &amp; Earrings | Shop Online in India</title>
-<meta name="description" content="Shop trendy anklets, stacked bracelets, earrings and chains at CLIPPD. Everyday accessories under ₹299 with delivery across India.">
+<meta name="description" content="Shop trendy anklets, stacked bracelets, earrings and necklaces at CLIPPD. Everyday accessories under ₹299 with delivery across India.">
 <link rel="canonical" href="https://clippd.in/">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#762B3B">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CLIPPD">
 <meta property="og:title" content="CLIPPD – Your Everyday Slay">
-<meta property="og:description" content="Anklets, bracelets, earrings and chains. Everyday accessories under ₹299.">
+<meta property="og:description" content="Anklets, bracelets, earrings and necklaces. Everyday accessories under ₹299.">
 <meta property="og:url" content="https://clippd.in/">
 <meta property="og:image" content="https://clippd.in/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -22,7 +22,7 @@
   "@type": "Store",
   "name": "CLIPPD",
   "url": "https://clippd.in/",
-  "description": "Online store for anklets, bracelets, earrings and chains in India.",
+  "description": "Online store for anklets, bracelets, earrings and necklaces in India.",
   "areaServed": "IN",
   "sameAs": [
     "https://www.instagram.com/slay_clippd/",
@@ -932,6 +932,49 @@
   .addr-pick{ margin-top:14px; }
   .addr-pick select{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:6px; font-family:inherit; font-size:13.5px; background:var(--ivory); color:var(--charcoal); margin-top:6px; }
   @media (max-width:520px){ .info-modal{ padding:36px 22px; } .info-form .form-row{ grid-template-columns:1fr; } }
+
+  /* ===== FULL-PAGE PRODUCT VIEW ===== */
+  #productModal, #productModal.open{
+    top:0; left:0; width:100vw; max-width:100vw;
+    height:100vh; height:100dvh; max-height:none;
+    border-radius:0; transform:none !important;
+    background:var(--ivory); overflow-y:auto; overflow-x:hidden;
+    transition:opacity .3s ease;
+  }
+  #productModal .modal-content-wrap{ max-width:1180px; margin:0 auto; max-height:none; overflow:visible !important; padding-top:12px; }
+  #productModal .modal-close{
+    position:fixed; top:14px; right:14px; width:42px; height:42px; z-index:5;
+    box-shadow:0 4px 14px rgba(29,26,23,.25);
+  }
+  #productModal .modal-product-grid{ grid-template-columns:1.1fr 0.9fr; gap:40px; padding:40px 32px; align-items:start; }
+  #productModal .modal-product-image{ position:sticky; top:20px; align-self:start; }
+  /* Show the whole photo, never cropped */
+  #productModal img#modalImg.modal-pdp-img{
+    width:100% !important; height:auto !important; aspect-ratio:auto !important;
+    object-fit:contain !important; max-height:82vh; background:var(--ivory-deep);
+    cursor:zoom-in; border-radius:8px !important;
+  }
+  #productModal #modalThumbs{ position:static !important; display:flex; gap:8px; margin-top:12px; overflow-x:auto; padding:2px 0 6px; flex-wrap:nowrap !important; }
+  #productModal .modal-thumb{ width:64px !important; height:64px !important; flex:none; border-radius:6px; }
+  @media (max-width:720px){
+    #productModal .modal-content-wrap{ padding-top:0; }
+    #productModal .modal-product-grid{ grid-template-columns:1fr !important; gap:0 !important; padding:0 !important; }
+    #productModal .modal-product-image{ position:static; }
+    #productModal img#modalImg.modal-pdp-img{ max-height:none; border-radius:0 !important; }
+    #productModal #modalThumbs{ padding:10px 16px; margin-top:0; }
+    #productModal .modal-product-details{ padding:16px 18px 6px !important; }
+  }
+  body.no-scroll{ overflow:hidden; }
+
+  /* ===== PHOTO ZOOM LIGHTBOX ===== */
+  .lightbox{ position:fixed; inset:0; background:rgba(15,13,11,.96); z-index:400; display:none; overflow:hidden; touch-action:none; }
+  .lightbox.open{ display:block; }
+  .lightbox img{ position:absolute; top:50%; left:50%; max-width:100vw; max-height:100vh; max-height:100dvh;
+    transform:translate(-50%,-50%); user-select:none; -webkit-user-drag:none; will-change:transform; }
+  .lb-btn{ position:absolute; z-index:2; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.15); color:#fff; font-size:22px;
+    display:flex; align-items:center; justify-content:center; }
+  .lb-close{ top:14px; right:14px; } .lb-prev{ left:12px; top:50%; } .lb-next{ right:12px; top:50%; }
+  .lb-count{ position:absolute; bottom:16px; left:50%; transform:translateX(-50%); color:#fff; font-family:'Space Mono',monospace; font-size:12px; z-index:2; }
 </style>
 </head>
 <body>
@@ -952,7 +995,7 @@
       <a href="#bestsellers" onclick="filterCategory('Anklets', this); return false;">Anklets</a>
       <a href="#bestsellers" onclick="filterCategory('Bracelets', this); return false;">Bracelets</a>
       <a href="#bestsellers" onclick="filterCategory('Earrings', this); return false;">Earrings</a>
-      <a href="#bestsellers" onclick="filterCategory('Chains', this); return false;">Chains</a>
+      <a href="#bestsellers" onclick="filterCategory('Necklaces', this); return false;">Necklaces</a>
       <a href="#bestsellers" onclick="filterCategory('New', this); return false;">New Arrivals</a>
       <a href="#bestsellers" onclick="filterCategory(null, this); return false;">Best Sellers</a>
     </nav>
@@ -982,7 +1025,7 @@
       <h1>YOUR<br>EVERYDAY<br><em>SLAY</em></h1>
       <p class="hero-sub">Small accessories. Major energy.</p>
       <p class="desc">Discover effortless fashion accessories designed to turn your everyday look into a statement — anklets, bracelets and earrings built for real, everyday main-character moments.</p>
-      <p class="desc">Shop anklets, bracelets, earrings &amp; chains under ₹299 — shipped across India.</p>
+      <p class="desc">Shop anklets, bracelets, earrings &amp; necklaces under ₹299 — shipped across India.</p>
       <div class="hero-ctas">
         <a href="#shop" class="btn btn-primary" onclick="scrollToSection('shop'); return false;">Shop The Collection</a>
         <a href="#bestsellers" class="btn btn-outline" onclick="filterCategory(null); return false;">Explore Bestsellers</a>
@@ -1063,13 +1106,13 @@
         <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Earrings'); return false;">Shop Now →</a>
       </div>
     </div>
-    <div class="cat-card" id="chains">
+    <div class="cat-card" id="necklaces">
       <div class="clip-notch"><svg viewBox="0 0 34 16" fill="none"><path d="M2 14C2 6 10 2 17 2s15 4 15 12" stroke="#231F1B" stroke-width="2.4" stroke-linecap="round"/></svg></div>
       <div class="cat-thumb"></div>
       <div class="cat-body">
-        <h3>Chains</h3>
+        <h3>Necklaces</h3>
         <p>"Make your look unforgettable."</p>
-        <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Chains'); return false;">Shop Now →</a>
+        <a href="#bestsellers" class="cat-shop" onclick="filterCategory('Necklaces'); return false;">Shop Now →</a>
       </div>
     </div>
   </div>
@@ -1192,7 +1235,7 @@
         <li><a href="#bestsellers" onclick="filterCategory('Anklets'); return false;">Anklets</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('Bracelets'); return false;">Bracelets</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('Earrings'); return false;">Earrings</a></li>
-        <li><a href="#bestsellers" onclick="filterCategory('Chains'); return false;">Chains</a></li>
+        <li><a href="#bestsellers" onclick="filterCategory('Necklaces'); return false;">Necklaces</a></li>
         <li><a href="#bestsellers" onclick="filterCategory('New'); return false;">New Arrivals</a></li>
         <li><a href="#bestsellers" onclick="filterCategory(null); return false;">Best Sellers</a></li>
       </ul>
@@ -1358,7 +1401,7 @@
     <a href="#bestsellers" onclick="filterCategory('Anklets', this); closeMobileNav(); return false;">Anklets</a>
     <a href="#bestsellers" onclick="filterCategory('Bracelets', this); closeMobileNav(); return false;">Bracelets</a>
     <a href="#bestsellers" onclick="filterCategory('Earrings', this); closeMobileNav(); return false;">Earrings</a>
-    <a href="#bestsellers" onclick="filterCategory('Chains', this); closeMobileNav(); return false;">Chains</a>
+    <a href="#bestsellers" onclick="filterCategory('Necklaces', this); closeMobileNav(); return false;">Necklaces</a>
     <a href="#bestsellers" onclick="filterCategory('New', this); closeMobileNav(); return false;">New Arrivals</a>
     <a href="#bestsellers" onclick="filterCategory(null, this); closeMobileNav(); return false;">Best Sellers</a>
   </div>
@@ -1532,6 +1575,13 @@
   </div>
 </div>
 
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-btn lb-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <button class="lb-btn lb-prev" onclick="lbStep(-1)" aria-label="Previous">‹</button>
+  <button class="lb-btn lb-next" onclick="lbStep(1)" aria-label="Next">›</button>
+  <img id="lbImg" alt="Product photo">
+  <div class="lb-count" id="lbCount"></div>
+</div>
 <div class="toast" id="toast">Added to bag</div>
 
 <!-- Supabase client -->
@@ -1735,7 +1785,7 @@
     'Anklets':    { eyebrow:'Anklets',     h2:'Anklets',          sub:'Every step, a little shine.' },
     'Bracelets': { eyebrow:'Bracelets',  h2:'Stacked Bracelets', sub:'Stack them up. Style all day.' },
     'Earrings':   { eyebrow:'Earrings',    h2:'Oxidised & Statement Earrings', sub:'Everyday tradition, reimagined.' },
-    'Chains':     { eyebrow:'Chains',      h2:'Chains',           sub:'Make your look unforgettable.' },
+    'Necklaces': { eyebrow:'Necklaces',  h2:'Necklaces',        sub:'Make your look unforgettable.' },
     'New':        { eyebrow:'New Arrivals', h2:'Just Dropped', sub:'The newest additions to your everyday rotation.' },
   };
 
@@ -1747,13 +1797,14 @@
     'Anklets':    'anklets',
     'Bracelets':  'bracelets',
     'Earrings':   'earrings',
-    'Chains':     'chains',
+    'Necklaces': 'necklaces',
     'New':        'new',
   };
   const SLUG_TO_CATEGORY = Object.fromEntries(
     Object.entries(CATEGORY_SLUGS).map(([cat, slug]) => [slug, cat])
   );
-  SLUG_TO_CATEGORY['claw-clips'] = 'Anklets'; // legacy URL → new category
+  SLUG_TO_CATEGORY['claw-clips'] = 'Anklets';
+  SLUG_TO_CATEGORY['chains'] = 'Necklaces'; // old /chains links still work // legacy URL → new category
 
   function updateCategoryURL(cat, replace){
     const slug = cat ? CATEGORY_SLUGS[cat] : 'best-sellers';
@@ -1895,6 +1946,7 @@
 
     document.getElementById('scrim').classList.add('open');
     setOverlayOpen('productModal', true);
+    document.getElementById('productModal').scrollTop = 0;
 
     loadReviews(id);
   }
@@ -3921,6 +3973,7 @@
     if(!el) return;
     el.classList.toggle('open', isOpen);
     el.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    if(id === 'productModal') document.body.classList.toggle('no-scroll', isOpen);
   }
   function settleScrim(){
     const anyOpen = ['productModal','cartDrawer','wishDrawer','searchPanel','accountModal','infoModal','checkoutModal','mobileNav','communityPostModal','communityTestiModal']
@@ -3943,6 +3996,94 @@
     toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);
   }
 
+
+  /* ---------- PHOTO ZOOM (tap / pinch / double-tap / wheel) ---------- */
+  let lbImages = [], lbIdx = 0, lbScale = 1, lbX = 0, lbY = 0;
+  function lbApply(){
+    document.getElementById('lbImg').style.transform = `translate(-50%,-50%) translate(${lbX}px,${lbY}px) scale(${lbScale})`;
+  }
+  function lbReset(){ lbScale = 1; lbX = 0; lbY = 0; lbApply(); }
+  function lbShow(i){
+    lbIdx = (i + lbImages.length) % lbImages.length;
+    document.getElementById('lbImg').src = transformImageUrl(lbImages[lbIdx]);
+    document.getElementById('lbCount').textContent = lbImages.length > 1 ? `${lbIdx+1} / ${lbImages.length}` : '';
+    document.querySelectorAll('.lb-prev,.lb-next').forEach(b => b.style.display = lbImages.length > 1 ? '' : 'none');
+    lbReset();
+  }
+  function lbStep(d){ lbShow(lbIdx + d); }
+  function openLightbox(){
+    const p = productById(modalProductId);
+    if(!p) return;
+    lbImages = getImageList(p);
+    if(!lbImages.length) return;
+    const cur = document.getElementById('modalImg').src;
+    const found = lbImages.findIndex(u => transformImageUrl(u) === cur);
+    lbShow(found > -1 ? found : 0);
+    const lb = document.getElementById('lightbox');
+    lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+  }
+  function closeLightbox(){
+    const lb = document.getElementById('lightbox');
+    lb.classList.remove('open'); lb.setAttribute('aria-hidden','true');
+  }
+  (function(){
+    const lb = document.getElementById('lightbox');
+    let startDist = 0, startScale = 1, lastX = 0, lastY = 0, panning = false, lastTap = 0, moved = false, swipeX0 = 0;
+    const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    document.getElementById('modalImg').addEventListener('click', openLightbox);
+    lb.addEventListener('touchstart', e => {
+      if(e.target.closest('.lb-btn')) return;
+      moved = false;
+      if(e.touches.length === 2){ startDist = dist(e.touches); startScale = lbScale; panning = false; }
+      else if(e.touches.length === 1){
+        panning = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; swipeX0 = lastX;
+      }
+    }, {passive:true});
+    lb.addEventListener('touchmove', e => {
+      if(e.target.closest('.lb-btn')) return;
+      moved = true;
+      if(e.touches.length === 2){
+        lbScale = Math.min(6, Math.max(1, startScale * dist(e.touches) / startDist));
+        if(lbScale === 1){ lbX = 0; lbY = 0; }
+        lbApply();
+      } else if(panning && lbScale > 1){
+        lbX += e.touches[0].clientX - lastX; lbY += e.touches[0].clientY - lastY;
+        lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; lbApply();
+      }
+      e.preventDefault();
+    }, {passive:false});
+    lb.addEventListener('touchend', e => {
+      if(e.target.closest('.lb-btn')) return;
+      if(e.touches.length) return;
+      const endX = e.changedTouches[0].clientX;
+      if(lbScale === 1 && moved && Math.abs(endX - swipeX0) > 60 && lbImages.length > 1){ lbStep(endX < swipeX0 ? 1 : -1); return; }
+      if(!moved){
+        const now = Date.now();
+        if(now - lastTap < 300){
+          if(lbScale > 1) lbReset(); else { lbScale = 2.5; lbApply(); }
+          lastTap = 0;
+        } else lastTap = now;
+      }
+    });
+    lb.addEventListener('wheel', e => {
+      e.preventDefault();
+      lbScale = Math.min(6, Math.max(1, lbScale * (e.deltaY < 0 ? 1.15 : 0.87)));
+      if(lbScale === 1){ lbX = 0; lbY = 0; }
+      lbApply();
+    }, {passive:false});
+    lb.addEventListener('dblclick', e => { if(e.target.closest('.lb-btn')) return; if(lbScale > 1) lbReset(); else { lbScale = 2.5; lbApply(); } });
+    let dragging = false;
+    lb.addEventListener('mousedown', e => { if(lbScale > 1 && !e.target.closest('.lb-btn')){ dragging = true; lastX = e.clientX; lastY = e.clientY; } });
+    window.addEventListener('mousemove', e => { if(dragging){ lbX += e.clientX - lastX; lbY += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; lbApply(); } });
+    window.addEventListener('mouseup', () => dragging = false);
+    document.addEventListener('keydown', e => {
+      if(!lb.classList.contains('open')) return;
+      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowRight') lbStep(1);
+      if(e.key === 'ArrowLeft') lbStep(-1);
+    });
+  })();
+
   /* ---------- APP BOOTSTRAP ---------- */
   async function initApp(){
     const { data, error } = await sb.from('products').select('*').order('id');
@@ -3952,7 +4093,7 @@
     } else {
       products = (data || []).map(p => ({
         id: p.id, name: p.name, desc: p.description, price: p.price,
-        was: p.was_price, cat: p.category, isNew: p.is_new,
+        was: p.was_price, cat: (p.category === 'Chains' ? 'Necklaces' : p.category), isNew: p.is_new,
         image_urls: p.image_urls, colors: p.colors,
         stock: p.stock_quantity ?? 0, viewCount: p.view_count ?? 0
       }));
@@ -4054,7 +4195,7 @@
   // photo of one of that category's products, replacing the plain
   // gradient background. Falls back to the gradient if no product in
   // that category has an image yet.
-  // Category cards (Anklets / Bracelets / Earrings / Chains): each card
+  // Category cards (Anklets / Bracelets / Earrings / Necklaces): each card
   // cycles through every photo of every product in its category, swapping
   // to a different random one every 10 seconds with a soft fade.
   let catThumbTimer = null;
@@ -4063,7 +4204,7 @@
       { sel:'#anklets .cat-thumb',    cat:'Anklets'    },
       { sel:'#bracelets .cat-thumb',  cat:'Bracelets'  },
       { sel:'#earrings .cat-thumb',   cat:'Earrings'   },
-      { sel:'#chains .cat-thumb',     cat:'Chains'     },
+      { sel:'#necklaces .cat-thumb', cat:'Necklaces' },
     ];
     const states = cards.map(c => {
       const urls = [...new Set(products.filter(p => p.cat === c.cat).flatMap(p => getImageList(p)).filter(Boolean))];
