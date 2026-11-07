@@ -49,6 +49,9 @@
   .btn-primary:disabled{ opacity:.55; cursor:default; transform:none; box-shadow:none; }
   .btn-outline{ background:transparent; color:var(--charcoal); border:1px solid var(--line); }
   .btn-outline:hover{ border-color:var(--charcoal); }
+  .btn-danger{ background:transparent; color:var(--brick); border:1px solid var(--brick); }
+  .btn-danger:hover{ background:var(--brick); color:#fff; }
+  .btn-danger:disabled{ opacity:.6; cursor:not-allowed; }
 
   /* ---------- Sign-in gate ---------- */
   #gate{
@@ -972,7 +975,53 @@
         </div>
         <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="saveStatus()">Save Status</button>
       </div>
+
+      ${order.status === 'pending_payment' ? `
+      <div class="drawer-section">
+        <span class="label">Remove Order</span>
+        <p style="margin-top:6px; font-size:13px; color:var(--charcoal-soft);">Only unpaid (Payment Pending) orders can be deleted. This cannot be undone.</p>
+        <button class="btn btn-danger" id="deleteOrderBtn" style="width:100%; margin-top:12px;" onclick="deletePendingOrder()">Delete Pending Payment Order</button>
+      </div>` : ''}
     `;
+  }
+  // Delete is allowed ONLY for orders still in "pending_payment". The status is
+  // re-checked here and again in the database query, so paid / shipped /
+  // delivered / cancelled / return orders can never be removed from this screen.
+  async function deletePendingOrder(){
+    const order = orders.find(o => o.id === selectedOrderId);
+    if(!order || order.status !== 'pending_payment'){
+      showToast('Only Payment Pending orders can be deleted');
+      return;
+    }
+    if(!confirm('Delete order ' + order.id + '? This cannot be undone.')) return;
+    const btn = document.getElementById('deleteOrderBtn');
+    if(btn) btn.disabled = true;
+
+    // Remove line items first (in case the foreign key does not cascade).
+    const { error: itemsErr } = await sb.from('order_items').delete().eq('order_id', order.id);
+    if(itemsErr) console.error('Failed to delete order items:', itemsErr);
+
+    const { data: removed, error } = await sb.from('orders')
+      .delete()
+      .eq('id', order.id)
+      .eq('status', 'pending_payment')
+      .select('id');
+    if(error || !removed || !removed.length){
+      if(btn) btn.disabled = false;
+      showToast("Couldn't delete order — check database delete permission");
+      console.error(error || 'No row deleted (row-level security may block deletes)');
+      return;
+    }
+    orders = orders.filter(o => o.id !== order.id);
+    allItems = null;        // force reports to refetch order_items
+    loadedViews = {};       // reports re-render without the deleted order
+    closeDrawer();
+    renderFilterTabs();
+    renderOrders();
+    renderOverview();
+    const openView = document.querySelector('.side-link.active')?.dataset.view;
+    if(openView && VIEW_LOADERS[openView]){ loadedViews[openView] = true; VIEW_LOADERS[openView](); }
+    showToast('Pending payment order deleted');
   }
   function onStatusSelectChange(){
     const val = document.getElementById('statusSelect').value;
