@@ -162,6 +162,22 @@
   @media (max-width:640px){ #diya-layer .diya-float{ width:60px; height:60px; filter:blur(3px) drop-shadow(0 0 10px rgba(255,170,60,.6)); } }
   @media (prefers-reduced-motion: reduce){ .diya-flame, .diya-glow, #diya-layer .diya-float{ animation:none; } }
 
+
+  /* ---------- DROPPING SOON (products with no image yet) ---------- */
+  .prod-card.dropping-card{ cursor:default; }
+  .prod-img.dropping-img{
+    background:linear-gradient(160deg,#EFE6D6,#D9CBB2) !important;
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .dropping-badge{
+    display:flex; align-items:center; gap:8px; padding:10px 14px;
+    font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.2em; font-weight:700;
+    color:var(--burgundy); text-align:center; animation:droppingPulse 1.8s ease-in-out infinite;
+  }
+  .dropping-line{ width:18px; height:1px; background:var(--burgundy); opacity:.6; }
+  @keyframes droppingPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+  @media (prefers-reduced-motion: reduce){ .dropping-badge{ animation:none; } }
+
   /* ---------- HEADER ---------- */
   header.site{
     position:sticky; top:0; z-index:100;
@@ -1061,7 +1077,7 @@
       <a href="#bestsellers" onclick="filterCategory(null, this); return false;">Best Sellers</a>
     </nav>
     <div class="nav-icons">
-      <a href="/CLIPPD.apk" download="CLIPPD.apk" class="app-download-btn" aria-label="Download the CLIPPD app">
+      <a href="/CLIPPD.apk?v=20261108" download="CLIPPD.apk" class="app-download-btn" aria-label="Download the CLIPPD app">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
         <span>Get the App</span>
       </a>
@@ -1810,12 +1826,27 @@
     });
   }
   function money(n){ return '₹' + n; }
+  // A product with no uploaded image is treated as "dropping soon": no price, not buyable.
+  function hasImage(p){ return getImageList(p).length > 0; }
   function productById(id){ return products.find(p => p.id === id); }
 
   function cardHTML(p){
     const disc = p.was ? Math.round((1 - p.price/p.was)*100) : null;
     const stock = p.stock ?? 0;
     const outOfStock = stock <= 0;
+    if(!hasImage(p)){
+      return `
+    <div class="prod-card dropping-card" data-id="${p.id}">
+      <div class="prod-img dropping-img" role="img" aria-label="${escapeHTML(String(p.name || 'CLIPPD accessory'))} - dropping soon">
+        <div class="dropping-badge"><span class="dropping-line"></span>DROPPING SOON<span class="dropping-line"></span></div>
+      </div>
+      <div class="prod-body">
+        <div class="pname">${brandName(p.name)}</div>
+        <div class="pdesc">${p.desc}</div>
+        <button class="quick-add" disabled style="opacity:0.6; cursor:not-allowed; background:none;">Dropping Soon</button>
+      </div>
+    </div>`;
+    }
     return `
     <div class="prod-card" data-id="${p.id}" onclick="openProduct(${p.id})">
       <div class="prod-img" role="img" aria-label="${escapeHTML(String(p.name || 'CLIPPD accessory'))}" style="${imgStyleFor(p)}">
@@ -1904,6 +1935,41 @@
   if(mobileMQ.addEventListener) mobileMQ.addEventListener('change', onMQChange);
   else if(mobileMQ.addListener) mobileMQ.addListener(onMQChange);
 
+  // ---------- AUTO-SHUFFLE PRODUCT LISTING ----------
+  // The product grid re-orders itself in every category (Best Sellers, New,
+  // Anklets, Bracelets, Earrings, Necklaces) every SHUFFLE_INTERVAL_MS.
+  // Change the number below to speed it up or slow it down (milliseconds).
+  const SHUFFLE_INTERVAL_MS = 10 * 60 * 1000;   // 10 minutes
+  function shuffleList(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function shuffleIsSafe(){
+    if(document.hidden) return false;                              // tab not visible
+    const grid = document.getElementById('prodGrid1');
+    if(!grid || !grid.children.length) return false;
+    if(grid.matches(':hover') || grid.contains(document.activeElement)) return false; // person is interacting
+    const overlays = ['productModal','cartDrawer','wishDrawer','searchPanel','accountModal','infoModal','checkoutModal','mobileNav'];
+    if(overlays.some(id => document.getElementById(id)?.classList.contains('open'))) return false;
+    const r = grid.getBoundingClientRect();                        // only shuffle while the grid is on screen
+    return r.bottom > 0 && r.top < window.innerHeight;
+  }
+  function autoShuffleGrid(){
+    if(!shuffleIsSafe()) return;
+    const grid = document.getElementById('prodGrid1');
+    grid.style.transition = 'opacity .35s ease';
+    grid.style.opacity = '0';
+    setTimeout(() => {
+      filterCategory(currentShopCat, findNavElForCategory(currentShopCat), true);
+      grid.style.opacity = '1';
+    }, 350);
+  }
+  setInterval(autoShuffleGrid, SHUFFLE_INTERVAL_MS);
+
   function filterCategory(cat, navEl, isUrlSync){
     currentShopCat = cat || null;
     let list = cat === 'New' ? products.filter(p => p.isNew)
@@ -1912,6 +1978,7 @@
                // based on view_count tracked via increment_product_view().
                : [...products].sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
     if(!cat || cat === 'New') list = list.slice(0, featuredLimit());
+    list = shuffleList(list);   // random order every time the grid is (re)drawn
     document.getElementById('prodGrid1').innerHTML = list.length
       ? list.map(cardHTML).join('')
       : `<p class="pdesc" style="grid-column:1/-1; text-align:center; padding:40px 0;">No products in this category yet — check back soon.</p>`;
@@ -1946,6 +2013,7 @@
   async function openProduct(id){
     const p = productById(id);
     if(!p) return;
+    if(!hasImage(p)){ showToast('This piece is dropping soon'); return; }
     modalProductId = id;
     modalQty = 1;
 
@@ -3006,7 +3074,7 @@
           <div class="cart-thumb" style="${imgStyleFor(p)}" onclick="closeWishlist(); openProduct(${p.id});"></div>
           <div class="cart-info">
             <div class="cname">${brandName(p.name)}</div>
-            <div class="cprice mono">${money(p.price)}</div>
+            <div class="cprice mono">${hasImage(p) ? money(p.price) : 'Dropping soon'}</div>
             <div class="cart-row-bottom">
               <button class="cart-remove" onclick="moveWishToBag(${p.id})" style="color:var(--burgundy);border-color:var(--burgundy);">Move to Bag</button>
               <button class="cart-remove" onclick="toggleWishlist(${p.id})">Remove</button>
@@ -3056,7 +3124,7 @@
         <div class="sr-thumb" style="${imgStyleFor(p)}"></div>
         <div class="sr-info">
           <div class="sname">${brandName(p.name)}</div>
-          <div class="sprice">${p.cat} · ${money(p.price)}</div>
+          <div class="sprice">${hasImage(p) ? `${p.cat} · ${money(p.price)}` : `${p.cat} · Dropping soon`}</div>
         </div>
       </div>`).join('');
   }
@@ -3130,9 +3198,25 @@
       .order('created_at', {ascending:false});
     accountOrders = data || [];
   }
+  // Supabase fires auth events (SIGNED_IN / TOKEN_REFRESHED) every time the tab
+  // regains focus. Re-rendering the account panel on each one wiped whatever
+  // the customer was typing in the address / profile form. We now only
+  // re-render when the signed-in user actually changed, or no form is in use.
+  let lastAuthUserId;
+  function accountFormBusy(){
+    try{
+      if(addrEditing !== null || profileEditing) return true;
+      const body = document.getElementById('accountBody');
+      const el = document.activeElement;
+      return !!(body && el && body.contains(el) && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+    }catch(e){ return false; }
+  }
   sb.auth.onAuthStateChange(async (_event, _session) => {
+    const uid = _session?.user?.id || null;
+    const userChanged = uid !== lastAuthUserId;
+    lastAuthUserId = uid;
     await refreshAccountFromSession();
-    renderAccount();
+    if(userChanged || !accountFormBusy()) renderAccount();
     // Sign-in/out flips account.isAdmin, which controls whether the
     // Community section's admin-only add/remove controls are shown.
     renderCommunityPosts();
