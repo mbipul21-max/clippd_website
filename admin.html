@@ -49,6 +49,13 @@
   .btn-primary:disabled{ opacity:.55; cursor:default; transform:none; box-shadow:none; }
   .btn-outline{ background:transparent; color:var(--charcoal); border:1px solid var(--line); }
   .btn-outline:hover{ border-color:var(--charcoal); }
+  .courier-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line, #E4DCCB); border-radius:10px; margin-top:8px; background:#fff; }
+  .courier-row .c-name{ font-weight:600; font-size:14px; }
+  .courier-row .c-meta{ font-size:12px; color:var(--charcoal-soft); margin-top:2px; }
+  .courier-row .c-price{ margin-left:auto; font-weight:700; font-size:15px; white-space:nowrap; }
+  .courier-row.cheapest{ border-color:var(--brass); box-shadow:0 0 0 1px var(--brass) inset; }
+  .courier-row .btn{ padding:8px 12px; font-size:12px; }
+  .courier-error{ margin-top:10px; padding:10px 12px; border-radius:8px; background:#FBEDEA; color:#8C2F1F; font-size:13px; white-space:pre-wrap; word-break:break-word; }
   .btn-danger{ background:transparent; color:var(--brick); border:1px solid var(--brick); }
   .btn-danger:hover{ background:var(--brick); color:#fff; }
   .btn-danger:disabled{ opacity:.6; cursor:not-allowed; }
@@ -636,7 +643,7 @@
   }
 
   async function loadOrders(){
-    const COLS = 'id,user_id,total,subtotal,shipping,status,payment_method,created_at,customer_name,phone,address,city,state,pincode,courier_name,awb_number,tracking_status,return_type,return_reason';
+    const COLS = 'id,user_id,total,subtotal,shipping,status,payment_method,created_at,customer_name,phone,address,city,state,pincode,courier_name,awb_number,nimbus_shipment_id,shipping_status,tracking_status,return_type,return_reason';
     let { data, error } = await sb.from('orders').select(COLS).order('created_at', { ascending: false });
     // A column in the list above may not exist yet in the table: retry with all columns.
     if(error && /column|schema cache/i.test(error.message || '')){
@@ -976,6 +983,20 @@
         <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="saveStatus()">Save Status</button>
       </div>
 
+      ${(() => {
+        const alreadySent = !!(order.awb_number || order.nimbus_shipment_id);
+        const readyToShip = !['pending_payment','cancelled','delivered','return_requested','shipped'].includes(order.status);
+        if(alreadySent){
+          return `<div class="drawer-section"><span class="label">Shipping</span>
+            <p style="margin-top:6px; font-size:13px; color:var(--charcoal-soft);">Sent to NimbusPost${order.courier_name ? ' with ' + order.courier_name : ''}${order.awb_number ? ' (AWB ' + order.awb_number + ')' : ''}.</p></div>`;
+        }
+        if(!readyToShip) return '';
+        return `<div class="drawer-section"><span class="label">Ship with NimbusPost</span>
+          <p style="margin-top:6px; font-size:13px; color:var(--charcoal-soft);">Pick the courier yourself. Cheapest first, Air couriers hidden.</p>
+          <button class="btn btn-outline" id="loadRatesBtn" style="width:100%; margin-top:12px;" onclick="loadCourierRates()">Choose Courier &amp; Ship</button>
+          <div id="courierList"></div></div>`;
+      })()}
+
       ${order.status === 'pending_payment' ? `
       <div class="drawer-section">
         <span class="label">Remove Order</span>
@@ -984,6 +1005,70 @@
       </div>` : ''}
     `;
   }
+  // ---------- Choose a courier yourself and book the shipment ----------
+  let courierOptions = [];
+  async function fnErrorText(error, data){
+    try{
+      if(error && error.context && error.context.json){
+        const j = await error.context.json();
+        return (j.error || 'Request failed') + (j.raw ? '\n\nNimbusPost said: ' + j.raw : '');
+      }
+    }catch(e){}
+    return (error && error.message) || (data && data.error) || 'Request failed';
+  }
+  function showCourierError(msg){
+    const box = document.getElementById('courierList');
+    if(box) box.innerHTML = '<div class="courier-error"></div>';
+    const el = box && box.firstChild; if(el) el.textContent = msg;
+  }
+  async function loadCourierRates(){
+    const order = orders.find(o => o.id === selectedOrderId);
+    if(!order) return;
+    const btn = document.getElementById('loadRatesBtn');
+    const box = document.getElementById('courierList');
+    btn.disabled = true; btn.textContent = 'Loading couriers…'; box.innerHTML = '';
+    const { data, error } = await sb.functions.invoke('nimbuspost-courier', { body: { action: 'rates', orderId: order.id } });
+    btn.disabled = false; btn.textContent = 'Refresh Courier List';
+    if(error || !data || !data.success){
+      showCourierError(await fnErrorText(error, data) + (data && data.raw ? '\n\nNimbusPost said: ' + data.raw : ''));
+      return;
+    }
+    courierOptions = data.couriers;
+    const eddText = e => (e && e !== 'undefined') ? ' · ' + e : '';
+    box.innerHTML =
+      '<p style="margin-top:12px; font-size:12px; color:var(--charcoal-soft);">' + data.payment + ' order · ' + courierOptions.length + ' couriers' + (data.hidden_air ? ' (' + data.hidden_air + ' Air hidden)' : '') + '</p>' +
+      courierOptions.map((c, i) => `
+        <div class="courier-row ${i === 0 ? 'cheapest' : ''}">
+          <div><div class="c-name">${String(c.name).replace(/</g,'&lt;')}</div>
+          <div class="c-meta">${i === 0 ? 'Cheapest' : ''}${eddText(c.edd)}</div></div>
+          <div class="c-price">₹${Number(c.charge).toFixed(2)}</div>
+          <button class="btn btn-primary" onclick="bookCourier(${i})">Ship</button>
+        </div>`).join('');
+  }
+  async function bookCourier(i){
+    const order = orders.find(o => o.id === selectedOrderId);
+    const c = courierOptions[i];
+    if(!order || !c) return;
+    if(!confirm('Ship order ' + order.id + ' with ' + c.name + ' (₹' + Number(c.charge).toFixed(2) + ')?')) return;
+    document.querySelectorAll('#courierList .btn').forEach(b => { b.disabled = true; });
+    const { data, error } = await sb.functions.invoke('nimbuspost-courier', {
+      body: { action: 'ship', orderId: order.id, courierId: c.id, courierName: c.name }
+    });
+    if(error || !data || !data.success){
+      showCourierError(await fnErrorText(error, data) + (data && data.details ? '\n\n' + data.details : ''));
+      return;
+    }
+    order.courier_name = data.courier_name || c.name;
+    order.awb_number = data.awb_number || null;
+    order.nimbus_shipment_id = data.shipment_id || order.nimbus_shipment_id;
+    order.shipping_status = 'shipment_created';
+    renderDrawer();
+    renderOrders();
+    showToast(data.courier_mismatch
+      ? 'Booked with ' + order.courier_name + ' - not the courier you chose. Check NimbusPost.'
+      : 'Shipment booked with ' + (order.courier_name || c.name));
+  }
+
   // Delete is allowed ONLY for orders still in "pending_payment". The status is
   // re-checked here and again in the database query, so paid / shipped /
   // delivered / cancelled / return orders can never be removed from this screen.

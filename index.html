@@ -3030,8 +3030,13 @@
     localStorage.setItem('clippd-cart', JSON.stringify(cart));
     // Kick off shipment creation in the background — don't block the
     // success screen on it, and don't fail the order if shipping sync fails.
-    sb.functions.invoke('create-nimbuspost-shipment', { body: { orderId } })
-      .catch(err => console.error('NimbusPost shipment sync failed:', err));
+    // Orders now WAIT for you to choose the courier in the admin page.
+    // Set to true to go back to automatic booking.
+    const AUTO_SHIP_TO_NIMBUSPOST = false;
+    if(AUTO_SHIP_TO_NIMBUSPOST){
+      sb.functions.invoke('create-nimbuspost-shipment', { body: { orderId } })
+        .catch(err => console.error('NimbusPost shipment sync failed:', err));
+    }
     // Email the customer their order confirmation — also non-blocking;
     // the order itself is already placed, so a mail failure shouldn't
     // interrupt the success screen.
