@@ -146,12 +146,17 @@
   }
   #scrim.open{ opacity:1; pointer-events:auto; }
   #drawer{
-    position:fixed; top:0; right:0; height:100%; width:min(440px, 100vw);
+    position:fixed; top:0; right:0; height:100%; width:min(760px, 100vw);
     background:var(--card); box-shadow:-24px 0 60px -30px rgba(29,26,23,.5);
     transform:translateX(100%); transition:transform .3s ease; z-index:21;
     overflow-y:auto; padding:30px 28px;
   }
   #drawer.open{ transform:translateX(0); }
+  /* Phones / small screens: the order panel takes the whole page */
+  @media (max-width:760px){
+    #drawer{ width:100vw; max-width:100vw; padding:24px 18px 32px; box-shadow:none; }
+    #drawer .close{ top:16px; right:16px; }
+  }
   #drawer .close{ position:absolute; top:22px; right:22px; }
   .drawer-section{ margin-top:24px; }
   .drawer-section .label{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--charcoal-soft); font-weight:600; }
