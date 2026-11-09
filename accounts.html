@@ -121,6 +121,10 @@ const lt=l=>l.incl?l.qty*l.rate/(1+l.gst/100):l.qty*l.rate,amt=e=>sum(lines(e),l
 isMan=v=>v!==undefined&&v!==null&&String(v).trim()!==''&&!isNaN(+v),
 autoRnd=e=>rr(Math.round(raw(e))-raw(e)),ro=e=>isMan(e.rnd)?+e.rnd:0,tot=e=>rr(raw(e)+ro(e)),
 xraw=x=>(+x.amt||0)*(1+(+x.gst||0)/100),xauto=x=>rr(Math.round(xraw(x))-xraw(x)),xro=x=>isMan(x.rnd)?+x.rnd:0,xtot=x=>rr(xraw(x)+xro(x));
+/* Delivery and COD on a SALE are GST-inclusive and taxed at the goods' rate (spread across rates in proportion if the basket has several). The invoice total does not change. */
+const scAll=e=>(+e.ship||0)+(+e.cod||0),shOn=e=>!e.type||e.type==='sale',
+shT=e=>{if(!shOn(e))return 0;const sc=scAll(e),L=lines(e),g=sum(L,l=>lt(l)*(1+(+l.gst||0)/100));if(!sc||!g)return 0;return sum(L,l=>{const r=+l.gst||0,x=sc*lt(l)*(1+r/100)/g;return x-x/(1+r/100)})},
+taxA=e=>tax(e)+shT(e),amtA=e=>amt(e)+(shOn(e)?scAll(e)-shT(e):0);
 const st=e=>e.cancelled?'Cancelled':e.paid?'Paid':e.due<today()?'Overdue':'Due';
 const bname=id=>(S.banks.find(b=>b.id===id)||{}).name||'';
 const bal=a=>(+a.open||0)+sum(S.txns.filter(t=>t.acct===a.id),t=>t.type==='in'?t.amt:-t.amt)+sum((S.jv||[]).flatMap(j=>j.lines.filter(l=>l.acct===a.name).map(l=>(+l.dr||0)-(+l.cr||0))),x=>x);
@@ -253,11 +257,11 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  L.forEach((l,i)=>{const u=unit(l);doc.setFont(CF,'normal');doc.setFontSize(8.5);const il=doc.splitTextToSize(cl(l.item),72),rh=7+(il.length-1)*4;if(y+rh>235){doc.addPage();y=20}if(i%2)fill([247,245,237],15.5,y,179,rh);
   il.forEach((t,k)=>T(t,19,y+4.8+k*4,CF,'normal',8.5,K));T(l.hsn||'-',96,y+4.8,CF,'normal',8,G);T(l.qty,128,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u),160,y+4.8,CF,'normal',8,[120,120,120],{align:'right'});T(rs(u*l.qty),190.9,y+4.8,CF,'normal',8,K,{align:'right'});y+=rh});
  y+=5;if(y>205){doc.addPage();y=20}doc.setDrawColor(216,210,196);doc.setLineWidth(.2);doc.line(15.5,y,194.5,y);y+=8;
- const sh=+e.ship||0,cd=+e.cod||0,tx=tax(e),rt=[...new Set(L.map(l=>+l.gst))],one=rt.length===1?rt[0]:null,lb=(n,d)=>n+(one!=null?' @ '+(one/d)+'%':'');
+ const sh=+e.ship||0,cd=+e.cod||0,inc=shOn(e),tx=inc?taxA(e):tax(e),rt=[...new Set(L.map(l=>+l.gst))],one=rt.length===1?rt[0]:null,lb=(n,d)=>n+(one!=null?' @ '+(one/d)+'%':'');
  const R=(k,v)=>{T(k,158,y,'helvetica','normal',9.5,K,{align:'right'});T(v,190.9,y,CF,'normal',8.5,[110,110,110],{align:'right'});y+=5.6};
- R('Subtotal (incl. GST)',rs(sum(L,l=>unit(l)*l.qty)));R('Taxable value',rs(amt(e)));
+ R('Subtotal (incl. GST)',rs(sum(L,l=>unit(l)*l.qty)));if(inc){R('Shipping (incl. GST)',sh?rs(sh):'Free');if(cd)R('COD charge (incl. GST)',rs(cd))}R('Taxable value',rs(inc?amtA(e):amt(e)));
  if(intra){R(lb('CGST',2),rs(tx/2));R(lb('SGST',2),rs(tx/2))}else R(lb('IGST',1),rs(tx));
- R('Shipping',sh?rs(sh):'Free');if(cd)R('COD charge',rs(cd));{const rd=ro(e);if(rd)R('Round off',(rd<0?'-':'')+rs(Math.abs(rd)))}
+ if(!inc){R('Shipping',sh?rs(sh):'Free');if(cd)R('COD charge',rs(cd))}{const rd=ro(e);if(rd)R('Round off',(rd<0?'-':'')+rs(Math.abs(rd)))}
  y+=1;fill(W,104.8,y,89.7,10.6);T('TOTAL',158,y+7,'times','normal',12.5,[255,255,255],{align:'right'});T(rs(tot(e)),190.9,y+7,CF,'bold',12,[255,255,255],{align:'right'});
  y+=18;if(y>195){doc.addPage();y=20}
  T('HSN SUMMARY',15.5,y,CF,'normal',6.5,GD);y+=2.5;
@@ -287,14 +291,14 @@ function list(type){const sale=type==='sale',a=S.entries.filter(e=>e.type===type
 
 const blank=()=>({item:'',sku:'',qty:1,rate:'',gst:0,sell:''});
 const lr=(l,i,p)=>`<tr><td><input data-i="${i}" data-k="item" list="items" value="${esc(l.item)}" placeholder="Type or pick an item" style="min-width:200px"></td><td><input data-i="${i}" data-k="hsn" value="${esc(l.hsn||'')}" style="width:90px" inputmode="numeric"></td>${p?`<td><input data-i="${i}" data-k="sku" value="${esc(l.sku||'')}" style="width:100px"></td>`:''}<td><input type="number" min="0" step="any" data-i="${i}" data-k="qty" value="${l.qty}" style="width:80px"></td><td><input type="number" min="0" step="any" data-i="${i}" data-k="rate" value="${l.rate}" style="width:110px"></td><td><select data-i="${i}" data-k="gst">${[0,3,5,12,18,28].map(g=>`<option${g==l.gst?' selected':''}>${g}</option>`).join('')}</select></td>${p?`<td><input type="number" min="0" step="any" data-i="${i}" data-k="sell" value="${l.sell||''}" style="width:110px"></td>`:''}<td class="n" id="la${i}">${inr(l.qty*l.rate)}</td><td><button class="lnk" data-rm="${i}" aria-label="Remove line">✕</button></td></tr>`;
-function updTot(){const e={lines:D.lines.map(l=>({...l,incl:D.type==='sale'?1:0})),ship:D.ship,cod:D.cod},man=isMan(D.rnd),a=autoRnd(e);e.rnd=man?+D.rnd:a;
- const ri=$('#d_rnd');if(ri)ri.placeholder=a.toFixed(2)+' (auto)';const rh=$('#rndHint');if(rh)rh.textContent=man?'Manual round off. Clear the box to round automatically.':'Rounded to the nearest rupee automatically. Type an amount to change it, or 0 for none.';$('#t4').textContent=inr((+D.ship||0)+(+D.cod||0));$('#t1').textContent=inr(amt(e));$('#t2').textContent=inr(tax(e));$('#t3').textContent=inr(tot(e))}
+function updTot(){const e={lines:D.lines.map(l=>({...l,incl:D.type==='sale'?1:0})),ship:D.ship,cod:D.cod,type:D.type},man=isMan(D.rnd),a=autoRnd(e);e.rnd=man?+D.rnd:a;
+ const ri=$('#d_rnd');if(ri)ri.placeholder=a.toFixed(2)+' (auto)';const rh=$('#rndHint');if(rh)rh.textContent=man?'Manual round off. Clear the box to round automatically.':'Rounded to the nearest rupee automatically. Type an amount to change it, or 0 for none.';$('#t4').textContent=inr(scAll(e)-shT(e));$('#t1').textContent=inr(amt(e));$('#t2').textContent=inr(taxA(e));$('#t3').textContent=inr(tot(e))}
 function form(){const p=D.type==='expense',w=p?'Vendor':'Customer';
  return `<div class="ph"><h1>${D.isNew?'New':'Edit'} ${p?'purchase bill':'invoice'}</h1></div><div class="panel">
  <div class="fg"><label>${w} name<input id="d_party" list="parties" value="${esc(D.party)}"></label><label>${p?'Bill':'Invoice'} number<input id="d_no" value="${esc(D.no)}"></label><label>${p?'Bill':'Invoice'} date<input type="date" id="d_date" value="${D.date}"></label><label>Due date<input type="date" id="d_due" value="${D.due}"></label></div>${p?'':`<div class="fg"><label>Place of supply<select id="d_pos">${STATES.map(([c,n])=>`<option value="${c}"${c===(D.pos||SC())?' selected':''}>${n} (${c})</option>`).join('')}</select></label><label>Order ID<input id="d_oid" value="${esc(D.oid)}"></label><label>Phone<input id="d_phone" value="${esc(D.phone)}"></label><label>Email<input id="d_email" value="${esc(D.email)}"></label><label>Address<input id="d_addr" value="${esc(D.addr)}"></label><label>Payment method<select id="d_pm">${['COD','UPI','Card','Bank transfer','Cash'].map(m=>`<option${m===(D.pm||'UPI')?' selected':''}>${m}</option>`).join('')}</select></label><label>Shipping charge<input type="number" min="0" step="any" id="d_ship" value="${D.ship||''}"></label><label>COD charge<input type="number" min="0" step="any" id="d_cod" value="${D.cod||''}"></label></div>`}
  <div class="tbl"><table><thead><tr><th>Item details</th><th>HSN</th>${p?'<th>SKU</th>':''}<th>Qty</th><th>${p?'Cost rate (excl. GST)':'Price (incl. GST)'}</th><th>GST %</th>${p?'<th>Website price (incl. GST)</th>':''}<th class="n">Amount</th><th></th></tr></thead><tbody id="lines">${D.lines.map((l,i)=>lr(l,i,p)).join('')}</tbody></table></div>
  <button class="btn g" id="addLine">+ Add another line</button><br><br>
- <div class="tot"><div>Sub total<b id="t1"></b></div><div>GST<b id="t2"></b></div><div>Shipping and COD<b id="t4"></b></div><div class="rnd"><span>Round off</span><input type="number" step="0.01" id="d_rnd" value="${D.rnd??''}" style="width:130px;text-align:right"></div><small id="rndHint"></small><div class="t">Total<b id="t3"></b></div></div>
+ <div class="tot"><div>Sub total<b id="t1"></b></div><div>GST<b id="t2"></b></div><div>Shipping and COD (excl. GST)<b id="t4"></b></div><div class="rnd"><span>Round off</span><input type="number" step="0.01" id="d_rnd" value="${D.rnd??''}" style="width:130px;text-align:right"></div><small id="rndHint"></small><div class="t">Total<b id="t3"></b></div></div>
  <div class="fg"><label>Payment status<select id="d_paid"><option value="0"${D.paid=='1'?'':' selected'}>Unpaid</option><option value="1"${D.paid=='1'?' selected':''}>Paid now</option></select></label>
  <label>Paid from / into<select id="d_acct">${S.banks.map(b=>`<option value="${b.id}"${b.id===D.acct?' selected':''}>${esc(b.name)}</option>`).join('')}</select></label>
  <label>Notes<input id="d_desc" value="${esc(D.desc)}"></label></div>
@@ -493,7 +497,7 @@ function vouch(){const V=[],M=masters(),bk=id=>bname(id)||'Bank',sk=new Set(),
  ids=new Set([...S.entries.map(e=>e.id),...S.exps.map(x=>x.id)]);
  const ob=S.banks.filter(b=>+b.open),net=sum(ob,b=>+b.open),d0=[...S.entries,...S.txns,...S.exps].map(x=>x.date).sort()[0]||today();
  if(ob.length)add(d0,'Journal','OPENING','Opening balances',[...ob.map(b=>[b.name,b.open>0?b.open:0,b.open<0?-b.open:0]),['Owner Capital',net<0?-net:0,net>0?net:0]]);
- S.entries.filter(e=>!e.cancelled).forEach(e=>{const s=e.type==='sale',p=pn(e),a=r2(amt(e)),t=r2(tax(e)),c=r2((+e.ship||0)+(+e.cod||0)),rd=r2(ro(e)),T=r2(a+t+c+rd);
+ S.entries.filter(e=>!e.cancelled).forEach(e=>{const s=e.type==='sale',p=pn(e),a=r2(amt(e)),t=r2(tax(e))+r2(shT(e)),c=r2(scAll(e))-r2(shT(e)),rd=r2(ro(e)),T=r2(a+t+c+rd);
   add(e.date,s?'Sales':'Purchase',e.no,e.party,s?[[p,T,0],['Sales',0,a],['GST Output',0,t],['Shipping & COD Charges',0,c],['Round Off',rd<0?-rd:0,rd>0?rd:0]]:[['Purchases',a,0],['GST Input',t,0],['Freight & Other Charges',c,0],['Round Off',rd>0?rd:0,rd<0?-rd:0],[p,0,T]]);
   S.txns.filter(x=>x.entry===e.id).forEach(x=>{const A=r2(x.amt);add(x.date,s?'Receipt':'Payment',(s?'RCPT-':'PMT-')+e.no,e.party,s?[[bk(x.acct),A,0],[p,0,A]]:[[p,A,0],[bk(x.acct),0,A]])})});
  S.exps.forEach(x=>{const a=r2(x.amt),t=r2(a*(x.gst||0)/100),rd=r2(xro(x));add(x.date,'Payment',x.ref||'EXP',(x.party||'')+(x.desc?' '+x.desc:''),[[x.cat,a,0],['GST Input',t,0],['Round Off',rd>0?rd:0,rd<0?-rd:0],[bk(x.acct),0,a+t+rd]])});
@@ -567,7 +571,58 @@ function addExpenseAccount(){const n=(prompt('New expense account name (e.g. Ins
 const dl=(n,t,m)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m||'text/csv'}));a.download=n;a.click()};
 const csv=rows=>'\ufeff'+rows.map(r=>r.map(c=>{c=String(c??'');return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n');
 const tx=(rn,b)=>`<?xml version="1.0" encoding="UTF-8"?><ENVELOPE><HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER><BODY><IMPORTDATA><REQUESTDESC><REPORTNAME>${rn}</REPORTNAME></REQUESTDESC><REQUESTDATA>${b}</REQUESTDATA></IMPORTDATA></BODY></ENVELOPE>`;
-function xport(k){const M=masters(),V=vouch().filter(v=>inR(v.date)),d=today(),P=(g)=>/^Sundry/.test(g),zl=l=>[l.g==='Sundry Debtors'?'Accounts Receivable':l.g==='Sundry Creditors'?'Accounts Payable':l.l,P(l.g)?l.l:''];
+/* ---- GST portal export (GSTR-1 JSON, HSN summary, document summary, sales register) ---- */
+const B2CL_MIN=100000,GSTIN_RE=/^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/;
+function g1data(E,own){
+ const miss=[],inv=[],hs={},sp=(t,intra)=>intra?{camt:rr(t/2),samt:rr(t/2)}:{iamt:rr(t)};
+ E.filter(e=>!e.cancelled).forEach(e=>{
+  const pos=e.pos||own,intra=pos===own,ct=String(e.gstin||'').trim().toUpperCase(),b2b=GSTIN_RE.test(ct),g={};
+  const sc=scAll(e),gr=sum(lines(e),x=>lt(x)*(1+(+x.gst||0)/100));
+  lines(e).forEach(l=>{
+   const rt=+l.gst||0,tv0=lt(l),tx0=l.incl?l.qty*l.rate-tv0:tv0*rt/100,dv=gr?sc*tv0*(1+rt/100)/gr:0,dn=dv/(1+rt/100),tv=tv0+dn,tx=tx0+(dv-dn);let h=String(l.hsn||'').trim();
+   if(!h){h='7117';miss.push((e.no||'')+' '+(l.item||''))}
+   const o=g[rt]=g[rt]||{rt,txval:0,tax:0};o.txval+=tv;o.tax+=tx;
+   const k=(b2b?'B2B':'B2C')+'|'+h+'|'+rt,x=hs[k]=hs[k]||{sup:b2b?'B2B':'B2C',hsn:h,sample:String(l.item||''),rt,qty:0,txval:0,intraTx:0,interTx:0};
+   x.qty+=+l.qty||0;x.txval+=tv;intra?x.intraTx+=tx:x.interTx+=tx});
+  const items=Object.values(g).map(o=>({rt:o.rt,txval:rr(o.txval),...sp(o.tax,intra),csamt:0}));
+  inv.push({e,no:e.no||'',date:e.date,pos,intra,ct:b2b?ct:'',val:tot(e),items})});
+ const b2b={},b2cl={},b2cs={};
+ inv.forEach(v=>{
+  const itms=v.items.map((i,n)=>({num:n+1,itm_det:i}));
+  if(v.ct)(b2b[v.ct]=b2b[v.ct]||[]).push({inum:v.no,idt:fd(v.date),val:v.val,pos:v.pos,rchrg:'N',inv_typ:'R',itms});
+  else if(!v.intra&&v.val>B2CL_MIN)(b2cl[v.pos]=b2cl[v.pos]||[]).push({inum:v.no,idt:fd(v.date),val:v.val,itms});
+  else v.items.forEach(i=>{const k=v.pos+'|'+i.rt,o=b2cs[k]=b2cs[k]||{sply_ty:v.intra?'INTRA':'INTER',typ:'OE',pos:v.pos,rt:i.rt,txval:0,iamt:0,camt:0,samt:0,csamt:0};
+   o.txval+=i.txval;o.iamt+=i.iamt||0;o.camt+=i.camt||0;o.samt+=i.samt||0})});
+ const hsn=Object.values(hs).map((x,n)=>({num:n+1,sup:x.sup,hsn_sc:x.hsn,sample:x.sample,uqc:'NOS',qty:rr(x.qty),rt:x.rt,txval:rr(x.txval),iamt:rr(x.interTx),camt:rr(x.intraTx/2),samt:rr(x.intraTx/2),csamt:0}));
+ const ser={};E.forEach(e=>{const m=String(e.no||'').match(/^(.*?)(\d+)$/);if(!m)return;(ser[m[1]]=ser[m[1]]||[]).push({n:+m[2],e})});
+ const docs=Object.values(ser).map(a=>{a.sort((x,y)=>x.n-y.n);const f=a[0],l=a[a.length-1],total=l.n-f.n+1,canc=a.filter(x=>x.e.cancelled).length+(total-a.length);
+  return{from:f.e.no,to:l.e.no,totnum:total,cancel:canc,net_issue:total-canc}});
+ return{inv,b2b,b2cl,b2cs,hsn,docs,miss}}
+function gstExport(k){
+ const own=SC(),gst=String(S.co.gstin||'').trim().toUpperCase(),d=today();
+ const E=S.entries.filter(e=>e.type==='sale'&&inR(e.date)).sort((a,b)=>(a.date+(a.no||'')).localeCompare(b.date+(b.no||'')));
+ if(!E.length){alert('There are no sales invoices in the selected period.');return}
+ const D=g1data(E,own),r=n=>rr(n);
+ if(k==='g1j'){
+  if(!GSTIN_RE.test(gst)){alert('Add your GSTIN under Settings, Invoice details first.');return}
+  const a=(pf||'').slice(0,7),b=(pt||'').slice(0,7);
+  if(!a||a!==b){alert('GSTR-1 is filed one month at a time. Set From and To to the same month (for example Last month), then download again.');return}
+  const o={gstin:gst,fp:a.slice(5,7)+a.slice(0,4),gt:0,cur_gt:0};
+  const b2b=Object.entries(D.b2b).map(([ctin,inv])=>({ctin,inv})),b2cl=Object.entries(D.b2cl).map(([pos,inv])=>({pos,inv})),
+   b2cs=Object.values(D.b2cs).map(x=>{const y={sply_ty:x.sply_ty,typ:x.typ,pos:x.pos,rt:x.rt,txval:r(x.txval),csamt:0};x.sply_ty==='INTRA'?(y.camt=r(x.camt),y.samt=r(x.samt)):(y.iamt=r(x.iamt));return y});
+  if(b2b.length)o.b2b=b2b;if(b2cl.length)o.b2cl=b2cl;if(b2cs.length)o.b2cs=b2cs;
+  const hb=D.hsn.filter(x=>x.sup==='B2B').map(({sup,sample,...x},i)=>({...x,num:i+1})),hc=D.hsn.filter(x=>x.sup==='B2C').map(({sup,sample,...x},i)=>({...x,num:i+1}));
+  if(hb.length||hc.length)o.hsn={...(hb.length?{hsn_b2b:hb}:{}),...(hc.length?{hsn_b2c:hc}:{})};
+  o.doc_issue={doc_det:[{doc_num:1,doc_typ:'Invoices for outward supply',docs:D.docs.map((x,i)=>({num:i+1,...x}))}]};
+  dl('gstr1-'+o.fp+'.json',JSON.stringify(o,null,1),'application/json')}
+ if(k==='g1h')dl('hsn-summary-'+d+'.csv',csv([['Supply type','HSN','Sample item','UQC','Total quantity','Rate %','Total value','Taxable value','IGST','CGST','SGST','Cess'],...D.hsn.map(x=>[x.sup,x.hsn_sc,x.sample,x.uqc,x.qty,x.rt,r(x.txval+x.iamt+x.camt+x.samt),x.txval,x.iamt,x.camt,x.samt,0])]));
+ if(k==='g1d')dl('document-summary-'+d+'.csv',csv([['Nature of document','Sr. No. from','Sr. No. to','Total number','Cancelled','Net issued'],...D.docs.map(x=>['Invoices for outward supply',x.from,x.to,x.totnum,x.cancel,x.net_issue])]));
+ if(k==='g1s')dl('sales-register-'+d+'.csv',csv([['Invoice no','Date','Customer','Customer GSTIN','Place of supply','Supply','Taxable value','CGST','SGST','IGST','Of which delivery and COD (incl. GST)','Invoice value','Status'],...E.map(e=>{
+  if(e.cancelled)return[e.no||'',e.date,e.party,'',e.pos||own,'','','','','','','','Cancelled'];
+  const v=D.inv.find(x=>x.e===e),sm=f=>r(sum(v.items,i=>i[f]||0));
+  return[v.no,v.date,e.party,v.ct,v.pos,v.intra?'Intra-state':'Inter-state',sm('txval'),sm('camt'),sm('samt'),sm('iamt'),r((+e.ship||0)+(+e.cod||0)),v.val,st(e)]})]));
+ if((k==='g1j'||k==='g1h')&&D.miss.length)alert(D.miss.length+' item line(s) had no HSN code, so 7117 was used: '+D.miss.slice(0,5).join('; ')+(D.miss.length>5?'; ...':'')+'. Set the HSN on those items if 7117 is wrong.')}
+function xport(k){if(/^g1/.test(k))return gstExport(k);const M=masters(),V=vouch().filter(v=>inR(v.date)),d=today(),P=(g)=>/^Sundry/.test(g),zl=l=>[l.g==='Sundry Debtors'?'Accounts Receivable':l.g==='Sundry Creditors'?'Accounts Payable':l.l,P(l.g)?l.l:''];
  if(k==='tm')dl('tally-masters-'+d+'.xml',tx('All Masters',Object.entries(M).map(([n,g])=>`<TALLYMESSAGE xmlns:UDF="TallyUDF"><LEDGER NAME="${esc(n)}" ACTION="Create"><NAME>${esc(n)}</NAME><PARENT>${esc(g)}</PARENT></LEDGER></TALLYMESSAGE>`).join('')),'application/xml');
  if(k==='tv')dl('tally-vouchers-'+d+'.xml',tx('Vouchers',V.map((v,i)=>`<TALLYMESSAGE xmlns:UDF="TallyUDF"><VOUCHER VCHTYPE="${v.type}" ACTION="Create"><DATE>${v.date.replace(/-/g,'')}</DATE><VOUCHERTYPENAME>${v.type}</VOUCHERTYPENAME><VOUCHERNUMBER>${esc(v.no||i+1)}</VOUCHERNUMBER><NARRATION>${esc(v.narr)}</NARRATION>${v.ls.map(l=>`<ALLLEDGERENTRIES.LIST><LEDGERNAME>${esc(l.l)}</LEDGERNAME><ISDEEMEDPOSITIVE>${l.dr?'Yes':'No'}</ISDEEMEDPOSITIVE><AMOUNT>${l.dr?-l.dr:l.cr}</AMOUNT></ALLLEDGERENTRIES.LIST>`).join('')}</VOUCHER></TALLYMESSAGE>`).join('')),'application/xml');
  if(k==='zc')dl('zoho-chart-of-accounts-'+d+'.csv',csv([['Account Name','Account Code','Account Type','Description'],...Object.entries(M).filter(([n,g])=>!P(g)).map(([n,g])=>[n,'',ZT[g],''])]));
@@ -575,7 +630,7 @@ function xport(k){const M=masters(),V=vouch().filter(v=>inR(v.date)),d=today(),P
  if(k==='zj')dl('zoho-journals-'+d+'.csv',csv([['Journal Date','Journal Number','Reference Number','Notes','Journal Type','Currency Code','Exchange Rate','Account','Description','Contact Name','Debit','Credit'],...V.flatMap((v,i)=>v.ls.map(l=>{const z=zl(l);return[v.date,v.type.slice(0,3).toUpperCase()+'-'+String(i+1).padStart(6,'0'),v.no,v.narr,'both','INR',1,z[0],v.narr,z[1],l.dr||'',l.cr||'']}))]));
  if(k==='db')dl('daybook-'+d+'.csv',csv([['Date','Voucher Type','Voucher No','Ledger','Group','Debit','Credit','Narration'],...V.flatMap(v=>v.ls.map(l=>[v.date,v.type,v.no,l.l,l.g,l.dr||'',l.cr||'',v.narr]))]))}
 function xp(){const b=(k,t,s)=>`<tr><td><b>${t}</b><br><small>${s}</small></td><td><button class="btn g" data-x="ex" data-v="${k}">Download</button></td></tr>`;
- return `<div class="ph"><h1>Export for Tally and Zoho Books</h1></div>${rbar("Vouchers, journals and the day book are limited to this period.")}<div class="tbl"><table><tbody>${b('tm','Tally: ledger masters (XML)','Import first: Tally Prime, Import Data, Masters.')+b('tv','Tally: all vouchers (XML)','Import second. Sales, purchases, receipts, payments, contra and journals.')+b('zc','Zoho Books: chart of accounts (CSV)','Settings, Import, Chart of Accounts. Customers and vendors are in the contacts file.')+b('zp','Zoho Books: customers and vendors (CSV)','Import contacts before the journals.')+b('zj','Zoho Books: journals (CSV)','Every voucher as a manual journal, with the contact on receivable and payable lines.')+b('db','Day book (CSV)','Plain debit and credit lines. Opens in Excel and works with most software.')}</tbody></table></div><small>For a full copy of your data, use Settings, Download backup. Everything is saved in this browser only.</small>`}
+ return `<div class="ph"><h1>Export: GST portal, Tally and Zoho Books</h1></div>${rbar("Exports are limited to this period. For the GSTR-1 file, choose a single month.")}<h2 style="margin:14px 0 6px">GST portal (GSTR-1)</h2><div class="tbl"><table><tbody>${b('g1j','GSTR-1 file (JSON)','Sales for one month: B2B, B2C, HSN summary and document summary. Upload it on the GST portal under Returns, GSTR-1, Prepare offline.')+b('g1h','HSN summary (CSV)','Rate-wise totals by HSN code, split into B2B and B2C.')+b('g1d','Document summary (CSV)','Invoice number series with total, cancelled and net issued.')+b('g1s','Sales register (CSV)','Invoice-wise taxable value, CGST, SGST and IGST.')}</tbody></table></div><h2 style="margin:18px 0 6px">Tally and Zoho Books</h2><div class="tbl"><table><tbody>${b('tm','Tally: ledger masters (XML)','Import first: Tally Prime, Import Data, Masters.')+b('tv','Tally: all vouchers (XML)','Import second. Sales, purchases, receipts, payments, contra and journals.')+b('zc','Zoho Books: chart of accounts (CSV)','Settings, Import, Chart of Accounts. Customers and vendors are in the contacts file.')+b('zp','Zoho Books: customers and vendors (CSV)','Import contacts before the journals.')+b('zj','Zoho Books: journals (CSV)','Every voucher as a manual journal, with the contact on receivable and payable lines.')+b('db','Day book (CSV)','Plain debit and credit lines. Opens in Excel and works with most software.')}</tbody></table></div><small>For a full copy of your data, use Settings, Download backup. Everything is saved in this browser only.</small>`}
 
 const LG=()=>S.co.logo||(document.querySelector('.gate-logo')||{}).src||'';
 const fd=s=>s?s.split('-').reverse().join('-'):'';
