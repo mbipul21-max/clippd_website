@@ -211,7 +211,7 @@ async function loadOrders(){if(!SBon())return;
 async function importOrders(list){list=list.filter(Boolean);if(!list.length)return;let n=0,bad=[],odd=[];
  try{const by={};
   for(let i=0;i<list.length;i+=40){const ids=list.slice(i,i+40).map(o=>'"'+o.id+'"').join(',');
-   (await sbf('order_items?select=order_id,product_id,product_name,price,qty&order_id=in.('+encodeURIComponent('('+ids+')')+')')).forEach(r=>(by[r.order_id]=by[r.order_id]||[]).push(r))}
+   (await sbf('order_items?select=order_id,product_id,product_name,price,qty&order_id=in.('+encodeURIComponent(ids)+')')).forEach(r=>(by[r.order_id]=by[r.order_id]||[]).push(r))}
   const hs=S.entries.flatMap(lines).reverse();
   for(const o of list){const it=by[o.id]||[];if(!it.length){bad.push(o.id);continue}
    const cod=isCODo(o),cc=cod&&(+o.subtotal||0)<999?39:0,ship=Math.max(0,(+o.shipping||0)-cc),date=istDate(o.created_at),
