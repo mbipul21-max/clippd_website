@@ -186,7 +186,13 @@ const recs=()=>[...S.entries,...S.exps.map(x=>({type:'expense',date:x.date,lines
 async function sbf(path,o={}){const c=S.sb,t=((await authClient.auth.getSession()).data.session||{}).access_token||sessionStorage.getItem('sbt')||c.key;
  const r=await fetch(c.url.replace(/\/$/,'')+'/rest/v1/'+path,{...o,headers:{apikey:c.key,Authorization:'Bearer '+t,'Content-Type':'application/json',Prefer:'return=representation'}});
  const x=await r.text();if(!r.ok)throw new Error(x||r.status);return x?JSON.parse(x):[]}
-async function loadItems(){if(!SBon())return;try{ITEMS=await sbf(S.sb.table+'?select=*&limit=1000');conn=true}catch(e){conn=false;msg='Could not read website products: '+e.message}
+const DEFAULT_HSN='7117'; // imitation jewellery; used only when the product has no hsn_code
+function fillHsn(){if(!ITEMS.length)return;let n=0;const nk=v=>String(v||'').toLowerCase().replace(/ \([^)]*\)$/,'').trim();
+ S.entries.forEach(e=>{if(e.type!=='sale')return;(e.lines||[]).forEach(l=>{if(String(l.hsn||'').trim())return;
+  const p=ITEMS.find(x=>(l.sku&&String(x[S.sb.sku]||'')===String(l.sku))||nk(x[S.sb.name])===nk(l.item));
+  l.hsn=String((p&&p.hsn_code)||DEFAULT_HSN).trim();n++})});
+ if(n){save();msg='Filled the HSN code on '+n+' invoice line'+(n==1?'':'s')+' from your products (7117 where a product has none).'}}
+async function loadItems(){if(!SBon())return;try{ITEMS=await sbf(S.sb.table+'?select=*&limit=1000');conn=true;fillHsn()}catch(e){conn=false;msg='Could not read website products: '+e.message}
  $('#items').innerHTML=ITEMS.map(r=>`<option value="${esc(r[S.sb.name])}">stock ${r[S.sb.stock]??'?'}</option>`).join('')}
 const find=l=>{const c=S.sb,k=String(l.sku||'').toLowerCase();return ITEMS.find(r=>k&&String(r[c.sku]??'').toLowerCase()===k)||ITEMS.find(r=>String(r[c.name]).toLowerCase()===String(l.item).toLowerCase())};
 async function syncEntry(e){const c=S.sb;let n=0;
@@ -220,7 +226,7 @@ async function importOrders(list){list=list.filter(Boolean);if(!list.length)retu
   for(const o of list){const it=by[o.id]||[];if(!it.length){bad.push(o.id);continue}
    const cod=isCODo(o),cc=cod&&(+o.subtotal||0)<999?39:0,ship=Math.max(0,(+o.shipping||0)-cc),date=istDate(o.created_at),
    ls=it.map(r=>{const base=String(r.product_name).replace(/ \([^)]*\)$/,'').toLowerCase(),p=ITEMS.find(x=>String(x.id)===String(r.product_id)),h=hs.find(m=>m.hsn&&[String(r.product_name).toLowerCase(),base].includes(String(m.item).toLowerCase()));
-    return{item:r.product_name,sku:p?(p[S.sb.sku]||''):'',qty:+r.qty||1,rate:+r.price||0,gst:3,incl:1,hsn:h?h.hsn:''}}),
+    return{item:r.product_name,sku:p?(p[S.sb.sku]||''):'',qty:+r.qty||1,rate:+r.price||0,gst:3,incl:1,hsn:String((p&&p.hsn_code)||(h?h.hsn:'')||DEFAULT_HSN)}}),
    e={id:uid(),type:'sale',no:nextNo('sale'),party:o.customer_name||'Website customer',date,due:date,lines:ls,desc:'Website order '+o.id,site:false,synced:true,oid:o.id,email:o.email||'',
     addr:[o.address,o.city,o.state].filter(Boolean).join(', ')+(o.pincode?' - '+o.pincode:''),phone:o.phone||'',
     pm:['COD','UPI','Card','Bank transfer','Cash'].find(m=>m.toLowerCase()===String(o.payment_method).toLowerCase())||'UPI',ship,cod:cc,pos:stCode(o.state)||SC()};
@@ -265,7 +271,7 @@ function makePdf(e){const J=window.jspdf;if(!J){msg='The PDF library could not l
  y+=1;fill(W,104.8,y,89.7,10.6);T('TOTAL',158,y+7,'times','normal',12.5,[255,255,255],{align:'right'});T(rs(tot(e)),190.9,y+7,CF,'bold',12,[255,255,255],{align:'right'});
  y+=18;if(y>195){doc.addPage();y=20}
  T('HSN SUMMARY',15.5,y,CF,'normal',6.5,GD);y+=2.5;
- const gm={};L.forEach(l=>{const k=(l.hsn||'-')+'|'+l.gst,g=gm[k]=gm[k]||{h:l.hsn||'-',r:+l.gst,t:0,x:0};g.t+=lt(l);g.x+=ltx(l)});const gs=Object.values(gm);
+ const gm={},dg=inc?sum(L,x=>lt(x)*(1+(+x.gst||0)/100)):0;L.forEach(l=>{const k=(l.hsn||'-')+'|'+l.gst,g=gm[k]=gm[k]||{h:l.hsn||'-',r:+l.gst,t:0,x:0},rt=+l.gst||0,dv=dg?(sh+cd)*lt(l)*(1+rt/100)/dg:0,dn=dv/(1+rt/100);g.t+=lt(l)+dn;g.x+=ltx(l)+(dv-dn)});const gs=Object.values(gm);
  const cols=intra?[['HSN',19,0],['TAXABLE VALUE',74,1],['CGST RATE',96,1],['CGST AMT',120,1],['SGST RATE',143,1],['SGST AMT',167,1],['TOTAL TAX',190.9,1]]:[['HSN',19,0],['TAXABLE VALUE',80,1],['IGST RATE',125,1],['IGST AMT',158,1],['TOTAL TAX',190.9,1]];
  const row=(v,bold,yy)=>cols.forEach(([k,x,ra],i)=>T(v[i],x,yy,CF,bold?'bold':'normal',7,K,ra?{align:'right'}:undefined));
  fill([238,231,217],15.5,y,179,6.4);cols.forEach(([k,x,ra])=>T(k,x,y+4.3,CF,'normal',6,[101,93,83],ra?{align:'right'}:undefined));y+=6.4;
