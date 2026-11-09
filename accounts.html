@@ -469,10 +469,16 @@ $('#view').addEventListener('click',async e=>{const t=e.target.closest('button,[
  if(t.id==='rs')$('#file').click();
  if(t.id==='wipe'&&confirm('Delete every entry, payment and account? Download a backup first.')){S={...DEF(),biz:S.biz,sb:S.sb};save();render()}});
 /* ---- double-entry books: journal, ledgers, P&L, balance sheet, exports ---- */
-let _fk='';function applyIcon(){const k=S.co.logo?S.co.logo.length+'L':'D';if(k===_fk)return;_fk=k;const f=$('#fav'),c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
- const done=()=>{f.href=c.toDataURL('image/png')};
- if(S.co.logo){const im=new Image;im.onload=()=>{x.fillStyle='#fff';x.fillRect(0,0,64,64);const k=Math.min(60/im.width,60/im.height);x.drawImage(im,(64-im.width*k)/2,(64-im.height*k)/2,im.width*k,im.height*k);done()};im.src=S.co.logo}
- else{x.fillStyle='#1D1A17';x.fillRect(0,0,64,64);x.fillStyle='#A07C45';x.font='bold 44px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText((S.co.name||'C')[0].toUpperCase(),32,36);done()}}
+let _fk='';function applyIcon(){if(_fk)return;_fk='R';const f=$('#fav'),c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
+ // CLIPPD-style favicon: charcoal tile, thin brass frame, brass rupee sign (drawn by hand so it needs no font)
+ x.fillStyle='#1D1A17';x.fillRect(0,0,64,64);
+ x.strokeStyle='#A07C45';x.lineWidth=2;x.strokeRect(3,3,58,58);
+ x.lineWidth=5;x.lineCap='butt';x.lineJoin='miter';
+ x.beginPath();x.moveTo(17,14);x.lineTo(47,14);x.stroke();
+ x.beginPath();x.moveTo(17,24);x.lineTo(47,24);x.stroke();
+ x.beginPath();x.moveTo(20,14);x.lineTo(29,14);x.arc(29,24,10,-Math.PI/2,Math.PI/2);x.lineTo(20,34);x.stroke();
+ x.beginPath();x.moveTo(20,34);x.lineTo(40,52);x.stroke();
+ f.type='image/png';f.href=c.toDataURL('image/png')}
 const fyS=()=>{const n=new Date(),y=n.getMonth()>=3?n.getFullYear():n.getFullYear()-1;return y+'-04-01'};
 let LK='a',LN=null,J=null,pf='',pt='',rp='all';
 const r2=n=>Math.round((+n||0)*100)/100,sgn=(n)=>inr(Math.abs(n))+(n<0?' Cr':' Dr');
