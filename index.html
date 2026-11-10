@@ -113,54 +113,6 @@
     width:16px; height:16px; flex:none;
   }
 
-  /* ---------- ANNOUNCEMENT BAR ---------- */
-  .announce{
-    background:var(--charcoal); color:var(--ivory);
-    padding:10px 0;
-    font-family:'Space Mono', monospace;
-    font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
-    overflow:hidden; white-space:nowrap; position:relative;
-  }
-  .announce-track{
-    display:inline-flex; width:max-content;
-    animation: announceScroll 16s linear infinite;
-  }
-  .announce:hover .announce-track{ animation-play-state:paused; }
-  .announce-item{ display:inline-flex; align-items:center; padding-right:48px; }
-  .announce span.dot{ color:var(--brass-soft); margin:0 10px; }
-  @keyframes announceScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
-  @keyframes blinkText{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
-  .blink-text{ animation:blinkText 1.4s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce){
-    .blink-text{ animation:none; }
-    .announce-track{ animation:none; }
-    .announce{ text-align:center; }
-    .announce-item:last-child{ display:none; }
-  }
-
-
-  /* ---------- DIWALI DIYA ---------- */
-  .diya-mini{ display:inline-block; width:22px; height:22px; margin:0 10px; vertical-align:middle; flex:none; overflow:visible; }
-  .diya-flame{ transform-box:fill-box; transform-origin:50% 100%; animation:diyaFlicker 1.1s ease-in-out infinite alternate; }
-  .diya-flame.f2{ animation-duration:.8s; animation-delay:-.3s; }
-  .diya-glow{ animation:diyaGlow 1.6s ease-in-out infinite alternate; }
-  @keyframes diyaFlicker{
-    0%{ transform:scale(1,1) rotate(-2deg); opacity:1; }
-    35%{ transform:scale(.92,1.08) rotate(2deg); opacity:.75; }
-    70%{ transform:scale(1.06,.94) rotate(-1deg); opacity:1; }
-    100%{ transform:scale(.95,1.06) rotate(2deg); opacity:.6; }
-  }
-  @keyframes diyaGlow{ from{ opacity:.45; } to{ opacity:1; } }
-  #diya-layer{ position:fixed; inset:0; pointer-events:none; z-index:60; overflow:hidden; }
-  #diya-layer .diya-float{
-    position:absolute; width:96px; height:96px; overflow:visible;
-    filter:blur(3.5px) drop-shadow(0 0 14px rgba(255,170,60,.65));
-    opacity:.6;
-    animation:diyaBob 5s ease-in-out infinite alternate;
-  }
-  @keyframes diyaBob{ from{ transform:translateY(0); } to{ transform:translateY(-8px); } }
-  @media (max-width:640px){ #diya-layer .diya-float{ width:60px; height:60px; filter:blur(3px) drop-shadow(0 0 10px rgba(255,170,60,.6)); } }
-  @media (prefers-reduced-motion: reduce){ .diya-flame, .diya-glow, #diya-layer .diya-float{ animation:none; } }
 
 
   /* ---------- DROPPING SOON (products with no image yet) ---------- */
@@ -627,7 +579,6 @@
     .section{ padding:30px 18px; }
     .section-head{ margin:0 auto 24px; }
     .section-head p{ margin-top:8px; }
-    .announce{ padding:8px 0; }
     footer{ padding:44px 18px 20px; }
     .foot-bottom{ margin-top:32px; padding-top:16px; }
     .modal-body{ padding:22px 18px; }
@@ -1056,11 +1007,6 @@
 </head>
 <body>
 
-<div class="announce"><div class="announce-track">
-  <span class="announce-item"><svg class="diya-mini" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dga1"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dga1)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">CLIPPD WISHES YOU HAPPY DIWALI!</strong><svg class="diya-mini" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgb1"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgb1)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg><span class="dot">✦</span> SHUBH DIPAWALI <span class="dot">✦</span></span>
-  <span class="announce-item" aria-hidden="true"><svg class="diya-mini" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dga2"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dga2)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg><strong class="blink-text" style="color:var(--brass-soft); font-weight:700;">CLIPPD WISHES YOU HAPPY DIWALI!</strong><svg class="diya-mini" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgb2"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgb2)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg><span class="dot">✦</span> SHUBH DIPAWALI <span class="dot">✦</span></span>
-</div></div>
-
 <header class="site">
   <div class="nav-row">
     <button class="mobile-toggle" aria-label="Open menu" onclick="openMobileNav()">
@@ -1446,7 +1392,7 @@
 
         <!-- Photo Upload -->
         <div style="margin-bottom:16px;">
-          <label style="display:block; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--charcoal-soft); margin-bottom:6px;">Add a Photo (Optional)</label>
+          <label style="display:block; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--charcoal-soft); margin-bottom:6px;">Add Photos (Optional)</label>
           <input type="file" id="reviewPhoto" accept="image/*" multiple onchange="previewReviewPhoto(this)" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px;">
           <div style="font-size:11px; color:var(--charcoal-soft); margin-top:4px;">Up to 5 photos</div>
           <div id="reviewPhotoPreview"></div>
@@ -2311,9 +2257,7 @@
       // Clear form and reload
       document.getElementById('modalReviewTitle').value = '';
       document.getElementById('modalReviewText').value = '';
-      if(photoInput) photoInput.value = '';
-      const previewEl = document.getElementById('reviewPhotoPreview');
-      if(previewEl) previewEl.innerHTML = '';
+      resetReviewPhotos();
       modalSelectedRating = 0;
       document.querySelectorAll('.star-btn-modal').forEach(btn => {
         btn.classList.remove('active');
@@ -2366,6 +2310,7 @@
       el.innerHTML = `<p class="review-signin"><a href="#" onclick="closeProduct(); openAccount(); return false;">Sign in</a> to write a review</p>`;
       return;
     }
+    reviewPhotoFiles = [];
     el.innerHTML = `
       <form class="review-form" onsubmit="return submitReview(event, ${productId})">
         <div class="field">
@@ -2399,27 +2344,57 @@
     });
   }
   const MAX_REVIEW_PHOTOS = 5;
+  let reviewPhotoFiles = [];
 
-  function previewReviewPhoto(input){
+  function syncReviewPhotoInput(){
+    const input = document.getElementById('reviewPhoto');
+    if(!input) return;
+    const dt = new DataTransfer();
+    reviewPhotoFiles.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  }
+
+  function resetReviewPhotos(){
+    reviewPhotoFiles = [];
+    const input = document.getElementById('reviewPhoto');
+    if(input) input.value = '';
     const el = document.getElementById('reviewPhotoPreview');
-    let files = input.files ? Array.from(input.files) : [];
-    if(!files.length){ el.innerHTML = ''; return; }
+    if(el) el.innerHTML = '';
+  }
 
-    if(files.length > MAX_REVIEW_PHOTOS){
+  // Each pick ADDS to the current selection (up to 5) instead of replacing it
+  function previewReviewPhoto(input){
+    const picked = input.files ? Array.from(input.files) : [];
+    const key = f => f.name + '|' + f.size + '|' + f.lastModified;
+    const seen = new Set(reviewPhotoFiles.map(key));
+    picked.forEach(f => { if(!seen.has(key(f))){ reviewPhotoFiles.push(f); seen.add(key(f)); } });
+    if(reviewPhotoFiles.length > MAX_REVIEW_PHOTOS){
       showToast(`You can add up to ${MAX_REVIEW_PHOTOS} photos — using the first ${MAX_REVIEW_PHOTOS}`);
-      // Rebuild input.files so submit only ever sees the trimmed set
-      const dt = new DataTransfer();
-      files.slice(0, MAX_REVIEW_PHOTOS).forEach(f => dt.items.add(f));
-      input.files = dt.files;
-      files = Array.from(input.files);
+      reviewPhotoFiles = reviewPhotoFiles.slice(0, MAX_REVIEW_PHOTOS);
     }
+    syncReviewPhotoInput();
+    renderReviewPhotoPreview();
+  }
 
+  function removeReviewPhoto(i){
+    reviewPhotoFiles.splice(i, 1);
+    syncReviewPhotoInput();
+    renderReviewPhotoPreview();
+  }
+
+  function renderReviewPhotoPreview(){
+    const el = document.getElementById('reviewPhotoPreview');
+    if(!el) return;
+    if(!reviewPhotoFiles.length){ el.innerHTML = ''; return; }
     el.style.display = 'flex';
     el.style.flexWrap = 'wrap';
     el.style.gap = '8px';
-    el.innerHTML = files.map(file =>
-      `<img src="${URL.createObjectURL(file)}" alt="Preview">`
-    ).join('');
+    el.innerHTML = reviewPhotoFiles.map((file, i) =>
+      `<div style="position:relative; display:inline-block;">` +
+        `<img src="${URL.createObjectURL(file)}" alt="Preview" style="width:72px; height:72px; object-fit:cover; border-radius:8px; border:1px solid var(--line);">` +
+        `<button type="button" onclick="removeReviewPhoto(${i})" aria-label="Remove photo" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; border:none; background:var(--charcoal); color:#fff; font-size:13px; line-height:1; cursor:pointer;">×</button>` +
+      `</div>`
+    ).join('') + `<div style="width:100%; font-size:11px; color:var(--charcoal-soft);">${reviewPhotoFiles.length}/${MAX_REVIEW_PHOTOS} photos</div>`;
   }
 
   function renderReviewList(reviews){
@@ -4506,12 +4481,5 @@
 </script>
 
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4aec8988ca524fb6b87c3d4e92c1497e","r":1,"spa":2}' crossorigin="anonymous"></script>
-<div id="diya-layer" aria-hidden="true">
-  <div class="diya-float" style="left:2%;bottom:6%;animation-delay:-0.0s"><svg style="width:100%;height:100%;overflow:visible" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgf0"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgf0)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg></div>
-  <div class="diya-float" style="right:2%;bottom:18%;animation-delay:-1.1s"><svg style="width:100%;height:100%;overflow:visible" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgf1"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgf1)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg></div>
-  <div class="diya-float" style="left:1%;top:42%;animation-delay:-2.2s"><svg style="width:100%;height:100%;overflow:visible" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgf2"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgf2)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg></div>
-  <div class="diya-float" style="right:1.5%;top:22%;animation-delay:-3.3000000000000003s"><svg style="width:100%;height:100%;overflow:visible" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgf3"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgf3)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg></div>
-  <div class="diya-float" style="left:46%;bottom:2%;animation-delay:-4.4s"><svg style="width:100%;height:100%;overflow:visible" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="dgf4"><stop offset="0" stop-color="#FFD36B" stop-opacity=".9"/><stop offset="1" stop-color="#FF8A00" stop-opacity="0"/></radialGradient></defs><circle class="diya-glow" cx="32" cy="24" r="22" fill="url(#dgf4)"/><path d="M6 38 Q32 64 58 38 Q32 45 6 38Z" fill="#B8651B"/><path d="M6 38 Q32 44 58 38 Q32 33 6 38Z" fill="#7A3E0F"/><path class="diya-flame" d="M32 8 C40 19 41 28 32 37 C23 28 24 19 32 8Z" fill="#FF9A1F"/><path class="diya-flame f2" d="M32 19 C36 25 36 30 32 35 C28 30 28 25 32 19Z" fill="#FFE27A"/></svg></div>
-</div>
 </body>
 </html>
