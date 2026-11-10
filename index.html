@@ -563,19 +563,21 @@
     .logo{ font-size:21px; }
     .hero{ padding:16px 18px 0; }
     .hero-grid{ gap:14px; padding-bottom:22px; }
-    .hero-visual{ height:190px; margin-top:6px; }
+    .hero-visual{ height:clamp(480px, 78vh, 680px); margin-top:8px; }
+    .hero-card.main{ width:100%; height:100%; right:0; top:0; }
+    .hero-copy p.desc{ display:none; }
     .hero-copy .eyebrow{ margin-bottom:8px; font-size:10px; }
     .hero-copy h1{ font-size:34px; line-height:1; }
     .hero-sub{ font-size:16px; margin-top:10px; }
-    .hero-copy p.desc{ font-size:12.5px; line-height:1.55; margin-top:8px; }
     .hero-ctas{ gap:8px; margin-top:14px; }
     .hero-ctas .btn{ padding:11px 16px; font-size:10px; }
-    .hero-card.float1{ width:112px; height:auto; padding:8px; left:-4px; bottom:10px; }
-    .hero-card.float1 .clip-swatch{ height:38px; }
-    .hero-card.float1 .price{ font-size:15px; }
-    .hero-card.float1 .mono, .hero-card.float2 .mono{ font-size:8px; }
-    .hero-card.float2{ width:84px; padding:8px 10px; left:10px; top:8px; }
-    .hero-card.float2 .stars{ font-size:9px; margin-top:3px; }
+    .hero-card.float1{ width:170px; height:auto; padding:12px; left:-4px; bottom:16px; }
+    .hero-card.float1 .clip-swatch{ height:84px; }
+    .hero-card.float1 .price{ font-size:21px; margin-top:4px; }
+    .hero-card.float1 .mono{ font-size:11px; line-height:1.4; }
+    .hero-card.float2 .mono{ font-size:11px; }
+    .hero-card.float2{ width:130px; padding:12px 14px; left:12px; top:14px; }
+    .hero-card.float2 .stars{ font-size:13px; margin-top:5px; }
     .section{ padding:30px 18px; }
     .section-head{ margin:0 auto 24px; }
     .section-head p{ margin-top:8px; }
